@@ -141,7 +141,7 @@ get_header();
                             <span class="price new-price">279€</span>
                         </div>
                         <a href="<?php echo home_url('/detalle-producto'); ?>" class="btn-card btn-primary">
-                            <i class="fas fa-shopping-cart me-2"></i> Añadir al carrito
+                            <i class="fas fa-shopping-cart me-2"></i> Agregar al carrito
                         </a>
                     </div>
                 </article>
@@ -170,7 +170,7 @@ get_header();
                             <span class="price new-price">279€</span>
                         </div>
                         <a href="<?php echo home_url('/detalle-producto'); ?>" class="btn-card btn-primary">
-                            <i class="fas fa-shopping-cart me-2"></i> Añadir al carrito
+                            <i class="fas fa-shopping-cart me-2"></i> Agregar al carrito
                         </a>
                     </div>
                 </article>

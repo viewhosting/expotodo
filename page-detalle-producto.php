@@ -141,7 +141,7 @@ $loop = new WP_Query( $args );
                                data-quantity="1" 
                                data-product_id="<?php echo get_the_ID(); ?>"
                                rel="nofollow">
-                                <i class="fas fa-shopping-cart me-2"></i> Añadir al carrito
+                                <i class="fas fa-shopping-cart me-2"></i> Agregar al carrito
                             </a>
                         </div>
                     </article>

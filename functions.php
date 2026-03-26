@@ -60,6 +60,8 @@ function expotodo_scripts() {
         'login_nonce' => wp_create_nonce( 'expotodo_login_nonce' ),
         'profile_nonce' => wp_create_nonce( 'expotodo_profile_nonce' ),
         'redirect_url'=> get_permalink( get_option('woocommerce_myaccount_page_id') ),
+        'checkout_url' => function_exists('wc_get_checkout_url') ? wc_get_checkout_url() : home_url('/checkout/'),
+        'checkout_nonce' => wp_create_nonce( 'woocommerce-process_checkout' ),
     ));
 
     // Custom Login JS (separado para evitar caché y mejor organización)
@@ -97,10 +99,10 @@ function expotodo_custom_checkout_fields( $fields ) {
     $fields['billing']['billing_company']['label'] = 'Nombre de la empresa / Razón Social';
     $fields['billing']['billing_company']['required'] = false;
 
-    // 2. Añadir campos personalizados para Factura
+    // 2. Agregar campos personalizados para Factura
     $fields['billing']['billing_invoice_required'] = array(
         'type'        => 'checkbox',
-        'label'       => '¿Quiere factura?',
+        'label'       => '¿Deseas factura?',
         'class'       => array('form-row-wide'),
         'priority'    => 25,
     );
@@ -153,7 +155,7 @@ function expotodo_custom_checkout_fields( $fields ) {
         'priority'    => 38,
     );
 
-    // 3. Ocultar País (Solo México) y añadir clase para ocultarlo visualmente
+    // 3. Ocultar País (Solo México) y agregar clase para ocultarlo visualmente
     $fields['billing']['billing_country']['class'][] = 'd-none';
     $fields['billing']['billing_country']['required'] = false;
     
@@ -319,9 +321,9 @@ function expotodo_ajax_filter_products() {
                             data-quantity="1" 
                             data-product_id="<?php echo get_the_ID(); ?>"
                             data-product_sku="<?php echo esc_attr( $product->get_sku() ); ?>"
-                            aria-label="Añadir “<?php the_title_attribute(); ?>” al carrito"
+                            aria-label="Agregar “<?php the_title_attribute(); ?>” al carrito"
                             rel="nofollow">
-                            <i class="fas fa-shopping-cart me-2"></i> Añadir
+                            <i class="fas fa-shopping-cart me-2"></i> Agregar
                         </a>
                     </div>
                 </div>
@@ -461,4 +463,137 @@ function expotodo_ajax_live_search() {
 
     wp_send_json_success( array( 'html' => $content ) );
     wp_die();
+}
+
+/**
+ * WooCommerce Get Cart Items HTML
+ */
+function expotodo_get_cart_items_html() {
+    ob_start();
+    ?>
+    <div class="cart-items flex-grow-1">
+        <?php if ( function_exists('WC') && ! WC()->cart->is_empty() ) : ?>
+            <ul class="list-unstyled p-3 mb-0">
+                <?php
+                foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+                    $_product   = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
+                    $product_id = apply_filters( 'woocommerce_cart_item_product_id', $cart_item['product_id'], $cart_item, $cart_item_key );
+
+                    if ( $_product && $_product->exists() && $cart_item['quantity'] > 0 && apply_filters( 'woocommerce_cart_item_visible', true, $cart_item, $cart_item_key ) ) {
+                        $product_permalink = apply_filters( 'woocommerce_cart_item_permalink', $_product->is_visible() ? $_product->get_permalink( $cart_item ) : '', $cart_item, $cart_item_key );
+                        ?>
+                        <li class="d-flex mb-3 pb-2 border-bottom align-items-center">
+                            <div class="me-3" style="width: 50px; height: 50px; flex-shrink: 0;">
+                                <?php 
+                                $thumbnail = apply_filters( 'woocommerce_cart_item_thumbnail', $_product->get_image(), $cart_item, $cart_item_key );
+                                echo str_replace('class="', 'class="img-fluid rounded shadow-sm ', $thumbnail);
+                                ?>
+                            </div>
+                            <div class="flex-grow-1 overflow-hidden">
+                                <h6 class="mb-0 text-truncate fw-bold small">
+                                    <?php
+                                    $name = apply_filters( 'woocommerce_cart_item_name', $_product->get_name(), $cart_item, $cart_item_key );
+                                    if ( $product_permalink ) {
+                                        echo sprintf( '<a href="%s" class="text-dark text-decoration-none">%s</a>', esc_url( $product_permalink ), esc_html($name) );
+                                    } else {
+                                        echo esc_html($name);
+                                    }
+                                    ?>
+                                </h6>
+                                <div class="text-muted small">
+                                    <?php echo sprintf( '%d &times; %s', $cart_item['quantity'], WC()->cart->get_product_price( $_product ) ); ?>
+                                </div>
+                            </div>
+                            <div class="ms-2">
+                                <?php
+                                echo apply_filters( 'woocommerce_cart_item_remove_link', sprintf(
+                                    '<a href="%s" class="remove_from_cart_button text-danger small" aria-label="%s" data-product_id="%s" data-cart_item_key="%s" data-product_sku="%s"><i class="fas fa-trash-alt"></i></a>',
+                                    esc_url( wc_get_cart_remove_url( $cart_item_key ) ),
+                                    esc_html__( 'Remove this item', 'woocommerce' ),
+                                    esc_attr( $product_id ),
+                                    esc_attr( $cart_item_key ),
+                                    esc_attr( $_product->get_sku() )
+                                ), $cart_item_key );
+                                ?>
+                            </div>
+                        </li>
+                    <?php }
+                } ?>
+            </ul>
+        <?php endif; ?>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * WooCommerce Cart AJAX Fragments
+ */
+add_filter( 'woocommerce_add_to_cart_fragments', 'expotodo_cart_fragments' );
+function expotodo_cart_fragments( $fragments ) {
+    $fragments['span.cart-count'] = '<span class="cart-count">' . WC()->cart->get_cart_contents_count() . '</span>';
+    $fragments['div.cart-items'] = expotodo_get_cart_items_html();
+    $fragments['span.cart-subtotal'] = '<span class="cart-subtotal">' . WC()->cart->get_cart_subtotal() . '</span>';
+    $fragments['span.cart-total'] = '<span class="cart-total">' . WC()->cart->get_total() . '</span>';
+    
+    // Visibilidad del mensaje de vacío
+    if ( WC()->cart->is_empty() ) {
+        $fragments['div.cart-empty-message'] = '<div class="cart-empty-message text-muted small p-4 text-center">Tu carrito está vacío.</div>';
+    } else {
+        $fragments['div.cart-empty-message'] = '<div class="cart-empty-message d-none"></div>';
+    }
+
+    return $fragments;
+}
+
+/**
+ * AJAX para obtener datos de Checkout (Métodos de Pago)
+ */
+add_action( 'wp_ajax_expotodo_get_checkout_data', 'expotodo_get_checkout_data' );
+add_action( 'wp_ajax_nopriv_expotodo_get_checkout_data', 'expotodo_get_checkout_data' );
+
+function expotodo_get_checkout_data() {
+    if ( ! WC()->cart ) {
+        wp_send_json_error( array( 'message' => 'Carrito no inicializado' ) );
+    }
+
+    $available_gateways = WC()->payment_gateways->get_available_payment_gateways();
+    
+    ob_start();
+    if ( ! empty( $available_gateways ) ) {
+        echo '<ul class="list-group list-group-flush payment-methods-list border-0 woocommerce-checkout-payment-methods">';
+        foreach ( $available_gateways as $gateway ) {
+            ?>
+            <li class="list-group-item p-0 mb-3 border-0 bg-transparent wc_payment_method payment_method_<?php echo esc_attr( $gateway->id ); ?>">
+                <input type="radio" class="btn-check input-radio" name="payment_method" id="payment_method_<?php echo esc_attr( $gateway->id ); ?>" value="<?php echo esc_attr( $gateway->id ); ?>" autocomplete="off" <?php checked( $gateway->chosen, true ); ?>>
+                <label class="btn btn-outline-dark w-100 text-start d-flex align-items-center p-3 payment-method-option" for="payment_method_<?php echo esc_attr( $gateway->id ); ?>">
+                    <div class="flex-grow-1">
+                        <div class="fw-bold h6 mb-1"><?php echo $gateway->get_title(); ?></div>
+                    </div>
+                    <?php if ( $gateway->get_icon() ) : ?>
+                        <div class="ms-2 payment-icon">
+                            <?php echo $gateway->get_icon(); ?>
+                        </div>
+                    <?php endif; ?>
+                </label>
+                
+                <?php if ( $gateway->has_fields() || $gateway->get_description() ) : ?>
+                    <div class="payment_box payment_method_<?php echo esc_attr( $gateway->id ); ?> mt-2 p-3 bg-light rounded" style="display: none; border: 1px solid #eee;">
+                        <?php $gateway->payment_fields(); ?>
+                    </div>
+                <?php endif; ?>
+            </li>
+            <?php
+        }
+        echo '</ul>';
+    } else {
+        echo '<div class="alert alert-warning small">No hay métodos de pago disponibles. Por favor, contacta con soporte.</div>';
+    }
+    $html = ob_get_clean();
+
+    wp_send_json_success( array(
+        'html'  => $html,
+        'total' => WC()->cart->get_total(),
+        'count' => WC()->cart->get_cart_contents_count()
+    ) );
 }

@@ -113,9 +113,9 @@ get_header();
                                                            data-quantity="1" 
                                                            data-product_id="<?php echo get_the_ID(); ?>"
                                                            data-product_sku="<?php echo esc_attr( $product->get_sku() ); ?>"
-                                                           aria-label="Añadir “<?php the_title_attribute(); ?>” al carrito"
+                                                           aria-label="Agregar “<?php the_title_attribute(); ?>” al carrito"
                                                            rel="nofollow">
-                                                            <i class="fas fa-shopping-cart me-2"></i> <?php echo $product->is_type('variable') ? 'Seleccionar opciones' : 'Añadir al carrito'; ?>
+                                                            <i class="fas fa-shopping-cart me-2"></i> <?php echo $product->is_type('variable') ? 'Seleccionar opciones' : 'Agregar al carrito'; ?>
                                                         </a>
                                                     </div>
                                                 </article>

@@ -121,7 +121,7 @@ $current_term_id = is_product_category() ? get_queried_object_id() : '';
                                                         <i class="fas fa-eye me-2"></i> Ver detalles
                                                     </a>
                                                     <a href="<?php echo esc_url( $product->add_to_cart_url() ); ?>" class="btn-card btn-outline-primary w-100 ajax_add_to_cart" data-quantity="1" data-product_id="<?php echo get_the_ID(); ?>">
-                                                        <i class="fas fa-shopping-cart me-2"></i> Añadir
+                                                        <i class="fas fa-shopping-cart me-2"></i> Agregar
                                                     </a>
                                                 </div>
                                             </article>

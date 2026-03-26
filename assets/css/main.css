@@ -24,6 +24,10 @@ body {
     padding-top: 70px; /* Para compensar el header fijo */
 }
 
+.home body {
+    padding-top: 0 !important;
+}
+
 /* Utilidades Bootstrap personalizadas */
 .btn {
     border-radius: 0;
@@ -460,8 +464,11 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ===== HERO SECTION ===== */
 .hero {
-    min-height: calc(90vh - 70px);
     color: var(--text-white);
+    min-height: 900px; /* Altura firme para escritorio para evitar colapso */
+    margin-bottom: 30px; 
+    position: relative;
+    overflow: hidden;
 }
 
 .hero-content {
@@ -793,7 +800,8 @@ h1, h2, h3, h4, h5, h6 {
     }
     
     .hero {
-        min-height: calc(100vh - 60px);
+        min-height: 640px !important; /* Altura firme para móvil */
+        margin-bottom: 20px !important;
     }
     
     .hero-title {
@@ -957,6 +965,43 @@ h1, h2, h3, h4, h5, h6 {
     overflow-y: auto;
 }
 
+/* Evitar scroll en el panel de búsqueda (solo el listado interno debe scrollear) */
+#buscarPanel {
+    overflow-y: hidden !important;
+}
+
+/* Toast con Estilo WooCommerce */
+#cartToast.woocommerce-message {
+    background: #fff !important;
+    color: #333 !important;
+    border-left: 6px solid #b0d443 !important;
+    width: auto;
+    min-width: 300px;
+    padding: 0;
+    margin: 0;
+    display: block;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
+    border-radius: 8px;
+}
+
+#cartToast.woocommerce-message::before {
+    display: none; /* Desactivar icono absoluto para el toast compacto */
+}
+
+#cartToast.woocommerce-message .toast-body {
+    padding: 1rem 1.5rem !important;
+    font-weight: 500;
+}
+
+#cartToast.woocommerce-message .btn-close {
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+#cartToast.woocommerce-message .btn-close:hover {
+    opacity: 1;
+}
+
 /* Estado abierto */
 .right-sidebar.open {
     right: 0;
@@ -977,6 +1022,105 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
     font-size: 1.3rem;
     margin: 0;
+}
+
+/* Botón de cierre de sidebar */
+.close-sidebar-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.close-sidebar-btn:hover {
+    background-color: var(--primary-color);
+    color: var(--text-dark);
+    transform: rotate(90deg) scale(1.1);
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== CHECKOUT MODAL SPECIAL STYLES (En lugar de Sidebar) ===== */
+.modal-content {
+    border-radius: 20px;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+}
+
+#checkoutPanel #checkout-errors .woocommerce-error {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 15px 20px !important;
+    font-size: 0.85rem !important;
+    border-radius: 12px !important;
+    background: #fff5f5 !important;
+    color: #c53030 !important;
+    border: 1px solid #feb2b2 !important;
+    box-shadow: none !important;
+    margin-bottom: 20px !important;
+    display: block !important;
+    pointer-events: auto !important;
+    animation: fadeIn 0.3s ease;
+    list-style: none !important;
+}
+
+#checkoutPanel .payment-method-option {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #fff;
+    cursor: pointer;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
+#checkoutPanel .payment-method-option:hover {
+    border-color: var(--primary-color);
+    background: rgba(176, 212, 67, 0.02);
+    transform: translateY(-2px);
+}
+
+#checkoutPanel .btn-check:checked + .payment-method-option {
+    border-color: var(--primary-color);
+    background-color: rgba(176, 212, 67, 0.06);
+    box-shadow: 0 4px 15px rgba(176, 212, 67, 0.12);
+}
+
+#checkoutPanel .payment_box {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: #4a5568;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 20px !important;
+    margin-top: -12px;
+    margin-bottom: 15px;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    border-top: none !important;
+}
+
+#checkoutPanel .checkout-summary {
+    transition: all 0.3s ease;
+}
+
+#checkoutPanel .checkout-summary:hover {
+    background: #f1f3f5 !important;
+}
+
+#checkoutPanel .payment-gateways-list {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-color) transparent;
 }
 
 /* =========================================
@@ -1923,4 +2067,64 @@ form.cart button.btn-card {
 
 .product-image-main:hover .woocommerce-main-image img {
     transform: scale(1.08); /* Sutil zoom de imagen */
+}
+
+/* Botón "Ver carrito" (oculto en favor de Toast/Sidebar solo si no se desea mostrar) */
+a.added_to_cart {
+    display: none !important;
+}
+
+/* ==========================================================================
+   Página del Carrito (Estructura DIV Fluida y Premium)
+   ========================================================================== */
+
+
+
+/* ==========================================================================
+   Consistencia del Modal de Checkout
+   ========================================================================== */
+
+@media (max-width: 576px) {
+    #checkoutPanel .modal-dialog {
+        margin: 10px;
+        max-width: calc(100% - 20px);
+    }
+    
+    #checkoutPanel .modal-body {
+        padding: 15px !important;
+    }
+    
+    #checkoutPanel .modal-header {
+        padding: 15px 15px 0 !important;
+    }
+    
+    #checkoutPanel .checkout-summary {
+        margin-bottom: 20px !important;
+        padding: 15px !important;
+    }
+    
+    #checkoutPanel .cart-total {
+        font-size: 1.4rem !important;
+    }
+    
+    #checkoutPanel .payment-method-option {
+        padding: 0.8rem !important;
+        margin-bottom: 8px !important;
+    }
+
+    #checkoutPanel .payment_box {
+        padding: 15px !important;
+        font-size: 0.82rem !important;
+    }
+
+    #checkoutPanel .checkout-actions {
+        margin-top: 20px !important;
+        padding-top: 15px !important;
+    }
+
+    #checkoutPanel .checkout-actions .btn {
+        padding: 12px 10px !important;
+        font-size: 1rem !important;
+        border-radius: 10px !important;
+    }
 }

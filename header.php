@@ -71,7 +71,7 @@
                                 </a>
                                 <a href="#carrito" class="cart-icon position-relative no-smooth-scroll" title="Carrito" role="button">
                                     <i class="fas fa-shopping-bag"></i>
-                                    <span class="cart-count">0</span>
+                                    <span class="cart-count"><?php echo WC()->cart ? WC()->cart->get_cart_contents_count() : '0'; ?></span>
                                 </a>
                             </div>
                         </li>
@@ -116,12 +116,14 @@
             </button>
         </div>
         <div class="d-flex flex-column flex-grow-1 overflow-hidden">
-            <div class="cart-items flex-grow-1"></div>
-            <div class="cart-empty-message text-muted small">Tu carrito está vacío.</div>
+            <?php echo expotodo_get_cart_items_html(); ?>
+            <div class="cart-empty-message text-muted small <?php echo (WC()->cart && WC()->cart->is_empty()) ? '' : 'd-none'; ?>">
+                Tu carrito está vacío.
+            </div>
             <div class="cart-summary mt-4">
                 <div class="d-flex justify-content-between mb-2">
                     <span>Subtotal</span>
-                    <span class="cart-subtotal">0,00€</span>
+                    <span class="cart-subtotal"><?php echo WC()->cart ? WC()->cart->get_cart_subtotal() : '0,00€'; ?></span>
                 </div>
                 <div class="mb-3">
                     <label for="cartPostalCode" class="form-label mb-1">Código postal para envío</label>
@@ -138,11 +140,122 @@
                 <hr>
                 <div class="d-flex justify-content-between fw-bold">
                     <span>Total</span>
-                    <span class="cart-total">0,00€</span>
+                    <span class="cart-total"><?php echo WC()->cart ? WC()->cart->get_total() : '0,00€'; ?></span>
                 </div>
                 <div class="mt-3 d-grid gap-2">
                     <a href="<?php echo home_url('/carrito'); ?>" class="btn btn-outline-primary">Ver Carrito</a>
-                    <a href="<?php echo home_url('/checkout'); ?>" class="btn btn-primary">Proceder al Pago</a>
+                    <button type="button" class="btn btn-primary btn-checkout-modal">Finalizar Compra</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Checkout (Reemplaza al sidebar para mejor visibilidad) -->
+    <div class="modal fade" id="checkoutPanel" tabindex="-1" aria-labelledby="checkoutPanelLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <div class="modal-header border-bottom-0 p-4 pb-0">
+                    <h5 class="modal-title h4 fw-bold" id="checkoutPanelLabel">Finalizar Compra</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 pt-1">
+                    <form name="checkout" method="post" class="checkout woocommerce-checkout" action="<?php echo esc_url( wc_get_checkout_url() ); ?>" enctype="multipart/form-data">
+                        <div class="checkout-summary mb-4 p-3 bg-light rounded-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted small text-uppercase fw-semibold letter-spacing-1">Total a pagar:</span>
+                                <span class="cart-total h3 fw-bold mb-0 text-primary">
+                                    <?php echo WC()->cart ? WC()->cart->get_total() : '0,00€'; ?>
+                                </span>
+                            </div>
+                        </div> <!-- Cierre de checkout-summary -->
+
+                        <!-- Contenedor dinámico de errores (Movido arriba para visibilidad) -->
+                        <div id="checkout-errors" class="mb-3"></div>
+
+                        <!-- Datos del Pedido -->
+                        <div class="customer-details-section mb-4">
+                            <h6 class="fw-bold small text-uppercase mb-3 letter-spacing-1 border-bottom pb-2">Datos de Envío</h6>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <input type="text" name="billing_first_name" class="form-control form-control-sm" placeholder="Nombre *" required value="<?php echo WC()->customer ? WC()->customer->get_billing_first_name() : ''; ?>">
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="billing_last_name" class="form-control form-control-sm" placeholder="Apellidos *" required value="<?php echo WC()->customer ? WC()->customer->get_billing_last_name() : ''; ?>">
+                                </div>
+                                <div class="col-12">
+                                    <input type="text" name="billing_address_1" class="form-control form-control-sm" placeholder="Dirección (Calle y Número) *" required value="<?php echo WC()->customer ? WC()->customer->get_billing_address_1() : ''; ?>">
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="billing_city" class="form-control form-control-sm" placeholder="Ciudad *" required value="<?php echo WC()->customer ? WC()->customer->get_billing_city() : ''; ?>">
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="billing_state" class="form-control form-control-sm" placeholder="Estado *" required value="<?php echo WC()->customer ? WC()->customer->get_billing_state() : ''; ?>">
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="text" name="billing_postcode" class="form-control form-control-sm" placeholder="C.P. *" required value="<?php echo WC()->customer ? WC()->customer->get_billing_postcode() : ''; ?>">
+                                </div>
+                                <div class="col-12">
+                                    <input type="email" name="billing_email" class="form-control form-control-sm" placeholder="Email *" required value="<?php echo WC()->customer ? WC()->customer->get_billing_email() : ''; ?>">
+                                </div>
+                                <div class="col-12 mt-1">
+                                    <select name="billing_country" class="form-select form-select-sm" required>
+                                        <option value="MX" selected>México</option>
+                                        <?php 
+                                            $countries = WC()->countries->get_allowed_countries();
+                                            foreach($countries as $code => $name) {
+                                                if($code !== 'MX') echo '<option value="'.$code.'">'.$name.'</option>';
+                                            }
+                                        ?>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-check mt-3">
+                                <input class="form-check-input" type="checkbox" name="use_shipping_for_billing" id="use-shipping-for-billing" checked>
+                                <label class="form-check-label small fw-bold" for="use-shipping-for-billing">
+                                    Usar datos de envío para facturación
+                                </label>
+                            </div>
+
+                            <!-- Dirección de Facturación Alternativa -->
+                            <div id="billing-different-fields" class="mt-3 p-3 bg-light rounded-3" style="display:none; border: 1px dashed #ddd;">
+                                <h6 class="fw-bold small text-uppercase mb-3 letter-spacing-1">Datos de Facturación Diferentes</h6>
+                                <div class="row g-2">
+                                    <div class="col-12">
+                                        <input type="text" name="shipping_address_1" class="form-control form-control-sm" placeholder="Dirección de Facturación">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" name="shipping_city" class="form-control form-control-sm" placeholder="Ciudad">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" name="shipping_postcode" class="form-control form-control-sm" placeholder="C.P.">
+                                    </div>
+                                    <div class="col-12 mt-2">
+                                        <div class="small text-muted"><i class="fas fa-info-circle me-1"></i> Estos datos se utilizarán para la factura oficial.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <h6 class="fw-bold small text-uppercase mb-3 letter-spacing-1 border-bottom pb-2">Método de Pago</h6>
+                            <div id="payment-gateways-container" class="payment-gateways-list" style="max-height: 250px; overflow-y: auto;">
+                                <div class="text-center py-5">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                    <span class="ms-2">Cargando métodos de pago...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="checkout-actions mt-4 pt-3 border-top">
+                            <button type="submit" class="btn btn-primary w-100 py-3 fw-bold text-uppercase h5 mb-3" id="btn-place-order" disabled style="border-radius: 12px; font-size: 1.1rem;">
+                                Pagar Ahora
+                            </button>
+                            <p class="text-muted small text-center mb-0">
+                                <i class="fas fa-lock me-1"></i> Transacción 100% segura procesada por pasarelas certificadas.
+                            </p>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -196,5 +309,17 @@
                     </div>
                 </form>
             <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- Toast de Notificación de Carrito (Woocommerce Style) -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1070;">
+        <div id="cartToast" class="toast woocommerce-message border-0 shadow-lg fade" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex align-items-center">
+                <div class="toast-body p-3">
+                    ¡Producto agregado al carrito con éxito!
+                </div>
+                <button type="button" class="btn-close me-3" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+            </div>
         </div>
     </div>

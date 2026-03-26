@@ -1,7 +1,7 @@
 <?php get_header(); ?>
 
     <!-- Sección Hero -->
-    <section class="hero d-flex align-items-center">
+    <section class="hero">
         <?php
             echo do_shortcode('[rev_slider alias="principal"][/rev_slider]');
 
@@ -70,8 +70,8 @@
                             <a href="<?php echo get_permalink(); ?>" class="btn-card btn-primary">
                                 <i class="fas fa-eye me-2"></i> Ver detalles
                             </a>
-                            <a href="<?php echo esc_url($product->add_to_cart_url()); ?>" class="btn-card btn-primary mt-2 <?php echo $product->is_type('simple') ? 'ajax_add_to_cart' : ''; ?>" data-quantity="1" data-product_id="<?php echo get_the_ID(); ?>" aria-label="Añadir “<?php the_title_attribute(); ?>” al carrito">
-                                <i class="fas fa-shopping-cart me-2"></i> <?php echo $product->is_type('variable') ? 'Seleccionar opciones' : 'Añadir al carrito'; ?>
+                            <a href="<?php echo esc_url($product->add_to_cart_url()); ?>" class="btn-card btn-primary mt-2 <?php echo $product->is_type('simple') ? 'ajax_add_to_cart' : ''; ?>" data-quantity="1" data-product_id="<?php echo get_the_ID(); ?>" aria-label="Agregar “<?php the_title_attribute(); ?>” al carrito">
+                                <i class="fas fa-shopping-cart me-2"></i> <?php echo $product->is_type('variable') ? 'Seleccionar opciones' : 'Agregar al carrito'; ?>
                             </a>
                         </div>
                     </article>

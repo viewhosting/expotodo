@@ -90,7 +90,7 @@ get_header();
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="card bg-light border-0 p-3">
-                                        <!-- Formulario de Añadir al Carrito (Variables, Cantidad, etc.) -->
+                                        <!-- Formulario de Agregar al Carrito (Variables, Cantidad, etc.) -->
                                         <div class="product-add-to-cart-container mb-3">
                                             <?php 
                                             if ( function_exists('expotodo_custom_add_to_cart_button') ) {
@@ -179,7 +179,7 @@ get_header();
                                                 <i class="fas fa-eye me-2"></i> Ver detalles
                                             </a>
                                             <a href="<?php echo esc_url( $product->add_to_cart_url() ); ?>" class="btn-card btn-primary mt-2 ajax_add_to_cart" data-quantity="1" data-product_id="<?php echo get_the_ID(); ?>">
-                                                <i class="fas fa-shopping-cart me-2"></i> Añadir al carrito
+                                                <i class="fas fa-shopping-cart me-2"></i> Agregar al carrito
                                             </a>
                                         </div>
                                     </article>

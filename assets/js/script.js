@@ -14,6 +14,43 @@ jQuery(document).ready(function ($) {
         }
     }
 
+    // ==========================================
+    // AUTO-HIDE WOOCOMMERCE MESSAGES
+    // ==========================================
+    function autoHideWoocommerceMessages() {
+        // Buscamos mensajes de éxito, información y errores
+        const selectors = '.woocommerce-message, .woocommerce-info, .woocommerce-error';
+        const messages = document.querySelectorAll(selectors);
+
+        messages.forEach(message => {
+            // Evitar duplicar el timeout si ya se aplicó
+            if (message.dataset.timeoutApplied) return;
+            message.dataset.timeoutApplied = 'true';
+
+            setTimeout(() => {
+                $(message).fadeOut(600, function () {
+                    $(this).remove();
+                });
+            }, 5000); // 5 segundos
+        });
+    }
+
+    // Ejecutar para los mensajes que ya vienen en el HTML de carga inicial
+    autoHideWoocommerceMessages();
+
+    // Observador para detectar mensajes inyectados por AJAX (ej. al añadir al carrito)
+    const observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+            if (mutation.addedNodes.length) {
+                // Si se añade algún nodo, revisamos si es o contiene un mensaje
+                autoHideWoocommerceMessages();
+            }
+        });
+    });
+
+    // Empezamos a observar el body en busca de cambios en la lista de hijos
+    observer.observe(document.body, { childList: true, subtree: true });
+
     // Mobile Navigation
     const navbarToggler = document.querySelector('.navbar-toggler');
     const navbarCollapse = document.querySelector('.navbar-collapse');
@@ -102,6 +139,162 @@ jQuery(document).ready(function ($) {
     });
 
     // ==========================================
+    // CHECKOUT SIDEBAR LOGIC
+    // ==========================================
+
+    let checkoutModal = null;
+
+    // Abrir modal de checkout desde cualquier botón de "Finalizar Compra"
+    $(document).on('click', '.btn-checkout-modal, .checkout-button', function (e) {
+        e.preventDefault();
+
+        // Inicialización perezosa del modal
+        if (!checkoutModal) {
+            const checkoutModalEl = document.getElementById('checkoutPanel');
+            if (checkoutModalEl && typeof bootstrap !== 'undefined') {
+                checkoutModal = new bootstrap.Modal(checkoutModalEl);
+            }
+        }
+
+        if (checkoutModal) {
+            checkoutModal.show();
+        }
+
+        const $container = $('#payment-gateways-container');
+        const $btnPlaceOrder = $('#btn-place-order');
+        const $errorContainer = $('#checkout-errors');
+
+        // Reset state
+        $errorContainer.empty();
+        $btnPlaceOrder.prop('disabled', true);
+        $container.html('<div class="text-center py-5"><div class="spinner-border spinner-border-sm text-primary" role="status"></div><span class="ms-2 text-muted">Cargando métodos de pago...</span></div>');
+
+        // Cargar métodos de pago via AJAX
+        $.ajax({
+            url: expotodo_globals.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'expotodo_get_checkout_data'
+            },
+            success: function (response) {
+                if (response.success) {
+                    $container.html(response.data.html);
+                    // Actualizar total en el panel (por si cambió)
+                    $('#checkoutPanel .cart-total').html(response.data.total);
+
+                    // Inicializar visibilidad de campos de pago y habilitar botón
+                    const $initialChecked = $container.find('input[name="payment_method"]:checked');
+                    if ($initialChecked.length > 0) {
+                        $initialChecked.closest('.wc_payment_method').find('.payment_box').show();
+                        $btnPlaceOrder.prop('disabled', false);
+                    }
+
+                    // Notificar a WooCommerce que el checkout se ha actualizado
+                    $(document.body).trigger('updated_checkout');
+
+                    // Listener para selección de método
+                    $container.find('input[name="payment_method"]').on('change', function () {
+                        const $parent = $(this).closest('.wc_payment_method');
+                        $('.payment_box').slideUp(200);
+                        if ($(this).is(':checked')) {
+                            $parent.find('.payment_box').slideDown(200);
+                            $btnPlaceOrder.prop('disabled', false);
+                            $(document.body).trigger('payment_method_selected');
+                        }
+                    });
+                } else {
+                    $container.html('<div class="alert alert-danger small m-3">Error: ' + (response.data.message || 'No se pudieron cargar los métodos.') + '</div>');
+                }
+            },
+            error: function () {
+                $container.html('<div class="alert alert-danger small m-3">Error de conexión al cargar métodos de pago.</div>');
+            }
+        });
+
+        // Alternar campos de facturación diferentes (Logic nueva para el modal)
+        $(document).on('change', '#use-shipping-for-billing', function () {
+            const $extraFields = $('#billing-different-fields');
+            if (!$(this).is(':checked')) {
+                $extraFields.slideDown();
+            } else {
+                $extraFields.slideUp();
+                // Limpiar campos si se vuelve a la opción por defecto
+                $extraFields.find('input').val('');
+            }
+        });
+    });
+
+    // Acción del botón de Pagar Ahora (Sumisión AJAX real con serialización completa)
+    $('#btn-place-order').on('click', function (e) {
+        e.preventDefault();
+        const selectedMethod = $('input[name="payment_method"]:checked').val();
+
+        if (!selectedMethod) {
+            alert('Por favor, selecciona un método de pago.');
+            return;
+        }
+
+        const $btn = $(this);
+        const originalHtml = $btn.html();
+        const $errorContainer = $('#checkout-errors');
+        const $form = $('form.woocommerce-checkout');
+
+        // Limpiar errores previos
+        $errorContainer.empty();
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1" role="status"></span> Procesando...');
+
+        // Recopilar TODOS los datos del formulario (incluyendo campos de pasarela y tokens ocultos)
+        let checkoutData = $form.serializeArray();
+
+        // Asegurar campos críticos
+        checkoutData.push({ name: '_wpnonce', value: expotodo_globals.checkout_nonce });
+        checkoutData.push({ name: 'woocommerce-process-checkout-nonce', value: expotodo_globals.checkout_nonce });
+        checkoutData.push({ name: 'ship_to_different_address', value: '0' });
+        checkoutData.push({ name: 'terms', value: 'on' });
+        checkoutData.push({ name: 'terms-field', value: '1' });
+
+        $.ajax({
+            url: '/?wc-ajax=checkout',
+            type: 'POST',
+            data: checkoutData,
+            success: function (response) {
+                try {
+                    let data = response;
+                    if (typeof response === 'string') {
+                        const jsonPos = response.indexOf('{"result"');
+                        if (jsonPos > -1) {
+                            data = JSON.parse(response.substring(jsonPos));
+                        }
+                    }
+
+                    if (data.result === 'success') {
+                        // LA PASARELA O WC HACEN LA REDIRECCIÓN OFICIAL
+                        window.location.href = data.redirect;
+                    } else {
+                        // MOSTRAR ERRORES EN EL SIDEBAR
+                        if (data.messages) {
+                            $errorContainer.html(data.messages).hide().fadeIn();
+                            // Scroll al inicio del panel para ver errores
+                            $('#checkoutPanel').animate({ scrollTop: 0 }, 400);
+                        } else {
+                            // Fallback si no hay mensajes
+                            window.location.href = expotodo_globals.checkout_url + '?payment_method=' + selectedMethod;
+                        }
+                        // Restaurar botón
+                        $btn.prop('disabled', false).html(originalHtml);
+                    }
+                } catch (err) {
+                    console.error('Error parseando checkout:', err);
+                    window.location.href = expotodo_globals.checkout_url + '?payment_method=' + selectedMethod;
+                }
+            },
+            error: function () {
+                window.location.href = expotodo_globals.checkout_url + '?payment_method=' + selectedMethod;
+            }
+        });
+    });
+
+    // ==========================================
     // SERVER-SIDE CART IMPLEMENTATION
     // ==========================================
 
@@ -112,7 +305,7 @@ jQuery(document).ready(function ($) {
     // PRODUCT DETAILS LAYOUT LOGIC
     // ==========================================
 
-    // Mover el contenedor de añadir al carrito a la barra lateral (sticky panel)
+    // Mover el contenedor de agregar al carrito a la barra lateral (sticky panel)
     // Se ejecuta al cargar y cuando WooCommerce actualiza las variaciones
     function teleportCartButton() {
         var $variationWrap = $('.single_variation_wrap');
@@ -160,32 +353,113 @@ jQuery(document).ready(function ($) {
         $('#sticky-cart-panel .cart-placeholder-text').show();
     });
 
-    // Hack para el botón de submit fuera del form
+    /**
+     * Función global para agregar al carrito via AJAX
+     * @param {jQuery} $btn - El botón que disparó la acción
+     * @param {Object|String} data - Datos a enviar
+     * @param {Boolean} isForm - Si los datos vienen de un formulario serializado
+     */
+    window.agregarCarrito = function ($btn, data, isForm) {
+        if ($btn.hasClass('loading')) return;
+
+        // Guardar el contenido original para restaurarlo después
+        var originalHtml = $btn.html();
+
+        $btn.addClass('loading').prop('disabled', true);
+        $btn.html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Agregando...');
+
+        // Si es formulario (single product), posteamos a la misma URL para que WC lo procese
+        // Si no, usamos el endpoint de AJAX de WooCommerce
+        var ajaxUrl = isForm ? window.location.href : (typeof wc_add_to_cart_params !== 'undefined' ? wc_add_to_cart_params.wc_ajax_url.toString().replace('%%endpoint%%', 'add_to_cart') : '/?wc-ajax=add_to_cart');
+
+        $.ajax({
+            url: ajaxUrl,
+            data: data,
+            method: 'POST',
+            success: function (response) {
+                // Actualizar fragmentos del carrito
+                $(document.body).trigger('wc_fragment_refresh');
+
+                // Disparar evento de éxito
+                if (response && response.fragments) {
+                    $(document.body).trigger('added_to_cart', [response.fragments, response.cart_hash, $btn]);
+                } else {
+                    $(document.body).trigger('added_to_cart', [null, null, $btn]);
+                }
+            },
+            error: function () {
+                // Fallback: si falla el AJAX de formulario, enviamos normal
+                if (isForm) {
+                    var $form = $btn.closest('form.cart') || $('form.variations_form, form.cart');
+                    if ($form.length) $form.submit();
+                }
+            },
+            complete: function () {
+                $btn.removeClass('loading').prop('disabled', false);
+                $btn.html(originalHtml);
+            }
+        });
+    };
+
+    // AJAX Add to Cart para Página de Producto (Simple y Variable)
     $(document).on('click', '.single_add_to_cart_button', function (e) {
         var $btn = $(this);
-        var $form = $('.variations_form');
+        var $form = $btn.closest('form.cart');
 
-        // Si el botón está fuera del form (que lo está ahora), enviamos el form manualmente
-        if ($btn.closest('form').length === 0 && $form.length) {
-            e.preventDefault();
-
-            // Verificar validez HTML5 si es posible
-            if ($form[0].checkValidity && !$form[0].checkValidity()) {
-                $form[0].reportValidity();
-                return;
-            }
-
-            // Crear un input hidden con el valor del botón (add-to-cart)
-            // WooCommerce busca este valor para procesar
-            if (!$form.find('input[name="add-to-cart"]').length) {
-                $form.append('<input type="hidden" name="add-to-cart" value="' + $btn.val() + '" />');
-            }
-
-            // También necesitamos product_id si es simple, o variation_id si es variable
-            // El form ya los tiene.
-
-            $form.submit();
+        if (!$form.length) {
+            $form = $('form.variations_form, form.cart');
         }
+
+        if (!$form.length) return;
+
+        e.preventDefault();
+
+        // Validar campos requeridos (especialmente variaciones)
+        if ($form[0].checkValidity && !$form[0].checkValidity()) {
+            $form[0].reportValidity();
+            return;
+        }
+
+        var data = $form.serialize();
+        var addToCartVal = $btn.val() || $form.find('[name="add-to-cart"]').val();
+        if (addToCartVal) {
+            data += '&add-to-cart=' + addToCartVal;
+        }
+
+        window.agregarCarrito($btn, data, true);
+    });
+
+    // AJAX Add to Cart para Listados (Archive/Grid)
+    $(document).on('click', '.add_to_cart_button:not(.single_add_to_cart_button), .ajax_add_to_cart', function (e) {
+        var $btn = $(this);
+
+        // Si no tiene product_id o es variable en listado (que redirige), dejamos comportamiento nativo
+        if (!$btn.data('product_id')) return;
+
+        e.preventDefault();
+
+        var data = {
+            product_id: $btn.data('product_id'),
+            quantity: $btn.data('quantity') || 1,
+            product_sku: $btn.data('product_sku') || ''
+        };
+
+        window.agregarCarrito($btn, data, false);
+    });
+
+    // Auto-open cart panel when item is added
+    $(document.body).on('added_to_cart', function () {
+        // Ocultar el botón "Ver carrito" que WooCommerce añade (ya que usamos Toast/Sidebar)
+        $('.added_to_cart').css('display', 'none');
+
+        // Mostrar Toast de éxito
+        var $toastEl = $('#cartToast');
+        if ($toastEl.length && typeof bootstrap !== 'undefined') {
+            var toast = new bootstrap.Toast($toastEl[0], { delay: 3000 });
+            toast.show();
+        }
+
+        openRightSidebar('cartPanel');
     });
 
     // Inicializar tooltips de Bootstrap

@@ -77,7 +77,7 @@ get_header();
                             <div class="product-price mb-3"><span class="price new-price">520€</span></div><a
                                 class="btn-card btn-primary" href="#"><i
                                     class="fas fa-eye me-2"></i> Ver detalles</a><a href="#" class="btn-card btn-primary mt-2">
-                            <i class="fas fa-shopping-cart me-2"></i> Añadir al carrito
+                            <i class="fas fa-shopping-cart me-2"></i> Agregar al carrito
                         </a>
                         </div>
                     </article>
@@ -99,7 +99,7 @@ get_header();
                             <div class="product-price mb-3"><span class="price new-price">450€</span></div><a
                                 class="btn-card btn-primary" href="#"><i
                                     class="fas fa-eye me-2"></i> Ver detalles</a><a href="#" class="btn-card btn-primary mt-2">
-                            <i class="fas fa-shopping-cart me-2"></i> Añadir al carrito
+                            <i class="fas fa-shopping-cart me-2"></i> Agregar al carrito
                         </a>
                         </div>
                     </article>
@@ -120,7 +120,7 @@ get_header();
                             <div class="product-price mb-3"><span class="price new-price">279€</span></div><a
                                 class="btn-card btn-primary" href="#"><i
                                     class="fas fa-eye me-2"></i> Ver detalles</a><a href="#" class="btn-card btn-primary mt-2">
-                            <i class="fas fa-shopping-cart me-2"></i> Añadir al carrito
+                            <i class="fas fa-shopping-cart me-2"></i> Agregar al carrito
                         </a>
                         </div>
                     </article>
@@ -142,7 +142,7 @@ get_header();
                                 class="btn-card btn-primary" href="#"><i
                                     class="fas fa-eye me-2"></i> Ver detalles</a>
                                     <a href="#" class="btn-card btn-primary mt-2">
-                            <i class="fas fa-shopping-cart me-2"></i> Añadir al carrito
+                            <i class="fas fa-shopping-cart me-2"></i> Agregar al carrito
                         </a>
                         </div>
                     </article>

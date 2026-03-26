@@ -79,8 +79,8 @@ get_header();
                                      <i class="fas fa-eye me-2"></i> Opciones
                                  </a>
                              <?php else : ?>
-                                 <a href="<?php echo esc_url($product->add_to_cart_url()); ?>" class="btn-card btn-primary ajax_add_to_cart flex-grow-1" data-quantity="1" data-product_id="<?php echo get_the_ID(); ?>" aria-label="Añadir “<?php the_title_attribute(); ?>” al carrito">
-                                     <i class="fas fa-shopping-cart me-2"></i> Añadir
+                                 <a href="<?php echo esc_url($product->add_to_cart_url()); ?>" class="btn-card btn-primary ajax_add_to_cart flex-grow-1" data-quantity="1" data-product_id="<?php echo get_the_ID(); ?>" aria-label="Agregar “<?php the_title_attribute(); ?>” al carrito">
+                                     <i class="fas fa-shopping-cart me-2"></i> Agregar
                                  </a>
                              <?php endif; ?>
                         </div>
