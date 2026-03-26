@@ -1,0 +1,120 @@
+.product-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 1.25rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.1), transparent);
+    color: var(--text-white);
+}
+
+.product-overlay .product-content {
+    margin: 200px 0 0 0;
+    padding: 1rem 1.25rem;
+    background-color: var(--primary-transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0px 0px 10px 8px rgba(0,0,0,0.5);
+}
+
+.product-overlay .product-title {
+    color: var(--text-dark);
+    text-transform: uppercase;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.product-overlay .product-price {
+    color: var(--primary-color);
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+}
+
+.product-overlay .product-price .price-label {
+    color: #ffffff;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+}
+
+.product-overlay .product-price .price-amount {
+    color: var(--accent-color);
+    font-weight: 700;
+    font-size: 2rem;
+    text-shadow: 0 0 4px var(--sombra-precio);
+}
+
+.product-overlay .product-description {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.product-overlay .btn-card {
+    background-color: var(--primary-color);
+    color: var(--text-dark);
+}
+
+.product-list-card {
+    overflow: hidden;
+}
+
+.product-list-table thead th {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom-width: 1px;
+}
+
+.product-list-table tbody tr:nth-child(odd) {
+    background-color: rgba(0, 0, 0, 0.01);
+}
+
+.product-list-thumb {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.product-list-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-list-title {
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.product-list-meta {
+    font-size: 0.8rem;
+    color: #777;
+}
+
+.product-list-price .price-label {
+    color: #999;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    margin-right: 0.25rem;
+}
+
+.product-list-price .price-amount {
+    color: var(--accent-color);
+    font-weight: 700;
+}

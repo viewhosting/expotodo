@@ -1,0 +1,159 @@
+/* ===== PRODUCT FILTERS ===== */
+.product-filter-sidebar {
+    background-color: #fff;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px !important;
+    padding: 1rem !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.03) !important;
+    transition: all 0.3s ease;
+}
+
+.product-filter-sidebar:hover {
+    box-shadow: 0 15px 35px rgba(0,0,0,0.06) !important;
+}
+
+.product-filter-sidebar h5 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+}
+
+.product-filter-sidebar h5::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 40px;
+    height: 2px;
+    background-color: var(--primary-color);
+}
+
+.product-filter-sidebar h6 {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* Category Checkboxes */
+.filter-options {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 8px; /* Space for scrollbar */
+}
+
+/* Custom Scrollbar */
+.filter-options::-webkit-scrollbar {
+    width: 4px;
+}
+
+.filter-options::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.filter-options::-webkit-scrollbar-thumb {
+    background: #e0e0e0;
+    border-radius: 10px;
+}
+
+.filter-options::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+.product-filter-sidebar .form-check {
+    margin-bottom: 0.1rem;
+    padding-left: 1.8rem;
+    position: relative;
+}
+
+.product-filter-sidebar .form-check-input {
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-left: -1.8rem;
+    border: 1px solid #d1d1d1;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #fff;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.product-filter-sidebar .form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+}
+
+.product-filter-sidebar .form-check-input:focus {
+    box-shadow: 0 0 0 3px var(--primary-transparent);
+    border-color: var(--primary-color);
+}
+
+.product-filter-sidebar .form-check-label {
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--text-light);
+    font-weight: 400;
+    transition: color 0.2s ease;
+    user-select: none;
+}
+
+.product-filter-sidebar .form-check:hover .form-check-label {
+    color: var(--primary-dark);
+}
+
+/* Select Styling */
+.product-filter-sidebar .form-select,
+.product-filter-sidebar .form-control {
+    border: 1px solid #d1d1d1;
+    border-radius: 6px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    box-shadow: none;
+    transition: all 0.2s ease;
+}
+
+.product-filter-sidebar .form-select:focus,
+.product-filter-sidebar .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-transparent);
+}
+
+.product-filter-sidebar .form-select:hover {
+    border-color: #aaa;
+}
+
+/* Range Inputs */
+.product-filter-sidebar .d-flex.gap-2 input {
+    text-align: center;
+}
+
+/* Apply Button */
+.product-filter-sidebar #btnFilterPrice {
+    border-radius: 6px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 0.5rem;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+.filter-category:checked {
+    /* 1. Esto elimina la palomita (que es un SVG de fondo) */
+    background-image: none !important;
+    
+    /* 2. Esto pone el fondo verde (puedes usar tu var(--primary-color) si es verde) */
+    background-color: var(--primary-color) !important; 
+    
+    /* 3. Esto asegura que el borde también sea verde para que se vea "total" */
+    border-color: var(--primary-color) !important;   
+}

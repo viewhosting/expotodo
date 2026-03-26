@@ -1,0 +1,89 @@
+/* 
+ * Estilos específicos para la página de Mi Cuenta
+ * Se carga solo en la plantilla page-cuenta.php o página 'cuenta'
+ */
+
+/* Contenedor principal de la cuenta */
+.account-page-container {
+    /* Personalizaciones futuras aquí */
+}
+
+/* Sidebar de navegación de cuenta */
+.account-sidebar .list-group-item {
+    border: none;
+    border-bottom: 1px solid #eee;
+    padding: 1rem 1.25rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.account-sidebar .list-group-item:last-child {
+    border-bottom: none;
+}
+
+.account-sidebar .list-group-item.active {
+    background-color: var(--primary-color);
+    color: var(--text-dark);
+    border-color: var(--primary-color);
+    font-weight: 600;
+}
+
+.account-sidebar .list-group-item:hover:not(.active) {
+    background-color: #f8f9fa;
+    padding-left: 1.5rem; /* Efecto de desplazamiento */
+}
+
+/* Tarjetas de contenido */
+.account-content .card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.account-content .card-header {
+    background-color: transparent;
+    border-bottom: 1px solid #eee;
+    padding: 1.25rem;
+}
+
+.account-content .card-body {
+    padding: 1.5rem;
+}
+
+/* Formularios de cuenta */
+.account-form label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+}
+
+.account-form .form-control {
+    padding: 0.6rem 1rem;
+    border-color: #dee2e6;
+}
+
+.account-form .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(176, 212, 67, 0.25);
+}
+
+/* Estado de pedidos */
+.order-status-badge {
+    padding: 0.35em 0.65em;
+    font-size: 0.75em;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
+}
+
+
+
+.list-group-item.active {
+    background-color: var(--primary-color);
+    color: var(--text-dark);
+    border-color: var(--primary-color);
+    font-weight: 600;
+}
