@@ -970,36 +970,74 @@ h1, h2, h3, h4, h5, h6 {
     overflow-y: hidden !important;
 }
 
-/* Toast con Estilo WooCommerce */
-#cartToast.woocommerce-message {
+/* Toast PREMIUM: Cascada y Desplazamiento */
+#expotodo-toast-container {
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 2000; /* Super superior */
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    top: 20px !important; /* Posición arriba para cascada natural */
+    bottom: auto !important;
+}
+
+#expotodo-toast-container .woocommerce-message,
+#expotodo-toast-container .woocommerce-info,
+#expotodo-toast-container .woocommerce-error {
     background: #fff !important;
     color: #333 !important;
     border-left: 6px solid #b0d443 !important;
     width: auto;
-    min-width: 300px;
-    padding: 0;
-    margin: 0;
-    display: block;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
-    border-radius: 8px;
+    min-width: 380px;
+    max-width: 500px;
+    padding: 1.2rem 3.5rem 1.2rem 1.5rem !important;
+    margin: 0 !important;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
+    border-radius: 15px;
+    animation: toast-slide-in 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    position: relative !important;
+    pointer-events: auto;
 }
 
-#cartToast.woocommerce-message::before {
-    display: none; /* Desactivar icono absoluto para el toast compacto */
+
+
+#expotodo-toast-container .woocommerce-message,
+#expotodo-toast-container .woocommerce-info,
+#expotodo-toast-container .woocommerce-error span {
+    font-size: 0.9rem;
 }
 
-#cartToast.woocommerce-message .toast-body {
-    padding: 1rem 1.5rem !important;
-    font-weight: 500;
+/* El Icono (La Paloma) - Despegado por fin */
+#expotodo-toast-container .woocommerce-message::before,
+#expotodo-toast-container .woocommerce-info::before,
+#expotodo-toast-container .woocommerce-error::before {
+    font-family: "Font Awesome 5 Free" !important;
+    font-weight: 900 !important;
+    font-size: 1rem !important;
+    margin-right: 15px !important;
+    position: static !important; /* Evita que flote sobre el texto */
+    display: inline-block !important;
+    flex-shrink: 0;
 }
 
-#cartToast.woocommerce-message .btn-close {
-    opacity: 0.8;
-    transition: opacity 0.2s;
+#expotodo-toast-container .woocommerce-message::before { content: "\f00c" !important; color: #b0d443 !important; }
+
+/* REGRESA EL EMPUJE DEL SIDEBAR */
+#expotodo-toast-container.pushed {
+    right: 340px !important;
 }
 
-#cartToast.woocommerce-message .btn-close:hover {
-    opacity: 1;
+@keyframes toast-slide-in {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Botón de Cerrar */
+#expotodo-toast-container .close-sidebar-btn {
+    position: absolute;
+    right: 15px;
 }
 
 /* Estado abierto */
@@ -1445,18 +1483,10 @@ h1, h2, h3, h4, h5, h6 {
 /* =========================================
    Push Notifications Style for WooCommerce
    ========================================= */
+/* Push Notifications Wrapper (Consolidado en #expotodo-toast-container) */
 .woocommerce-notices-wrapper,
 .woocommerce-NoticeGroup {
-    position: fixed;
-    top: 10%;
-    right: 0;
-    z-index: 99999;
-    width: 90%;
-    max-width: 600px;
-    pointer-events: none; /* Let clicks pass through the wrapper */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    display: none; /* Dejamos que el script mueva los mensajes al contenedor premium */
 }
 
 /* Exclude internal update notices from fixed positioning if needed, 
@@ -2074,10 +2104,10 @@ a.added_to_cart {
     display: none !important;
 }
 
-/* ==========================================================================
-   Página del Carrito (Estructura DIV Fluida y Premium)
-   ========================================================================== */
 
+/* ==========================================================================
+   Consistencia del Modal de Checkout
+   ========================================================================== */
 
 
 /* ==========================================================================

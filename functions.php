@@ -597,3 +597,62 @@ function expotodo_get_checkout_data() {
         'count' => WC()->cart->get_cart_contents_count()
     ) );
 }
+
+/**
+ * Disparadores de prueba manual: Agregado por URL (?test_toast=1) o por AJAX
+ */
+add_action( 'init', 'expotodo_manual_test_toast' );
+function expotodo_manual_test_toast() {
+    if ( isset( $_GET['test_toast'] ) ) {
+        wc_add_notice( '¡Prueba de Toast exitosa! El sistema funciona.', 'success' );
+        wp_redirect( remove_query_arg( 'test_toast' ) );
+        exit;
+    }
+}
+
+add_action( 'wp_ajax_expotodo_add_notice', 'expotodo_ajax_add_notice' );
+add_action( 'wp_ajax_nopriv_expotodo_add_notice', 'expotodo_ajax_add_notice' );
+function expotodo_ajax_add_notice() {
+    wc_add_notice( '¡Mensaje vía AJAX exitoso!', 'success' );
+    wp_send_json_success();
+}
+
+/**
+ * Disparador de prueba manual: Agregado por URL (?test_success=1)
+ */
+add_action( 'init', 'expotodo_debug_trigger_notice' );
+function expotodo_debug_trigger_notice() {
+    if ( isset( $_GET['test_success'] ) ) {
+        wc_add_notice( '¡Victoria! El sistema de avisos está vivo y deja pasar mensajes legítimos.', 'success' );
+    }
+}
+
+/**
+ * EXTERMINIO 360° - NIVEL PHP (Nacimiento y Entrega)
+ * Bloqueamos cualquier mensaje de "Zona" o "México" para que ni siquiera llegue 
+ * al sistema de Toasts.
+ */
+add_filter( 'woocommerce_add_notice', 'expotodo_kill_zone_notices_at_birth', 999, 1 );
+function expotodo_kill_zone_notices_at_birth( $notice ) {
+    if ( isset($notice['notice']) && (stripos($notice['notice'], 'Zona') !== false || stripos($notice['notice'], 'México') !== false) ) {
+        return false;
+    }
+    return $notice;
+}
+
+add_filter( 'woocommerce_get_notices', 'expotodo_kill_zone_notices_at_delivery', 999, 1 );
+function expotodo_kill_zone_notices_at_delivery( $notices ) {
+    if ( empty( $notices ) ) return $notices;
+    $categories = array( 'success', 'notice', 'error' );
+    foreach ( $categories as $cat ) {
+        if ( ! empty( $notices[$cat] ) ) {
+            foreach ( $notices[$cat] as $key => $notice ) {
+                if ( isset($notice['notice']) && (stripos($notice['notice'], 'Zona') !== false || stripos($notice['notice'], 'México') !== false) ) {
+                    unset( $notices[$cat][$key] );
+                }
+            }
+            $notices[$cat] = array_values( $notices[$cat] );
+        }
+    }
+    return $notices;
+}

@@ -15,40 +15,105 @@ jQuery(document).ready(function ($) {
     }
 
     // ==========================================
-    // AUTO-HIDE WOOCOMMERCE MESSAGES
+    // SISTEMA DE TOASTS SIMPLE Y APILABLE
     // ==========================================
     function autoHideWoocommerceMessages() {
-        // Buscamos mensajes de éxito, información y errores
-        const selectors = '.woocommerce-message, .woocommerce-info, .woocommerce-error';
-        const messages = document.querySelectorAll(selectors);
+        const toastSelectors = '.woocommerce-message, .woocommerce-info, .woocommerce-error, .coupon-error-notice';
+        const $foundMessages = $(toastSelectors).not('#expotodo-toast-container *');
 
-        messages.forEach(message => {
-            // Evitar duplicar el timeout si ya se aplicó
-            if (message.dataset.timeoutApplied) return;
-            message.dataset.timeoutApplied = 'true';
+        if ($foundMessages.length > 0) {
+            if ($('#expotodo-toast-container').length === 0) {
+                $('body').append('<div id="expotodo-toast-container"></div>');
+            }
+            const $container = $('#expotodo-toast-container');
 
-            setTimeout(() => {
-                $(message).fadeOut(600, function () {
-                    $(this).remove();
+            $foundMessages.each(function () {
+                const $msg = $(this);
+                const msgText = $msg.text().replace(/\s+/g, ' ').trim();
+
+                if (!msgText) return;
+
+                // CENTINELA 360: Bloqueo de Zona/México (Fail-safe en JS)
+                const lowText = msgText.toLowerCase();
+                if (lowText.includes('zona') || lowText.includes('méxico')) {
+                    $msg.remove();
+                    return;
+                }
+
+                // Evitar duplicados físicos idénticos que ya estén visibles
+                let isAlreadyVisible = false;
+                $container.children().each(function () {
+                    if ($(this).text().replace(/\s+/g, ' ').trim() === msgText) isAlreadyVisible = true;
                 });
-            }, 5000); // 5 segundos
-        });
+
+                if (isAlreadyVisible) {
+                    $msg.remove();
+                    return;
+                }
+
+                // Teletransportar al contenedor y mostrar (NUEVO ORDEN: prependTo)
+                $msg.prependTo($container).show();
+
+                // Auto-ocultar después de 8 segundos
+                setTimeout(() => {
+                    $msg.fadeOut(600, function () {
+                        $(this).remove();
+                        if ($container.children().length === 0) $container.hide();
+                    });
+                }, 8000);
+            });
+            $container.show(); // Moved outside the each loop to ensure it shows if any messages are added
+        }
     }
 
-    // Ejecutar para los mensajes que ya vienen en el HTML de carga inicial
+    // Inicializar
     autoHideWoocommerceMessages();
 
-    // Observador para detectar mensajes inyectados por AJAX (ej. al añadir al carrito)
-    const observer = new MutationObserver(function (mutations) {
-        mutations.forEach(function (mutation) {
-            if (mutation.addedNodes.length) {
-                // Si se añade algún nodo, revisamos si es o contiene un mensaje
-                autoHideWoocommerceMessages();
+    // Escuchar eventos de actualización de WooCommerce (AJAX)
+    // Estos eventos se disparan cuando cambia el carrito, checkout, o métodos de envío.
+    $(document.body).on('updated_wc_div updated_cart_totals updated_checkout updated_shipping_method', function () {
+        autoHideWoocommerceMessages();
+    });
+
+    // LISTENER VIP: Detectar cuando se agrega un producto vía AJAX y mostrar el Toast
+    $(document.body).on('added_to_cart', function (event, fragments, cart_hash, $button) {
+        // Obtenemos el nombre del producto si está disponible en el botón
+        const productName = $button.closest('.product-card').find('.product-title').text() || 'el producto';
+        const successHtml = `
+            <div class="woocommerce-message">
+                <span>¡Hecho! Se ha agregado "${productName}" al carrito con éxito.</span>
+                <button type="button" class="close-sidebar-btn" aria-label="Cerrar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+
+        // Inyectamos el mensaje en el body temporalmente para que autoHideWoocommerceMessages lo capture
+        $('body').append(successHtml);
+        autoHideWoocommerceMessages();
+
+        // Al ocurrir una acción AJAX, limpiamos la memoria de mensajes vistos.
+        // Esto permite que si el usuario vuelve a forzar un error, el Toast aparezca de nuevo.
+        sessionStorage.removeItem('expotodo_toasts_seen');
+        setTimeout(autoHideWoocommerceMessages, 400);
+    });
+
+    // Detector de cierre manual de Toasts
+    $(document).on('click', '#expotodo-toast-container .close-sidebar-btn', function (e) {
+        e.preventDefault();
+        e.stopPropagation(); // Evitamos que cierre el sidebar si el botón se llama igual
+        $(this).closest('.woocommerce-message, .woocommerce-info, .woocommerce-error').fadeOut(300, function () {
+            $(this).remove();
+            if ($('#expotodo-toast-container').children().length === 0) {
+                $('#expotodo-toast-container').hide();
             }
         });
     });
 
-    // Empezamos a observar el body en busca de cambios en la lista de hijos
+    // Observador de cambios
+    const observer = new MutationObserver((mutations) => {
+        autoHideWoocommerceMessages();
+    });
     observer.observe(document.body, { childList: true, subtree: true });
 
     // Mobile Navigation
@@ -92,6 +157,9 @@ jQuery(document).ready(function ($) {
             panel.classList.add('open');
             if (sidebarOverlay) sidebarOverlay.classList.add('active');
             document.body.style.overflow = 'hidden';
+
+            // EMPUJAR TOASTS: Si el sidebar se abre, empujamos el contenedor de avisos
+            $('#expotodo-toast-container').addClass('pushed');
         }
     }
 
@@ -101,6 +169,9 @@ jQuery(document).ready(function ($) {
         if (sidebarOverlay && !isNavbarOpen) {
             sidebarOverlay.classList.remove('active');
             document.body.style.overflow = '';
+
+            // REGRESAR TOASTS: Al cerrar el sidebar, regresan a su sitio
+            $('#expotodo-toast-container').removeClass('pushed');
         }
     }
 

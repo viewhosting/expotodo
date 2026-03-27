@@ -312,14 +312,7 @@
         </div>
     </div>
 
-    <!-- Toast de Notificación de Carrito (Woocommerce Style) -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1070;">
-        <div id="cartToast" class="toast woocommerce-message border-0 shadow-lg fade" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex align-items-center">
-                <div class="toast-body p-3">
-                    ¡Producto agregado al carrito con éxito!
-                </div>
-                <button type="button" class="btn-close me-3" data-bs-dismiss="toast" aria-label="Cerrar"></button>
-            </div>
-        </div>
+    <!-- Contenedor Único para Toasts Dinámicos de WooCommerce -->
+    <div id="expotodo-toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1070;">
+        <!-- Los Toasts reales se inyectarán aquí vía JavaScript (script.js) -->
     </div>
