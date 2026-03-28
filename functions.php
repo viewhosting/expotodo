@@ -662,3 +662,54 @@ function expotodo_kill_zone_notices_at_delivery( $notices ) {
  * para lograr un diseño de totales minimalista y premium.
  */
 add_filter( 'woocommerce_shipping_package_name', '__return_empty_string', 999 );
+
+/**
+ * SOLUCIÓN MERCADO PAGO OFF-SITE EXTRACTOR
+ * Redirigir directamente al cliente al Checkout Pro de Mercado Pago 
+ * en caso de que Mercado Pago intente mandarlos a 'order-pay'.
+ */
+add_filter( 'woocommerce_payment_successful_result', 'expotodo_force_mercadopago_redirect', 9999, 2 );
+function expotodo_force_mercadopago_redirect( $result, $order_id ) {
+    if ( isset($result['redirect']) && strpos($result['redirect'], 'order-pay') !== false ) {
+        
+        $order = wc_get_order( $order_id );
+        if ( ! $order ) return $result;
+
+        // Comprobar si es un pago procesado por Mercado Pago
+        $payment_method = strtolower($order->get_payment_method());
+        if ( strpos($payment_method, 'mercadopago') !== false || strpos($payment_method, 'woo-mercado') !== false ) {
+            
+            // Buscar URLs o Preference IDs de Mercado Pago generadas en la meta de la orden
+            $metas = get_post_meta( $order_id );
+            
+            $init_point = '';
+            $preference_id = '';
+            
+            foreach ( $metas as $key => $values ) {
+                $val = isset($values[0]) ? $values[0] : '';
+                
+                // Si encontramos la URL literal (Gateway la guarda muchas veces)
+                if ( is_string($val) && strpos($val, 'mercadopago.com') !== false && strpos($val, 'http') === 0 ) {
+                    $init_point = $val;
+                    break; // Tomamos la primera URL limpia de mercadopago
+                }
+                
+                // Capturar el preference id exacto por si acaso
+                if ( is_string($key) && stripos($key, 'preference_id') !== false && !empty($val) && is_string($val) ) {
+                    $preference_id = $val;
+                }
+            }
+            
+            // Si la orden no tiene url directa pero tiene preference ID:
+            if ( empty($init_point) && !empty($preference_id) ) {
+                $init_point = 'https://www.mercadopago.com.mx/checkout/v1/redirect?pref_id=' . $preference_id;
+            }
+            
+            // Reemplazar brutalmente el URL de 'order-pay' por el de Mercado Pago
+            if ( !empty($init_point) ) {
+                $result['redirect'] = $init_point;
+            }
+        }
+    }
+    return $result;
+}
