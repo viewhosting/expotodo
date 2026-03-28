@@ -337,13 +337,14 @@ jQuery(document).ready(function ($) {
                             data = JSON.parse(response.substring(jsonPos));
                         }
                     }
-
+                    console.log(data.messages);
                     if (data.result === 'success') {
                         // LA PASARELA O WC HACEN LA REDIRECCIÓN OFICIAL
                         window.location.href = data.redirect;
                     } else {
                         // MOSTRAR ERRORES EN EL SIDEBAR
                         if (data.messages) {
+
                             $errorContainer.html(data.messages).hide().fadeIn();
                             // Scroll al inicio del panel para ver errores
                             $('#checkoutPanel').animate({ scrollTop: 0 }, 400);
@@ -619,4 +620,42 @@ jQuery(document).ready(function ($) {
             },
         });
     }
+
+    /**
+     * --- LÓGICA DE FACTURACIÓN EN CARRITO (jQuery Version Refinada) ---
+     */
+    $(document).on('change', '#request_invoice', function () {
+        const $extraFields = $('#extra_billing_fields');
+        if ($(this).is(':checked')) {
+            // Detenemos animaciones, activamos grid y deslizamos
+            $extraFields.stop(true, true).addClass('is-active').hide().slideDown(400);
+        } else {
+            // Deslizamos y al terminar quitamos la clase activa
+            $extraFields.stop(true, true).slideUp(400, function () {
+                $(this).removeClass('is-active');
+            });
+        }
+    });
+
+    // Función para verificar el estado inicial
+    function initBillingToggle() {
+        const $checkbox = $('#request_invoice');
+        const $extraFields = $('#extra_billing_fields');
+
+        if ($checkbox.length && $extraFields.length) {
+            if ($checkbox.is(':checked')) {
+                $extraFields.addClass('is-active').show();
+            } else {
+                $extraFields.removeClass('is-active').hide();
+            }
+        }
+    }
+
+    // Ejecutar al cargar
+    initBillingToggle();
+
+    // Ejecutar cuando WooCommerce actualice los fragmentos del carrito
+    $(document.body).on('updated_cart_totals', function () {
+        initBillingToggle();
+    });
 });

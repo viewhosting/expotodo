@@ -656,3 +656,9 @@ function expotodo_kill_zone_notices_at_delivery( $notices ) {
     }
     return $notices;
 }
+
+/**
+ * ELIMINACIÓN DE "SHIPMENT": Silenciamos los títulos redundantes de envío
+ * para lograr un diseño de totales minimalista y premium.
+ */
+add_filter( 'woocommerce_shipping_package_name', '__return_empty_string', 999 );

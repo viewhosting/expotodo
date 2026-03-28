@@ -185,10 +185,10 @@
                                 <div class="col-12">
                                     <input type="text" name="billing_address_1" class="form-control form-control-sm" placeholder="Dirección (Calle y Número) *" required value="<?php echo WC()->customer ? WC()->customer->get_billing_address_1() : ''; ?>">
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <input type="text" name="billing_city" class="form-control form-control-sm" placeholder="Ciudad *" required value="<?php echo WC()->customer ? WC()->customer->get_billing_city() : ''; ?>">
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <input type="text" name="billing_state" class="form-control form-control-sm" placeholder="Estado *" required value="<?php echo WC()->customer ? WC()->customer->get_billing_state() : ''; ?>">
                                 </div>
                                 <div class="col-md-4">
@@ -197,7 +197,7 @@
                                 <div class="col-12">
                                     <input type="email" name="billing_email" class="form-control form-control-sm" placeholder="Email *" required value="<?php echo WC()->customer ? WC()->customer->get_billing_email() : ''; ?>">
                                 </div>
-                                <div class="col-12 mt-1">
+                                <div class="col-12 mt-1 d-none">
                                     <select name="billing_country" class="form-select form-select-sm" required>
                                         <option value="MX" selected>México</option>
                                         <?php 
@@ -211,8 +211,8 @@
                             </div>
 
                             <div class="form-check mt-3">
-                                <input class="form-check-input" type="checkbox" name="use_shipping_for_billing" id="use-shipping-for-billing" checked>
-                                <label class="form-check-label small fw-bold" for="use-shipping-for-billing">
+                                <input class="form-check-input-checkbox" type="checkbox" name="use_shipping_for_billing" id="use-shipping-for-billing" checked>
+                                <label class="form-check-label-checkbox small fw-bold" for="use-shipping-for-billing">
                                     Usar datos de envío para facturación
                                 </label>
                             </div>
