@@ -143,15 +143,24 @@
                     <span class="cart-total"><?php echo WC()->cart ? WC()->cart->get_total() : '0,00€'; ?></span>
                 </div>
                 <div class="mt-3 d-grid gap-2">
-                    <a href="<?php echo home_url('/carrito'); ?>" class="btn btn-outline-primary">Ver Carrito</a>
-                    <button type="button" class="btn btn-primary btn-checkout-modal">Finalizar Compra</button>
+                    <!-- Redirigido directo al Checkout oficial para permitir scripts de Mercado Pago -->
+                    <a href="<?php echo esc_url( wc_get_checkout_url() ); ?>" class="btn btn-outline-primary">Ver Carrito</a>
+                    <a href="<?php echo esc_url( wc_get_checkout_url() ); ?>" class="btn btn-primary">Finalizar Compra</a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal de Checkout (Reemplaza al sidebar para mejor visibilidad) -->
-    <div class="modal fade" id="checkoutPanel" tabindex="-1" aria-labelledby="checkoutPanelLabel" aria-hidden="true">
+    <!-- 
+    MODAL DE CHECKOUT DESACTIVADO
+    =============================
+    Razón: Para que el SDK de Javascript de Mercado Pago (y otras pasarelas) 
+    pueda inyectar su Pop-Up nativo (Checkout Pro) y procesar tokens, es obligatorio
+    que el flujo de pago se realice en la página oficial `/checkout/`. 
+    Al cargar los métodos de pago via AJAX en este modal, el SDK de MP no se lograba 
+    enganchar a los botones, forzando un fallo o redirección oculta.
+    -->
+    <!-- <div class="modal fade" id="checkoutPanel" tabindex="-1" aria-labelledby="checkoutPanelLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
                 <div class="modal-header border-bottom-0 p-4 pb-0">
@@ -167,12 +176,11 @@
                                     <?php echo WC()->cart ? WC()->cart->get_total() : '0,00€'; ?>
                                 </span>
                             </div>
-                        </div> <!-- Cierre de checkout-summary -->
+                        </div>
 
-                        <!-- Contenedor dinámico de errores (Movido arriba para visibilidad) -->
                         <div id="checkout-errors" class="mb-3"></div>
 
-                        <!-- Datos del Pedido -->
+              
                         <div class="customer-details-section mb-4">
                             <h6 class="fw-bold small text-uppercase mb-3 letter-spacing-1 border-bottom pb-2">Datos de Envío</h6>
                             <div class="row g-2">
@@ -220,7 +228,7 @@
                                 </label>
                             </div>
 
-                            <!-- Dirección de Facturación Alternativa -->
+ 
                             <div id="billing-different-fields" class="mt-3 p-3 bg-light rounded-3" style="display:none; border: 1px dashed #ddd;">
                                 <h6 class="fw-bold small text-uppercase mb-3 letter-spacing-1">Datos de Facturación Diferentes</h6>
                                 <div class="row g-2">
@@ -262,7 +270,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <div class="right-sidebar" id="wishlistPanel">
         <div class="right-sidebar-header">

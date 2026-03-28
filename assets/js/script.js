@@ -295,6 +295,13 @@ jQuery(document).ready(function ($) {
         });
     });
 
+    // ==========================================
+    // MODAL DE CHECKOUT DESACTIVADO
+    // Razón: El Modal de pasarelas cargadas por AJAX no es compatible con el SDK 
+    //        de Mercado Pago (Checkout Pro modal). Esta lógica se desactiva para volver
+    //        al flujo nativo en /checkout/
+    // ==========================================
+    /*
     // Acción del botón de Pagar Ahora (Sumisión AJAX real con serialización completa)
     $('#btn-place-order').on('click', function (e) {
         e.preventDefault();
@@ -365,6 +372,7 @@ jQuery(document).ready(function ($) {
             }
         });
     });
+    */
 
     // ==========================================
     // SERVER-SIDE CART IMPLEMENTATION
