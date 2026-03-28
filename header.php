@@ -177,28 +177,31 @@
                             <h6 class="fw-bold small text-uppercase mb-3 letter-spacing-1 border-bottom pb-2">Datos de Envío</h6>
                             <div class="row g-2">
                                 <div class="col-md-6">
-                                    <input type="text" name="billing_first_name" class="form-control form-control-sm" placeholder="Nombre *" required value="<?php echo WC()->customer ? WC()->customer->get_billing_first_name() : ''; ?>">
+                                    <input type="text" name="billing_first_name" class="form-control form-control-sm" placeholder="Nombre *" value="<?php echo WC()->customer ? WC()->customer->get_billing_first_name() : ''; ?>">
                                 </div>
                                 <div class="col-md-6">
-                                    <input type="text" name="billing_last_name" class="form-control form-control-sm" placeholder="Apellidos *" required value="<?php echo WC()->customer ? WC()->customer->get_billing_last_name() : ''; ?>">
+                                    <input type="text" name="billing_last_name" class="form-control form-control-sm" placeholder="Apellidos *" value="<?php echo WC()->customer ? WC()->customer->get_billing_last_name() : ''; ?>">
                                 </div>
                                 <div class="col-12">
-                                    <input type="text" name="billing_address_1" class="form-control form-control-sm" placeholder="Dirección (Calle y Número) *" required value="<?php echo WC()->customer ? WC()->customer->get_billing_address_1() : ''; ?>">
+                                    <input type="text" name="billing_address_1" class="form-control form-control-sm" placeholder="Dirección (Calle y Número) *" value="<?php echo WC()->customer ? WC()->customer->get_billing_address_1() : ''; ?>">
                                 </div>
                                 <div class="col-md-4">
-                                    <input type="text" name="billing_city" class="form-control form-control-sm" placeholder="Ciudad *" required value="<?php echo WC()->customer ? WC()->customer->get_billing_city() : ''; ?>">
+                                    <input type="text" name="billing_city" class="form-control form-control-sm" placeholder="Ciudad *" value="<?php echo WC()->customer ? WC()->customer->get_billing_city() : ''; ?>">
                                 </div>
                                 <div class="col-md-4">
-                                    <input type="text" name="billing_state" class="form-control form-control-sm" placeholder="Estado *" required value="<?php echo WC()->customer ? WC()->customer->get_billing_state() : ''; ?>">
+                                    <input type="text" name="billing_state" class="form-control form-control-sm" placeholder="Estado *" value="<?php echo WC()->customer ? WC()->customer->get_billing_state() : ''; ?>">
                                 </div>
                                 <div class="col-md-4">
-                                    <input type="text" name="billing_postcode" class="form-control form-control-sm" placeholder="C.P. *" required value="<?php echo WC()->customer ? WC()->customer->get_billing_postcode() : ''; ?>">
+                                    <input type="text" name="billing_postcode" class="form-control form-control-sm" placeholder="C.P. *" value="<?php echo WC()->customer ? WC()->customer->get_billing_postcode() : ''; ?>">
                                 </div>
-                                <div class="col-12">
-                                    <input type="email" name="billing_email" class="form-control form-control-sm" placeholder="Email *" required value="<?php echo WC()->customer ? WC()->customer->get_billing_email() : ''; ?>">
+                                <div class="col-8">
+                                    <input type="email" name="billing_email" class="form-control form-control-sm" placeholder="Email *" value="<?php echo WC()->customer ? WC()->customer->get_billing_email() : ''; ?>">
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="text" name="billing_phone" class="form-control form-control-sm" placeholder="Teléfono *" value="<?php echo WC()->customer ? WC()->customer->get_billing_phone() : ''; ?>">
                                 </div>
                                 <div class="col-12 mt-1 d-none">
-                                    <select name="billing_country" class="form-select form-select-sm" required>
+                                    <select name="billing_country" class="form-select form-select-sm">
                                         <option value="MX" selected>México</option>
                                         <?php 
                                             $countries = WC()->countries->get_allowed_countries();
