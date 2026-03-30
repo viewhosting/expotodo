@@ -78,7 +78,8 @@ function expotodo_scripts() {
     }
 
     // Custom Checkout JS (solo en checkout)
-    if ( is_checkout() ) {
+    if ( is_checkout() && ! is_order_received_page() ) {
+        wp_enqueue_style( 'expotodo-checkout-css', get_template_directory_uri() . '/assets/css/pagina_checkout.css?ver='.rand(1,9999), array('expotodo-style'), '1.0.0' );
         wp_enqueue_script( 'expotodo-checkout-custom', get_template_directory_uri() . '/assets/js/checkout-custom.js?ver='.rand(1,9999), array('jquery'), '1.0.0', true );
         
         // Localizar script para checkout
@@ -94,50 +95,111 @@ function expotodo_scripts() {
  */
 add_filter( 'woocommerce_checkout_fields', 'expotodo_custom_checkout_fields' );
 function expotodo_custom_checkout_fields( $fields ) {
-    // 1. Ocultar campo empresa
-    $fields['billing']['billing_company']['class'][] = 'd-none';
-    $fields['billing']['billing_company']['label'] = 'Nombre de la empresa / Razón Social';
-    $fields['billing']['billing_company']['required'] = false;
+    // 1. Reordenar y personalizar campos de FACTURACIÓN (Billing)
+    $fields['billing']['billing_first_name']['priority'] = 10;
+    $fields['billing']['billing_first_name']['placeholder'] = 'Nombre';
+    
+    $fields['billing']['billing_last_name']['priority'] = 20;
+    $fields['billing']['billing_last_name']['placeholder'] = 'Apellidos';
+    
+    $fields['billing']['billing_email']['priority'] = 30;
+    $fields['billing']['billing_email']['placeholder'] = 'Correo electrónico';
+    $fields['billing']['billing_email']['class'] = array('form-row-first');
+    
+    $fields['billing']['billing_phone']['priority'] = 40;
+    $fields['billing']['billing_phone']['placeholder'] = 'Teléfono';
+    $fields['billing']['billing_phone']['class'] = array('form-row-last');
+    
+    $fields['billing']['billing_state']['priority'] = 50;
+    $fields['billing']['billing_state']['placeholder'] = 'Estado';
+    $fields['billing']['billing_state']['class'] = array('form-row-first');
+    
+    $fields['billing']['billing_city']['priority'] = 60;
+    $fields['billing']['billing_city']['placeholder'] = 'Ciudad / Localidad';
+    $fields['billing']['billing_city']['class'] = array('form-row-last');
+    
+    $fields['billing']['billing_postcode']['priority'] = 70;
+    $fields['billing']['billing_postcode']['placeholder'] = 'Código Postal';
+    $fields['billing']['billing_postcode']['class'] = array('form-row-first');
+    
+    $fields['billing']['billing_address_1']['priority'] = 80;
+    $fields['billing']['billing_address_1']['label'] = 'Calle y Número';
+    $fields['billing']['billing_address_1']['placeholder'] = 'Calle y Número (ej: Av. Reforma 123)';
+    $fields['billing']['billing_address_1']['class'] = array('form-row-wide');
+    
+    $fields['billing']['billing_address_2']['priority'] = 90;
+    $fields['billing']['billing_address_2']['placeholder'] = 'Referencias (opcional, ej: Entre calles X y Y)';
+    $fields['billing']['billing_address_2']['class'] = array('form-row-wide');
 
-    // 2. Agregar campos personalizados para Factura
-    $fields['billing']['billing_invoice_required'] = array(
-        'type'        => 'checkbox',
-        'label'       => '¿Deseas factura?',
-        'class'       => array('form-row-wide'),
-        'priority'    => 25,
-    );
+    // Ocultar campos innecesarios
+    unset($fields['billing']['billing_company']);
+    // No eliminamos billing_country para evitar errores de validación, lo manejaremos como oculto
+    $fields['billing']['billing_country']['default'] = 'MX';
+    $fields['billing']['billing_country']['class'] = array('hidden-field-checkout');
 
+    // 2. Reordenar y personalizar campos de ENVÍO (Shipping)
+    if (isset($fields['shipping'])) {
+        $fields['shipping']['shipping_first_name']['priority'] = 10;
+        $fields['shipping']['shipping_first_name']['placeholder'] = 'Nombre';
+        
+        $fields['shipping']['shipping_last_name']['priority'] = 20;
+        $fields['shipping']['shipping_last_name']['placeholder'] = 'Apellidos';
+
+        $fields['shipping']['shipping_state']['priority'] = 50;
+        $fields['shipping']['shipping_state']['placeholder'] = 'Estado';
+        $fields['shipping']['shipping_state']['class'] = array('form-row-first');
+
+        $fields['shipping']['shipping_city']['priority'] = 60;
+        $fields['shipping']['shipping_city']['placeholder'] = 'Ciudad';
+        $fields['shipping']['shipping_city']['class'] = array('form-row-last');
+
+        $fields['shipping']['shipping_postcode']['priority'] = 70;
+        $fields['shipping']['shipping_postcode']['placeholder'] = 'Código Postal';
+        $fields['shipping']['shipping_postcode']['class'] = array('form-row-first');
+
+        $fields['shipping']['shipping_address_1']['priority'] = 80;
+        $fields['shipping']['shipping_address_1']['label'] = 'Calle y Número';
+        $fields['shipping']['shipping_address_1']['placeholder'] = 'Calle y Número (ej: Calle Falsa 123)';
+        $fields['shipping']['shipping_address_1']['class'] = array('form-row-wide');
+
+        $fields['shipping']['shipping_address_2']['priority'] = 90;
+        $fields['shipping']['shipping_address_2']['placeholder'] = 'Referencias opcionales';
+        
+        unset($fields['shipping']['shipping_company']);
+        unset($fields['shipping']['shipping_country']);
+    }
+
+    // 3. Campos personalizados para Factura (Boutique integration)
+    // Nota: Estos campos se controlan vía JS con el checkbox #request_invoice_checkout
     $fields['billing']['billing_rfc'] = array(
         'type'        => 'text',
         'label'       => 'RFC',
-        'class'       => array('form-row-first', 'd-none', 'invoice-field'),
+        'placeholder' => 'RFC (ej: ABC123456XYZ)',
+        'class'       => array('form-row-first', 'invoice-field'),
         'required'    => false,
-        'priority'    => 35,
+        'priority'    => 100,
     );
 
-    $fields['billing']['billing_cfdi'] = array(
+    $fields['billing']['billing_company_name'] = array(
+        'type'        => 'text',
+        'label'       => 'Razón Social',
+        'placeholder' => 'Razón Social / Nombre Legal',
+        'class'       => array('form-row-last', 'invoice-field'),
+        'required'    => false,
+        'priority'    => 101,
+    );
+
+    $fields['billing']['billing_cfdi_usage'] = array(
         'type'        => 'select',
         'label'       => 'Uso de CFDI',
-        'class'       => array('form-row-last', 'd-none', 'invoice-field'),
+        'class'       => array('form-row-wide', 'invoice-field'),
         'required'    => false,
         'options'     => array(
             'G01' => 'G01 - Adquisición de mercancías',
             'G03' => 'G03 - Gastos en general',
-            'P01' => 'P01 - Por definir',
+            'S01' => 'S01 - Sin efectos fiscales',
         ),
-        'priority'    => 36,
-    );
-    
-    $fields['billing']['billing_payment_method'] = array(
-        'type'        => 'select',
-        'label'       => 'Método de Pago',
-        'class'       => array('form-row-first', 'd-none', 'invoice-field'),
-        'required'    => false,
-        'options'     => array(
-            'PUE' => 'PUE - Pago en una sola exhibición',
-            'PPD' => 'PPD - Pago en parcialidades o diferido',
-        ),
-        'priority'    => 37,
+        'priority'    => 102,
     );
 
     $fields['billing']['billing_payment_form'] = array(
@@ -152,7 +214,7 @@ function expotodo_custom_checkout_fields( $fields ) {
             '28' => '28 - Tarjeta de débito',
             '99' => '99 - Por definir',
         ),
-        'priority'    => 38,
+        'priority'    => 103,
     );
 
     // 3. Ocultar País (Solo México) y agregar clase para ocultarlo visualmente
@@ -712,4 +774,121 @@ function expotodo_force_mercadopago_redirect( $result, $order_id ) {
         }
     }
     return $result;
+}
+
+/**
+ * Sincronización inteligente de campos para Mercado Pago y Boutique Flow
+ */
+add_action( 'woocommerce_checkout_process', 'expotodo_sync_checkout_fields_boutique' );
+function expotodo_sync_checkout_fields_boutique() {
+    
+
+    $solicita_factura = isset( $_POST['request_invoice_checkout'] ) ? true : false;
+    $shipping_methods = isset( $_POST['shipping_method'] ) ? $_POST['shipping_method'] : array();
+    $is_local_pickup = false;
+
+    if ( ! empty( $shipping_methods ) ) {
+        foreach ( $shipping_methods as $method ) {
+            if ( strpos( $method, 'local_pickup' ) !== false ) {
+                $is_local_pickup = true;
+                break;
+            }
+        }
+    }
+
+    // 1. Identidad: Copiar Datos de Contacto (Billing Name) a Envío si es necesario
+    if ( ! empty( $_POST['billing_first_name'] ) ) {
+        if ( empty( $_POST['shipping_first_name'] ) ) {
+            $_POST['shipping_first_name'] = $_POST['billing_first_name'];
+        }
+        if ( empty( $_POST['shipping_last_name'] ) ) {
+            $_POST['shipping_last_name'] = $_POST['billing_last_name'];
+        }
+    }
+
+    // 2. Ubicación: Sincronización para Mercado Pago
+    // Mercado Pago usa los campos 'billing_' para procesar el pago.
+    if ( ! $solicita_factura && ! $is_local_pickup ) {
+        // Si es Envío a Domicilio y NO pide factura, copiamos Dirección de Envío -> Billing
+        $sync_address_map = array(
+            'shipping_address_1'  => 'billing_address_1',
+            'shipping_address_2'  => 'billing_address_2',
+            'shipping_city'       => 'billing_city',
+            'shipping_state'      => 'billing_state',
+            'shipping_postcode'   => 'billing_postcode',
+        );
+
+        foreach ( $sync_address_map as $shipping_key => $billing_key ) {
+            if ( ! empty( $_POST[ $shipping_key ] ) ) {
+                $_POST[ $billing_key ] = $_POST[ $shipping_key ];
+            }
+        }
+    }
+}
+
+/**
+ * Filtros adicionales para WooCommerce
+ */
+add_filter( 'woocommerce_checkout_billing_fields_title', '__return_empty_string' );
+
+/**
+ * AJAX endpoints para botones de cantidad y eliminar en el Checkout Boutique
+ */
+add_action('wp_ajax_expotodo_update_checkout_qty', 'expotodo_update_checkout_qty');
+add_action('wp_ajax_nopriv_expotodo_update_checkout_qty', 'expotodo_update_checkout_qty');
+function expotodo_update_checkout_qty() {
+    $cart_item_key = sanitize_text_field($_POST['cart_item_key']);
+    $qty = (int) $_POST['qty'];
+    
+    if ( WC()->cart->set_quantity($cart_item_key, $qty) ) {
+        WC()->cart->calculate_totals();
+        wp_send_json_success();
+    }
+    wp_send_json_error();
+}
+
+add_action('wp_ajax_expotodo_remove_checkout_item', 'expotodo_remove_checkout_item');
+add_action('wp_ajax_nopriv_expotodo_remove_checkout_item', 'expotodo_remove_checkout_item');
+function expotodo_remove_checkout_item() {
+    $cart_item_key = sanitize_text_field($_POST['cart_item_key']);
+    if ( WC()->cart->remove_cart_item($cart_item_key) ) {
+        WC()->cart->calculate_totals();
+        wp_send_json_success();
+    }
+    wp_send_json_error();
+}
+
+/**
+ * Redirigir a Checkout (y no a Carrito) cuando se cancela o falla el pago en Mercado Pago
+ */
+add_filter( 'woocommerce_mercadopago_preference_body', 'expotodo_custom_mercadopago_back_urls' );
+function expotodo_custom_mercadopago_back_urls( $preference ) {
+    $checkout_url = wc_get_checkout_url();
+    
+    // Si existe la sección de back_urls, forzamos failure y pending al checkout
+    if ( isset( $preference['back_urls'] ) ) {
+        $preference['back_urls']['failure'] = $checkout_url;
+        $preference['back_urls']['pending'] = $checkout_url;
+        // success lo dejamos quieto para que vaya a la 'thankyou' de WC
+    }
+    
+    // La auto_return suele ser 'approved' por defecto, pero si cancelan usan la URL de failure
+    return $preference;
+}
+/**
+ * Corregir el marcador de posición de la política de privacidad si está en español o mal configurado
+ */
+add_filter( 'woocommerce_get_privacy_policy_text', 'expotodo_fix_privacy_policy_placeholder', 20 );
+function expotodo_fix_privacy_policy_placeholder( $text ) {
+    $privacy_url = get_privacy_policy_url();
+    if ( ! $privacy_url ) return $text;
+
+    $link = '<a href="' . esc_url( $privacy_url ) . '" class="woocommerce-privacy-policy-link" target="_blank">' . __( 'política de privacidad', 'woocommerce' ) . '</a>';
+    
+    // Reemplazar variantes del tag para asegurar compatibilidad
+    $text = str_replace( '[privacy_policy]', $link, $text );
+    $text = str_replace( '[política_de_privacidad]', $link, $text );
+    $text = str_replace( '[politica_de_privacidad]', $link, $text );
+    
+    return $text;
 }
