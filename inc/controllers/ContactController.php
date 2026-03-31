@@ -84,25 +84,36 @@ class ContactController {
         check_ajax_referer('expotodo_admin_nonce', 'security');
         if (!current_user_can('manage_options')) wp_send_json_error();
 
-        $to      = sanitize_email($_POST['email']);
-        $reply   = wp_kses_post($_POST['reply_content']);
-        $subject = "Respuesta a tu consulta - Expotodo Boutique";
+        $email         = sanitize_email($_POST['email']);
+        $name          = sanitize_text_field($_POST['name']);
+        $reply_content = wp_kses_post($_POST['reply_content']);
 
         $template = get_option('expotodo_template_contact', "Hola {name},\n\n{message}");
         
-        // El {message} en la respuesta es el contenido que escribe Emanuel en el modal
+        // Reemplazar tags en la plantilla de contacto
         $body = str_replace(
-            array('{name}', '{message}', '{email}', '{subject}'),
-            array($_POST['name'], $reply, $to, $subject),
+            array('{name}', '{email}', '{message}', '{subject}'),
+            array($name, $email, $reply_content, "Re: Consulta Expotodo"),
             $template
         );
 
-        $sent = wp_mail($to, $subject, $body, array('Content-Type: text/html; charset=UTF-8'));
-        
+        $sent = wp_mail($email, "Re: Tu mensaje en Expotodo", $body, array('Content-Type: text/html; charset=UTF-8'));
+
         if ($sent) {
-            wp_send_json_success('¡Respuesta enviada correctamente!');
+            // Registrar en la cola boutique para auditoría
+            if (class_exists('EmailController')) {
+                global $wpdb;
+                $wpdb->insert($wpdb->prefix . 'expotodo_email_queue', array(
+                    'recipient'  => $email,
+                    'subject'    => "Re: Tu mensaje en Expotodo",
+                    'body'       => $body,
+                    'status'     => 'sent',
+                    'created_at' => current_time('mysql')
+                ));
+            }
+            wp_send_json_success('Respuesta enviada y guardada en la cola de auditoría.');
         } else {
-            wp_send_json_error('Error al enviar el correo. Revisa la configuración SMTP.');
+            wp_send_json_error('Error al enviar el correo a través del servidor SMTP.');
         }
     }
 
