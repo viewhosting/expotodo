@@ -67,7 +67,7 @@
                                 </a>
                                 <a href="#wishlist" class="wishlist-icon position-relative no-smooth-scroll" title="Lista de deseos" role="button">
                                     <i class="fas fa-heart"></i>
-                                    <span class="wishlist-count">0</span>
+                                    <span class="wishlist-count"><?php echo count(expotodo_get_user_wishlist()); ?></span>
                                 </a>
                                 <a href="#carrito" class="cart-icon position-relative no-smooth-scroll" title="Carrito" role="button">
                                     <i class="fas fa-shopping-bag"></i>
@@ -280,8 +280,15 @@
             </button>
         </div>
         <div class="d-flex flex-column flex-grow-1 overflow-hidden">
-            <div class="wishlist-items flex-grow-1"></div>
-            <div class="wishlist-empty-message text-muted small">Tu lista de deseos está vacía.</div>
+            <div id="wishlist-items-container" class="wishlist-items flex-grow-1 overflow-auto">
+                <?php echo expotodo_get_wishlist_items_html(); ?>
+            </div>
+            <div class="wishlist-empty-message text-muted small <?php echo count(expotodo_get_user_wishlist()) > 0 ? 'd-none' : ''; ?>">
+                Tu lista de deseos está vacía.
+            </div>
+            <div class="wishlist-summary p-3 bg-light border-top mt-auto">
+                <a href="<?php echo home_url('/cuenta/?tab=wishlist'); ?>" class="btn btn-primary btn-sm w-100">Ver Lista Completa</a>
+            </div>
         </div>
     </div>
 

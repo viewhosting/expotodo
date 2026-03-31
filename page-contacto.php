@@ -45,29 +45,39 @@ get_header();
                 <div class="col-lg-6">
                     <div class="bg-white p-4 rounded-3 shadow-sm h-100">
                         <h3 class="mb-4">Envíanos un mensaje</h3>
-                        <form>
+                        <form id="expotodo-contact-form" class="needs-validation" novalidate>
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label for="nombre" class="form-label">Nombre</label>
-                                    <input type="text" class="form-control" id="nombre" placeholder="Tu nombre" required>
+                                    <input type="text" class="form-control" name="name" id="nombre" placeholder="Tu nombre" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="email" class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="email" placeholder="tucorreo@ejemplo.com" required>
+                                    <input type="email" class="form-control" name="email" id="email" placeholder="tucorreo@ejemplo.com" required>
                                 </div>
                                 <div class="col-12">
                                     <label for="asunto" class="form-label">Asunto</label>
-                                    <input type="text" class="form-control" id="asunto" placeholder="Asunto del mensaje" required>
+                                    <input type="text" class="form-control" name="subject" id="asunto" placeholder="Asunto del mensaje" required>
                                 </div>
                                 <div class="col-12">
                                     <label for="mensaje" class="form-label">Mensaje</label>
-                                    <textarea class="form-control" id="mensaje" rows="5" placeholder="¿En qué podemos ayudarte?" required></textarea>
+                                    <textarea class="form-control" name="message" id="mensaje" rows="5" placeholder="¿En qué podemos ayudarte?" required></textarea>
                                 </div>
+                                
+                                <!-- Honeypot anti-spam -->
+                                <div style="display:none;">
+                                    <input type="text" name="hp_field" value="">
+                                </div>
+
                                 <div class="col-12">
-                                    <button type="submit" class="btn btn-primary w-100">Enviar Mensaje</button>
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <span class="btn-text">Enviar Mensaje</span>
+                                        <span class="btn-loading d-none"><i class="fas fa-spinner fa-spin"></i> Enviando...</span>
+                                    </button>
                                 </div>
                             </div>
                         </form>
+                        <div id="contact-response" class="mt-4"></div>
                     </div>
                 </div>
             </div>

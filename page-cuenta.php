@@ -53,6 +53,9 @@ get_header();
                         <a href="#direcciones" class="list-group-item list-group-item-action" data-bs-toggle="list">
                             <i class="fas fa-map-marked-alt me-2"></i> Direcciones
                         </a>
+                        <a href="#wishlist" class="list-group-item list-group-item-action" data-bs-toggle="list" id="tab-wishlist-link">
+                            <i class="fas fa-heart me-2"></i> Mi Wishlist
+                        </a>
                         <a href="<?php echo wp_logout_url(home_url()); ?>" class="list-group-item list-group-item-action text-danger mt-2 border-top">
                             <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
                         </a>
@@ -223,8 +226,40 @@ get_header();
                                     </div>
                                 </div>
                             </div>
+                        <!-- Lista de Deseos (Wishlist) -->
+                        <div class="tab-pane fade" id="wishlist">
+                            <div class="card account-main-card">
+                                <div class="account-header">
+                                    <h5 class="mb-0"><i class="fas fa-heart me-2"></i>Mi Lista de Deseos</h5>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="wishlist-page-container">
+                                        <?php echo expotodo_get_wishlist_items_html(0, 'grid'); ?>
+                                    </div>
+                                    <?php if (empty(expotodo_get_user_wishlist())) : ?>
+                                        <div class="p-5 text-center">
+                                            <i class="far fa-heart fa-3x text-muted mb-3 opacity-25"></i>
+                                            <p class="text-muted">Aún no tienes productos en tu lista de deseos.</p>
+                                            <a href="<?php echo home_url('/productos'); ?>" class="btn btn-primary">Explorar Productos</a>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
                         </div>
                     <?php } ?>
+                    
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const tab = urlParams.get('tab');
+                        if (tab === 'wishlist') {
+                            const wishlistTab = document.querySelector('#tab-wishlist-link');
+                            if (wishlistTab) {
+                                bootstrap.Tab.getOrCreateInstance(wishlistTab).show();
+                            }
+                        }
+                    });
+                    </script>
                 </div>
             </div>
         <?php endif; ?>
@@ -296,8 +331,8 @@ get_header();
                         <?php if ($product->is_on_sale()) : ?>
                             <div class="product-category sale" style="top: 40px; background-color: #dc3545;">Oferta</div>
                         <?php endif; ?>
-                        <button type="button" class="btn-add-wishlist" title="Agregar a lista de deseos">
-                            <i class="far fa-heart"></i>
+                        <button type="button" class="btn-add-wishlist" data-id="<?php echo $product_id; ?>" title="Agregar a lista de deseos">
+                            <i class="far fa-heart <?php echo in_array($product_id, expotodo_get_user_wishlist()) ? 'fas text-danger' : 'far'; ?>"></i>
                         </button>
                         <img src="<?php echo esc_url($image_url); ?>" 
                              class="product-image" 

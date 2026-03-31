@@ -95,8 +95,8 @@ $current_term_id = is_product_category() ? get_queried_object_id() : '';
                                                         <div class="product-category sale" style="top: 40px; background-color: #dc3545;">Oferta</div>
                                                     <?php endif; ?>
                                                     
-                                                    <button type="button" class="btn-add-wishlist" title="Agregar a lista de deseos">
-                                                        <i class="far fa-heart"></i>
+                                                    <button type="button" class="btn-add-wishlist" data-id="<?php echo $product->get_id(); ?>" title="Agregar a lista de deseos">
+                                                        <i class="far fa-heart <?php echo in_array($product->get_id(), expotodo_get_user_wishlist()) ? 'fas text-danger' : 'far'; ?>"></i>
                                                     </button>
 
                                                     <a href="<?php the_permalink(); ?>">

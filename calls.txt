@@ -1,0 +1,24 @@
+                                                        <i class="far fa-heart <?php echo in_array
+                                                <button type="button" id="btn-save-profile" class="btn btn-primary px-4 py-2 fw-bold" onclick="if
+                                                <i class="far fa-heart <?php echo in_array
+                                                expotodo_custom_add_to_cart_button
+                                            if 
+                                        <?php echo expotodo_get_wishlist_items_html
+                                    <?php if 
+                                    <span class="wishlist-count"><?php echo count
+                                <button type="button" id="btn-main-login-submit" class="btn btn-primary w-100 py-2 fw-bold" onclick="expotodo_handle_login
+                                <i class="far fa-heart <?php echo in_array
+                            <i class="far fa-heart <?php echo in_array
+                    <button type="button" class="btn btn-primary w-100 mb-2" id="btn-login-submit" onclick="expotodo_handle_login
+                <?php echo expotodo_get_wishlist_items_html
+                if 
+            <?php echo expotodo_get_cart_items_html
+            <div class="wishlist-empty-message text-muted small <?php echo count
+        checkoutData.push
+        console.error
+        formData.append
+        formData.push
+        sessionStorage.removeItem
+    if 
+window.expotodo_handle_login = function
+window.expotodo_save_profile = function

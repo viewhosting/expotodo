@@ -83,18 +83,36 @@ function expotodo_scripts() {
         wp_enqueue_style( 'expotodo-checkout-css', get_template_directory_uri() . '/assets/css/pagina_checkout.css?ver='.rand(1,9999), array('expotodo-style'), '1.0.0' );
         wp_enqueue_script( 'expotodo-checkout-custom', get_template_directory_uri() . '/assets/js/checkout-custom.js?ver='.rand(1,9999), array('jquery'), '1.0.0', true );
         
-        // Localizar script para checkout
         wp_localize_script( 'expotodo-checkout-custom', 'expotodo_checkout_params', array(
             'ajax_url' => admin_url( 'admin-ajax.php' ),
             'nonce'    => wp_create_nonce( 'expotodo_checkout_nonce' ),
         ));
     }
+
+    // Wishlist JS (Global)
+    wp_enqueue_script( 'expotodo-wishlist-js', get_template_directory_uri() . '/assets/js/wishlist-boutique.js?ver='.rand(1,9999), array('jquery'), '1.0.0', true );
+    wp_localize_script( 'expotodo-wishlist-js', 'expotodo_wishlist_params', array(
+        'ajax_url' => admin_url( 'admin-ajax.php' ),
+        'nonce'    => wp_create_nonce( 'expotodo_wishlist_nonce' ),
+    ));
+
+    // Contact Page Assets
+    if ( is_page_template('page-contacto.php') || is_page('contacto') ) {
+        wp_enqueue_style( 'expotodo-contacto-css', get_template_directory_uri() . '/assets/css/contacto.css?ver='.rand(1,9999), array('expotodo-style'), '1.0.0' );
+        wp_enqueue_script( 'expotodo-contacto-js', get_template_directory_uri() . '/assets/js/contacto.js?ver='.rand(1,9999), array('jquery', 'expotodo-wishlist-js'), '1.0.0', true );
+        
+        wp_localize_script( 'expotodo-contacto-js', 'expotodo_contact_params', array(
+            'ajax_url' => admin_url( 'admin-ajax.php' ),
+            'nonce'    => wp_create_nonce( 'expotodo_contact_nonce' ),
+        ));
+    }
 }
 
-/**
- * Modificar campos del checkout
- */
-add_filter( 'woocommerce_checkout_fields', 'expotodo_custom_checkout_fields' );
+// Ganchos AJAX para el formulario de contacto (Carga Prioritaria)
+add_action('wp_ajax_expotodo_send_contact', 'expotodo_handle_contact_form');
+add_action('wp_ajax_nopriv_expotodo_send_contact', 'expotodo_handle_contact_form');
+
+// Basic Setup
 function expotodo_custom_checkout_fields( $fields ) {
     // 1. Reordenar y personalizar campos de FACTURACIÓN (Billing)
     $fields['billing']['billing_first_name']['priority'] = 10;
@@ -372,6 +390,9 @@ function expotodo_ajax_filter_products() {
             >
                 <div class="card h-100 product-card border-0 shadow-sm">
                     <div class="product-image-container position-relative overflow-hidden">
+                        <button type="button" class="btn-add-wishlist" data-id="<?php echo $product->get_id(); ?>" title="Agregar a lista de deseos">
+                            <i class="far fa-heart <?php echo in_array($product->get_id(), expotodo_get_user_wishlist()) ? 'fas text-danger' : 'far'; ?>"></i>
+                        </button>
                         <?php 
                         if ( has_post_thumbnail() ) {
                             echo '<img src="' . get_the_post_thumbnail_url() . '" alt="' . get_the_title() . '" class="product-image">';
@@ -992,4 +1013,366 @@ function expotodo_save_address_ajax() {
     }
 
     wp_send_json_success('La dirección se ha actualizado correctamente.');
+}
+
+/**
+ * SISTEMA DE WISHLIST BOUTIQUE
+ */
+
+// 1. Obtener la lista de productos (IDs) del usuario
+function expotodo_get_user_wishlist($user_id = 0) {
+    if (!$user_id) $user_id = get_current_user_id();
+    if (!$user_id) return array();
+    
+    $wishlist = get_user_meta($user_id, '_expotodo_wishlist', true);
+    return is_array($wishlist) ? $wishlist : array();
+}
+
+// 2. AJAX: Alternar producto en la wishlist
+add_action('wp_ajax_expotodo_toggle_wishlist', 'expotodo_toggle_wishlist');
+function expotodo_toggle_wishlist() {
+    $product_id = isset($_POST['product_id']) ? intval($_POST['product_id']) : 0;
+    $user_id = get_current_user_id();
+
+    if (!$user_id) {
+        wp_send_json_error(array('message' => 'Inicia sesión para guardar favoritos', 'require_login' => true));
+    }
+
+    if (!$product_id) wp_send_json_error('Producto no válido.');
+
+    $wishlist = expotodo_get_user_wishlist($user_id);
+    $action = '';
+
+    if (in_array($product_id, $wishlist)) {
+        $wishlist = array_diff($wishlist, array($product_id));
+        $action = 'removed';
+    } else {
+        $wishlist[] = $product_id;
+        $action = 'added';
+    }
+
+    update_user_meta($user_id, '_expotodo_wishlist', $wishlist);
+    
+    wp_send_json_success(array(
+        'action' => $action,
+        'count' => count($wishlist),
+        'html' => expotodo_get_wishlist_items_html($user_id)
+    ));
+}
+
+// 3. Generar HTML de los items de la Wishlist (Estética idéntica al Carrito)
+function expotodo_get_wishlist_items_html($user_id = 0, $view = 'sidebar') {
+    $wishlist = expotodo_get_user_wishlist($user_id);
+    
+    if (empty($wishlist)) {
+        return '<div class="p-5 text-center text-muted"><i class="far fa-heart fa-3x mb-3 opacity-25"></i><p>Tu lista de deseos está vacía.</p></div>';
+    }
+
+    ob_start();
+    $container_class = ($view === 'grid') ? 'row g-3 p-3' : 'wishlist-sidebar-list';
+    ?>
+    <div class="wishlist-wrapper <?php echo $container_class; ?>">
+        <?php foreach ($wishlist as $item_id) : 
+            $product = wc_get_product($item_id);
+            if (!$product) continue;
+            
+            if ($view === 'grid') : ?>
+                <!-- Vista en Cuadrícula (Pestaña "Mi Cuenta") -->
+                <div class="col-md-4 col-sm-6">
+                    <div class="wishlist-grid-item card h-100 border-0 shadow-sm overflow-hidden" style="transition: transform 0.3s ease;">
+                        <div class="position-relative">
+                            <a href="<?php echo get_permalink($item_id); ?>">
+                                <?php echo $product->get_image('medium', array('class' => 'card-img-top', 'style' => 'height: 200px; object-fit: cover;')); ?>
+                            </a>
+                            <button class="btn btn-sm btn-light rounded-circle shadow-sm position-absolute top-0 end-0 m-2 btn-remove-wishlist" data-id="<?php echo $item_id; ?>" title="Quitar de la lista">
+                                <i class="fas fa-trash text-danger"></i>
+                            </button>
+                        </div>
+                        <div class="card-body p-3">
+                            <h6 class="card-title mb-1 text-truncate" title="<?php echo $product->get_name(); ?>">
+                                <?php echo $product->get_name(); ?>
+                            </h6>
+                            <div class="price mb-3 fw-bold text-primary">
+                                <?php echo $product->get_price_html(); ?>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <a href="<?php echo esc_url($product->add_to_cart_url()); ?>" class="btn btn-primary btn-sm ajax_add_to_cart" data-product_id="<?php echo $item_id; ?>">
+                                    <i class="fas fa-cart-plus me-1"></i> Al carrito
+                                </a>
+                                <a href="<?php echo get_permalink($item_id); ?>" class="btn btn-outline-dark btn-sm">Ver producto</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php else : ?>
+                <!-- Vista en Lista (Panel Lateral Header) -->
+                <div class="wishlist-item d-flex align-items-center p-3 border-bottom hover-bg-light" style="transition: background 0.2s;">
+                    <div class="wishlist-item-image me-3" style="width: 70px; height: 70px; overflow: hidden; border-radius: 12px; background: #f9f9f9; flex-shrink: 0;">
+                        <a href="<?php echo get_permalink($item_id); ?>">
+                            <?php echo $product->get_image('thumbnail', array('class' => 'img-fluid h-100', 'style' => 'object-fit: cover;')); ?>
+                        </a>
+                    </div>
+                    <div class="wishlist-item-details flex-grow-1 min-width-0">
+                        <h6 class="mb-1 small fw-bold text-truncate"><?php echo $product->get_name(); ?></h6>
+                        <div class="wishlist-item-price text-primary fw-bold small">
+                            <?php echo $product->get_price_html(); ?>
+                        </div>
+                    </div>
+                    <div class="wishlist-item-actions d-flex flex-column gap-2 ms-2">
+                         <a href="<?php echo esc_url($product->add_to_cart_url()); ?>" class="btn btn-sm btn-primary-soft p-2 ajax_add_to_cart" data-product_id="<?php echo $item_id; ?>" title="Comprar">
+                            <i class="fas fa-shopping-bag"></i>
+                        </a>
+                        <button class="btn btn-sm btn-light p-2 btn-remove-wishlist" data-id="<?php echo $item_id; ?>" title="Eliminar">
+                            <i class="fas fa-times text-muted"></i>
+                        </button>
+                    </div>
+                </div>
+            <?php endif; ?>
+        <?php endforeach; ?>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+// 4. Panel Administrativo de Expotodo
+add_action('admin_menu', 'expotodo_admin_menu_setup');
+function expotodo_admin_menu_setup() {
+    // Menú Principal
+    add_menu_page(
+        'Expotodo', 
+        'Expotodo', 
+        'manage_options', 
+        'expotodo-main', 
+        'expotodo_render_admin_wishlist', // Wishlist por defecto
+        'dashicons-store', 
+        25
+    );
+
+    // Submenús
+    add_submenu_page('expotodo-main', 'Wishlist', 'Wishlist', 'manage_options', 'expotodo-main', 'expotodo_render_admin_wishlist');
+    add_submenu_page('expotodo-main', 'Plantillas', 'Plantillas', 'manage_options', 'expotodo-templates', 'expotodo_render_templates_page');
+    add_submenu_page('expotodo-main', 'Mensajes de la web', 'Mensajes de la web', 'manage_options', 'expotodo-messages', 'expotodo_render_messages_page');
+}
+
+function expotodo_render_admin_wishlist() {
+    ?>
+    <div class="wrap expotodo-admin-boutique" style="font-family: 'Inter', sans-serif;">
+        <h1 class="wp-heading-inline" style="margin-bottom: 20px;">
+            <span class="dashicons dashicons-heart" style="font-size: 24px; width: 24px; height: 24px; color: #dc3545;"></span> 
+            Smart Wishlist Insights
+        </h1>
+        <hr class="wp-header-end">
+
+        <div class="expotodo-admin-dashboard" style="max-width: 100%; margin-top: 25px; background: #fff; border: 1px solid #ccd0d4; border-radius: 4px; overflow: hidden;">
+            <div class="dashboard-header" style="background: #f8f9fa; border-bottom: 1px solid #ccd0d4; padding: 15px 20px; display: flex; font-weight: 600; color: #50575e; font-size: 13px;">
+                <div style="width: 250px;">CLIENTE</div>
+                <div style="flex-grow: 1;">PRODUCTOS EN LISTA DE DESEOS</div>
+            </div>
+            
+            <?php
+            $users = get_users(array(
+                'meta_key' => '_expotodo_wishlist',
+                'meta_compare' => 'EXISTS'
+            ));
+
+            if (empty($users)) : ?>
+                <div style="padding: 40px; text-align: center; color: #a7aaad;">No hay listas de deseos registradas.</div>
+            <?php else :
+                foreach ($users as $user) :
+                    $wishlist = expotodo_get_user_wishlist($user->ID);
+                    if (empty($wishlist)) continue;
+                    ?>
+                    <div class="wishlist-admin-row" style="display: flex; border-bottom: 1px solid #f0f0f1; transition: background 0.1s ease;">
+                        <!-- Columna Usuario -->
+                        <div style="width: 250px; padding: 20px; border-right: 1px solid #f0f0f1; background: #fdfdfd;">
+                            <div style="font-weight: 700; color: #1d2327; font-size: 14px;"><?php echo esc_html($user->display_name); ?></div>
+                            <div style="font-size: 12px; color: #646970; margin-top: 4px; word-break: break-all;">
+                                <i class="dashicons dashicons-email" style="font-size: 14px; width: 14px; height: 14px; color: #2271b1;"></i> 
+                                <?php echo esc_html($user->user_email); ?>
+                            </div>
+                        </div>
+
+                        <!-- Columna Productos -->
+                        <div style="flex-grow: 1; padding: 20px; background: #fff;">
+                            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                <?php foreach ($wishlist as $pid) : 
+                                    $p = wc_get_product($pid);
+                                    if ($p) : ?>
+                                        <a href="<?php echo get_permalink($pid); ?>" target="_blank" class="admin-product-pill" style="text-decoration: none; padding: 5px 12px; background: #f0f6fb; border: 1px solid #c3d9ef; border-radius: 20px; color: #2271b1; font-size: 12px; font-weight: 500; display: inline-flex; align-items: center; transition: all 0.2s;">
+                                            <span style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><?php echo $p->get_name(); ?></span>
+                                            <i class="dashicons dashicons-external" style="font-size: 12px; margin-left: 6px; opacity: 0.6;"></i>
+                                        </a>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach;
+            endif; ?>
+        </div>
+        <style>
+            .wishlist-admin-row:hover { background: #f9f9f9 !important; }
+            .wishlist-admin-row:hover > div:first-child { background: #f6f7f7 !important; }
+            .admin-product-pill:hover { background: #2271b1 !important; color: #fff !important; border-color: #2271b1 !important; }
+        </style>
+    </div>
+    <?php
+}
+
+// 5. AJAX Content Loader para el Panel Lateral
+add_action('wp_ajax_expotodo_get_wishlist_panel_content', 'expotodo_ajax_get_wishlist_content');
+add_action('wp_ajax_nopriv_expotodo_get_wishlist_panel_content', 'expotodo_ajax_get_wishlist_content');
+function expotodo_ajax_get_wishlist_content() {
+    $user_id = get_current_user_id();
+    $html = expotodo_get_wishlist_items_html($user_id);
+    $count = count(expotodo_get_user_wishlist($user_id));
+    
+    wp_send_json_success(array('html' => $html, 'count' => $count));
+}
+
+/**
+ * SISTEMA DE CONTACTO AJAX
+ */
+
+// 1. Crear tabla de mensajes si no existe
+function expotodo_setup_contact_table() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'expotodo_messages';
+    $charset_collate = $wpdb->get_charset_collate();
+    $sql = "CREATE TABLE $table_name (
+        id bigint(20) NOT NULL AUTO_INCREMENT,
+        name varchar(255) NOT NULL,
+        email varchar(255) NOT NULL,
+        subject varchar(255) DEFAULT '',
+        message text NOT NULL,
+        created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+        PRIMARY KEY  (id)
+    ) $charset_collate;";
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+}
+add_action('after_setup_theme', 'expotodo_setup_contact_table');
+
+// [Manejador AJAX movido arriba para evitar problemas de carga temprana]
+function expotodo_handle_contact_form() {
+    check_ajax_referer('expotodo_contact_nonce', 'nonce');
+    
+    // Honeypot check
+    if (!empty($_POST['hp_field'])) {
+        wp_send_json_error('Spam detectado.');
+    }
+
+    $name    = sanitize_text_field($_POST['name']);
+    $email   = sanitize_email($_POST['email']);
+    $subject = sanitize_text_field($_POST['subject']);
+    $message = sanitize_textarea_field($_POST['message']);
+
+    if (empty($name) || empty($email) || empty($message)) {
+        wp_send_json_error('Por favor rellena todos los campos obligatorios.');
+    }
+
+    global $wpdb;
+    $wpdb->insert($wpdb->prefix . 'expotodo_messages', array(
+        'name'       => $name,
+        'email'      => $email,
+        'subject'    => $subject,
+        'message'    => $message,
+        'created_at' => current_time('mysql')
+    ));
+
+    // Preparar el correo usando la plantilla de la BD
+    $admin_email = get_option('admin_email');
+    $template = get_option('expotodo_template_contact', "Nombre: {name}\nEmail: {email}\nAsunto: {subject}\n\nMensaje:\n{message}");
+    
+    $body = str_replace(
+        array('{name}', '{email}', '{subject}', '{message}'),
+        array($name, $email, $subject, $message),
+        $template
+    );
+    
+    $subject_mail = "Nuevo mensaje de contacto: " . $subject;
+    wp_mail($admin_email, $subject_mail, $body);
+
+    wp_send_json_success('¡Mensaje enviado con éxito! Nos pondremos en contacto pronto.');
+}
+
+/**
+ * RENDER: Página de Plantillas
+ */
+function expotodo_render_templates_page() {
+    if (isset($_POST['expotodo_save_templates'])) {
+        update_option('expotodo_template_contact', wp_kses_post($_POST['template_contact']));
+        update_option('expotodo_template_purchase', wp_kses_post($_POST['template_purchase']));
+        update_option('expotodo_template_invoice', wp_kses_post($_POST['template_invoice']));
+        echo '<div class="updated"><p>Plantillas actualizadas correctamente.</p></div>';
+    }
+
+    $contact = get_option('expotodo_template_contact', "Nombre: {name}\nEmail: {email}\nAsunto: {subject}\n\nMensaje:\n{message}");
+    $purchase = get_option('expotodo_template_purchase', "Hola {name}, gracias por tu compra de {amount}.");
+    $invoice = get_option('expotodo_template_invoice', "Adjuntamos tu factura para el pedido {order_id}.");
+
+    ?>
+    <div class="wrap">
+        <h1>Plantillas de Correo</h1>
+        <form method="post">
+            <div class="card" style="margin-bottom: 20px; padding: 20px;">
+                <h3>Contacto</h3>
+                <p>Usa tags como {name}, {email}, {subject}, {message}</p>
+                <textarea name="template_contact" rows="8" class="large-text" style="font-family: monospace;"><?php echo esc_textarea($contact); ?></textarea>
+            </div>
+
+            <div class="card" style="margin-bottom: 20px; padding: 20px;">
+                <h3>Compra</h3>
+                <p>Usa tags como {name}, {amount}, {order_id}</p>
+                <textarea name="template_purchase" rows="8" class="large-text" style="font-family: monospace;"><?php echo esc_textarea($purchase); ?></textarea>
+            </div>
+
+            <div class="card" style="margin-bottom: 20px; padding: 20px;">
+                <h3>Factura</h3>
+                <textarea name="template_invoice" rows="8" class="large-text" style="font-family: monospace;"><?php echo esc_textarea($invoice); ?></textarea>
+            </div>
+
+            <input type="submit" name="expotodo_save_templates" class="button button-primary" value="Guardar Plantillas">
+        </form>
+    </div>
+    <?php
+}
+
+/**
+ * RENDER: Página de Mensajes Web
+ */
+function expotodo_render_messages_page() {
+    global $wpdb;
+    $messages = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}expotodo_messages ORDER BY created_at DESC");
+    ?>
+    <div class="wrap">
+        <h1>Mensajes Recibidos</h1>
+        <table class="wp-list-table widefat fixed striped">
+            <thead>
+                <tr>
+                    <th width="150">Fecha</th>
+                    <th width="200">De</th>
+                    <th>Mensaje</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if ($messages) : foreach ($messages as $msg) : ?>
+                    <tr>
+                        <td><?php echo date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($msg->created_at)); ?></td>
+                        <td>
+                            <strong><?php echo esc_html($msg->name); ?></strong><br>
+                            <small><?php echo esc_html($msg->email); ?></small>
+                        </td>
+                        <td>
+                            <strong><?php echo esc_html($msg->subject); ?></strong><br>
+                            <?php echo nl2br(esc_html($msg->message)); ?>
+                        </td>
+                    </tr>
+                <?php endforeach; else : ?>
+                    <tr><td colspan="3">No hay mensajes.</td></tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+    <?php
 }
