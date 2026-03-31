@@ -61,12 +61,12 @@ class AdminController {
         );
 
         add_submenu_page(
-            'expotodo-main', 
-            'Cola de Envío', 
-            'Cola de Envío', 
-            'manage_options', 
-            'expotodo-email-queue', 
-            array( 'EmailController', 'render_queue_page' )
+            'expotodo-settings',
+            'Cola de Envío',
+            'Cola de Envío',
+            'manage_options',
+            'expotodo-queue',
+            array('EmailController', 'render_queue_page')
         );
     }
 

@@ -117,7 +117,7 @@ class EmailController {
     /**
      * Renderiza la página de registro de cola
      */
-    public function render_queue_page() {
+    public static function render_queue_page() {
         if (!current_user_can('manage_options')) return;
         
         global $wpdb;
