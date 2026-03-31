@@ -9,9 +9,30 @@ class ContactController {
 
     public function __construct() {
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
-        add_action( 'after_setup_theme', array( $this, 'setup_table' ) );
+        add_action( 'after_setup_theme', array( $this, 'setup_table' ) );        
         add_action( 'wp_ajax_expotodo_send_contact', array( $this, 'ajax_handle_contact' ) );
         add_action( 'wp_ajax_nopriv_expotodo_send_contact', array( $this, 'ajax_handle_contact' ) );
+        
+        // Acciones Admin para mensajes
+        add_action( 'wp_ajax_expotodo_delete_message', array( $this, 'ajax_delete_message' ) );
+        add_action( 'wp_ajax_expotodo_reply_message', array( $this, 'ajax_reply_message' ) );
+        add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
+    }
+
+    public function admin_assets($hook) {
+        if (strpos($hook, 'expotodo-messages') !== false || strpos($hook, 'expotodo-templates') !== false) {
+            wp_enqueue_script('expotodo-admin-contact', get_template_directory_uri() . '/assets/js/admin-contact.js', array('jquery'), '1.0.0', true);
+            wp_localize_script('expotodo-admin-contact', 'expotodo_admin_params', array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce'    => wp_create_nonce('expotodo_admin_nonce')
+            ));
+
+            if (strpos($hook, 'expotodo-templates') !== false) {
+                // Editor de código para plantillas
+                $settings = wp_enqueue_code_editor(array('type' => 'text/html'));
+                wp_add_inline_script('code-editor', sprintf('jQuery(function(){ wp.codeEditor.initialize("template_contact", %s); wp.codeEditor.initialize("template_purchase", %s); });', wp_json_encode($settings), wp_json_encode($settings)));
+            }
+        }
     }
 
     public function enqueue_assets() {
@@ -41,6 +62,48 @@ class ContactController {
         ) $charset_collate;";
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
+    }
+
+    /**
+     * AJAX: Eliminar mensaje
+     */
+    public function ajax_delete_message() {
+        check_ajax_referer('expotodo_admin_nonce', 'security');
+        if (!current_user_can('manage_options')) wp_send_json_error();
+
+        global $wpdb;
+        $id = intval($_POST['id']);
+        $wpdb->delete($wpdb->prefix . 'expotodo_messages', array('id' => $id));
+        wp_send_json_success();
+    }
+
+    /**
+     * AJAX: Responder mensaje (vía correo con plantilla)
+     */
+    public function ajax_reply_message() {
+        check_ajax_referer('expotodo_admin_nonce', 'security');
+        if (!current_user_can('manage_options')) wp_send_json_error();
+
+        $to      = sanitize_email($_POST['email']);
+        $reply   = wp_kses_post($_POST['reply_content']);
+        $subject = "Respuesta a tu consulta - Expotodo Boutique";
+
+        $template = get_option('expotodo_template_contact', "Hola {name},\n\n{message}");
+        
+        // El {message} en la respuesta es el contenido que escribe Emanuel en el modal
+        $body = str_replace(
+            array('{name}', '{message}', '{email}', '{subject}'),
+            array($_POST['name'], $reply, $to, $subject),
+            $template
+        );
+
+        $sent = wp_mail($to, $subject, $body, array('Content-Type: text/html; charset=UTF-8'));
+        
+        if ($sent) {
+            wp_send_json_success('¡Respuesta enviada correctamente!');
+        } else {
+            wp_send_json_error('Error al enviar el correo. Revisa la configuración SMTP.');
+        }
     }
 
     public function ajax_handle_contact() {
@@ -77,41 +140,79 @@ class ContactController {
             $template
         );
         
-        wp_mail($admin_email, "Nuevo mensaje de contacto: " . $subject, $body);
+        wp_mail($admin_email, "Nuevo mensaje de contacto: " . $subject, $body, array('Content-Type: text/html; charset=UTF-8'));
         wp_send_json_success('¡Mensaje enviado con éxito! Nos pondremos en contacto pronto.');
     }
 
     public static function render_templates_page() {
+        if (!current_user_can('manage_options')) return;
+
+        $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'contact';
+
         if (isset($_POST['expotodo_save_templates'])) {
-            update_option('expotodo_template_contact', wp_kses_post($_POST['template_contact']));
-            update_option('expotodo_template_purchase', wp_kses_post($_POST['template_purchase']));
-            update_option('expotodo_template_invoice', wp_kses_post($_POST['template_invoice']));
-            echo '<div class="updated"><p>Plantillas actualizadas correctamente.</p></div>';
+            // Guardar solo el campo de la pestaña activa para evitar sobrescribir otros
+            if ($active_tab === 'contact') {
+                update_option('expotodo_template_contact', $_POST['template_contact']);
+            } elseif ($active_tab === 'purchase') {
+                update_option('expotodo_template_purchase', $_POST['template_purchase']);
+            } elseif ($active_tab === 'invoice') {
+                update_option('expotodo_template_invoice', $_POST['template_invoice']);
+            }
+            echo '<div class="updated"><p>¡Plantilla de <strong>' . strtoupper($active_tab) . '</strong> guardada correctamente con tecnología visual!</p></div>';
         }
 
-        $contact = get_option('expotodo_template_contact', "Nombre: {name}\nEmail: {email}\nAsunto: {subject}\n\nMensaje:\n{message}");
-        $purchase = get_option('expotodo_template_purchase', "Hola {name}, gracias por tu compra de {amount}.");
-        $invoice = get_option('expotodo_template_invoice', "Adjuntamos tu factura para el pedido {order_id}.");
+        $contact  = get_option('expotodo_template_contact', "<h2>Hola {name}</h2><p>{message}</p>");
+        $purchase = get_option('expotodo_template_purchase', "<h2>¡Gracias por tu pedido, {name}!</h2><p>Tu compra de {amount} está siendo procesada.</p>");
+        $invoice  = get_option('expotodo_template_invoice', "<h2>Aquí tienes tu factura</h2><p>Adjuntamos el comprobante del pedido #{order_id}.</p>");
+
+        $editor_settings = array(
+            'textarea_rows' => 18,
+            'media_buttons' => true,
+            'tinymce'       => true,
+            'quicktags'     => true
+        );
 
         ?>
         <div class="wrap">
-            <h1>Plantillas de Correo Dinámicas</h1>
+            <h1>Gestor de Comunicaciones Boutique</h1>
+            <p class="description">Personaliza la experiencia visual de cada correo que sale de tu tienda.</p>
+            <hr class="wp-header-end">
+
+            <h2 class="nav-tab-wrapper" style="margin-bottom: 0;">
+                <a href="?page=expotodo-templates&tab=contact" class="nav-tab <?php echo $active_tab == 'contact' ? 'nav-tab-active' : ''; ?>">Respuesta (Contacto)</a>
+                <a href="?page=expotodo-templates&tab=purchase" class="nav-tab <?php echo $active_tab == 'purchase' ? 'nav-tab-active' : ''; ?>">Confirmación de Pedido</a>
+                <a href="?page=expotodo-templates&tab=invoice" class="nav-tab <?php echo $active_tab == 'invoice' ? 'nav-tab-active' : ''; ?>">Facturación</a>
+            </h2>
+
             <form method="post">
-                <div class="card" style="margin-bottom: 20px; padding: 20px;">
-                    <h3>Página de Contacto</h3>
-                    <p>Usa tags: {name}, {email}, {subject}, {message}</p>
-                    <textarea name="template_contact" rows="8" class="large-text" style="font-family: monospace;"><?php echo esc_textarea($contact); ?></textarea>
+                <div class="card" style="max-width: 95%; margin-top: 0; padding: 35px; border-top: none; border-radius: 0 0 12px 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                    
+                    <?php if ($active_tab === 'contact') : ?>
+                        <h2 class="title">Plantilla de Respuesta Manual</h2>
+                        <p class="description">Esta plantilla se pre-carga cuando respondes a un cliente desde el Centro de Mensajes. <br>Tags permitidos: <code>{name}</code>, <code>{message}</code> (Cuerpo de respuesta), <code>{email}</code>, <code>{subject}</code></p>
+                        <div style="margin-top: 20px;">
+                            <?php wp_editor($contact, 'template_contact', $editor_settings); ?>
+                        </div>
+
+                    <?php elseif ($active_tab === 'purchase') : ?>
+                        <h2 class="title">Confirmación de Pedido</h2>
+                        <p class="description">Se envía automáticamente tras una compra exitosa. <br>Tags permitidos: <code>{name}</code>, <code>{amount}</code>, <code>{order_id}</code>, <code>{order_details}</code></p>
+                        <div style="margin-top: 20px;">
+                            <?php wp_editor($purchase, 'template_purchase', $editor_settings); ?>
+                        </div>
+
+                    <?php elseif ($active_tab === 'invoice') : ?>
+                        <h2 class="title">Plantilla de Facturación</h2>
+                        <p class="description">Formato para el envío de comprobantes fiscales o recibos. <br>Tags permitidos: <code>{name}</code>, <code>{order_id}</code>, <code>{invoice_url}</code></p>
+                        <div style="margin-top: 20px;">
+                            <?php wp_editor($invoice, 'template_invoice', $editor_settings); ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <p class="submit" style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                        <input type="submit" name="expotodo_save_templates" class="button button-primary button-large" value="Guardar Plantilla de <?php echo strtoupper($active_tab); ?>">
+                    </p>
                 </div>
-                <div class="card" style="margin-bottom: 20px; padding: 20px;">
-                    <h3>Confirmación de Compra</h3>
-                    <p>Usa tags: {name}, {amount}, {order_id}</p>
-                    <textarea name="template_purchase" rows="8" class="large-text" style="font-family: monospace;"><?php echo esc_textarea($purchase); ?></textarea>
-                </div>
-                <div class="card" style="margin-bottom: 20px; padding: 20px;">
-                    <h3>Facturación</h3>
-                    <textarea name="template_invoice" rows="8" class="large-text" style="font-family: monospace;"><?php echo esc_textarea($invoice); ?></textarea>
-                </div>
-                <input type="submit" name="expotodo_save_templates" class="button button-primary" value="Guardar Plantillas">
             </form>
         </div>
         <?php
@@ -122,23 +223,53 @@ class ContactController {
         $messages = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}expotodo_messages ORDER BY created_at DESC");
         ?>
         <div class="wrap">
-            <h1>Centro de Mensajes de la Web</h1>
-            <table class="wp-list-table widefat fixed striped">
+            <h1>Centro de Comunicaciones Directas</h1>
+            <table class="wp-list-table widefat fixed striped" style="margin-top: 20px;">
                 <thead>
-                    <tr><th width="150">Fecha</th><th width="200">De</th><th>Mensaje / Asunto</th></tr>
+                    <tr><th width="150">Fecha</th><th width="200">De</th><th>Mensaje / Asunto</th><th width="180">Acciones Boutique</th></tr>
                 </thead>
                 <tbody>
                     <?php if ($messages) : foreach ($messages as $msg) : ?>
-                        <tr>
+                        <tr id="message-row-<?php echo $msg->id; ?>">
                             <td><?php echo date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($msg->created_at)); ?></td>
                             <td><strong><?php echo esc_html($msg->name); ?></strong><br><small><?php echo esc_html($msg->email); ?></small></td>
-                            <td><strong><?php echo esc_html($msg->subject); ?></strong><br><?php echo nl2br(esc_html($msg->message)); ?></td>
+                            <td>
+                                <strong><?php echo esc_html($msg->subject); ?></strong><br>
+                                <div style="display: block; padding-top: 10px; color: #555;"><?php echo nl2br(esc_html($msg->message)); ?></div>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <button class="button button-primary btn-reply" 
+                                            data-id="<?php echo $msg->id; ?>" 
+                                            data-email="<?php echo esc_attr($msg->email); ?>" 
+                                            data-name="<?php echo esc_attr($msg->name); ?>">Responder</button>
+                                    <button class="button button-link text-danger btn-delete" data-id="<?php echo $msg->id; ?>">Eliminar</button>
+                                </div>
+                            </td>
                         </tr>
                     <?php endforeach; else : ?>
-                        <tr><td colspan="3">No hay mensajes aún.</td></tr>
+                        <tr><td colspan="4">No hay mensajes aún.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
+
+            <!-- Modal de Respuesta Boutique -->
+            <div id="replyModal" style="display:none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6);">
+                <div style="background-color: #fff; margin: 5% auto; padding: 25px; border-radius: 12px; width: 60%; max-width: 700px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                    <h2 id="replyTitle">Respondiendo a...</h2>
+                    <hr>
+                    <div style="margin-bottom: 15px;">
+                        <label>Escribe tu mensaje boutique:</label>
+                        <textarea id="replyContent" rows="10" style="width: 100%; margin-top: 10px; border-radius: 8px; padding: 10px; border: 1px solid #ddd;"></textarea>
+                    </div>
+                    <div style="text-align: right;">
+                        <button class="button" onclick="jQuery('#replyModal').hide()">Cancelar</button>
+                        <button class="button button-primary" id="btn-send-reply">Enviar Respuesta Profesional</button>
+                    </div>
+                    <input type="hidden" id="replyEmail">
+                    <input type="hidden" id="replyName">
+                </div>
+            </div>
         </div>
         <?php
     }

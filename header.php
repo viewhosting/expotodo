@@ -51,7 +51,7 @@
                                 <i class="fas fa-phone icon-telephone"></i>
                                 <div class="ms-2 hotline-content">
                                     <label class="mb-0">LLAMA AHORA</label>
-                                    <span>(55) 5510 1477</span>
+                                    <span><?php echo esc_html(get_option('expotodo_whatsapp', '(55) 5510 1477')); ?></span>
                                 </div>
                             </div>
                         </li>

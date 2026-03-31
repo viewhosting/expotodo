@@ -20,11 +20,15 @@ class UserController {
 
     public function enqueue_assets() {
         if ( is_page_template('page-cuenta.php') || is_account_page() ) {
-            // Dashboard & Boutique Global Assets
-            wp_enqueue_style( 'expotodo-account-dashboard', get_template_directory_uri() . '/assets/css/account_dashboard.css?ver=' . time() );
-            wp_enqueue_script( 'expotodo-account-dashboard', get_template_directory_uri() . '/assets/js/account_dashboard.js?ver=' . time(), array('jquery'), '1.0.0', true );
+            $boutique_mode = get_option('expotodo_boutique_mode', 'yes');
+
+            if ($boutique_mode === 'yes') {
+                // Dashboard & Boutique Global Assets
+                wp_enqueue_style( 'expotodo-account-dashboard', get_template_directory_uri() . '/assets/css/account_dashboard.css?ver=' . time() );
+                wp_enqueue_script( 'expotodo-account-dashboard', get_template_directory_uri() . '/assets/js/account_dashboard.js?ver=' . time(), array('jquery'), '1.0.0', true );
+            }
             
-            // Address Handling
+            // Address Handling (Siempre activo para funcionalidad AJAX básica)
             wp_enqueue_script( 'expotodo-account-address', get_template_directory_uri() . '/assets/js/account-address.js?ver=' . time(), array('jquery', 'bootstrap-js'), '1.0.0', true );
             wp_localize_script( 'expotodo-account-address', 'expotodo_account_params', array(
                 'ajax_url' => admin_url( 'admin-ajax.php' ),
