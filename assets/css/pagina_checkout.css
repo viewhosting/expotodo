@@ -1899,6 +1899,5 @@ input {
 
 /* Efecto Hover */
 .woocommerce-terms-and-conditions-wrapper label.checkbox:hover .woocommerce-terms-and-conditions-checkbox-text::before {
-    border-color: #b0d443 !important;
     box-shadow: 0 0 0 4px rgba(176, 212, 67, 0.1) !important;
 }

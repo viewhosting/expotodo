@@ -892,3 +892,13 @@ function expotodo_fix_privacy_policy_placeholder( $text ) {
     
     return $text;
 }
+
+/**
+ * Encolar estilos específicos para la página de agradecimiento (Thank You) Boutique
+ */
+add_action( 'wp_enqueue_scripts', 'expotodo_enqueue_thankyou_styles' );
+function expotodo_enqueue_thankyou_styles() {
+    if ( is_order_received_page() ) {
+        wp_enqueue_style( 'expotodo-thankyou', get_template_directory_uri() . '/assets/css/pagina_gracias.css', array(), '1.1.0' );
+    }
+}

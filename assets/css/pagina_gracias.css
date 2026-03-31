@@ -1,0 +1,162 @@
+/* --- ESTILOS DE PÁGINA DE AGRADECIMIENTO (THANK YOU) BOUTIQUE --- */
+.boutique-thankyou-page {
+    background-color: #f8fafc !important;
+}
+
+.boutique-thankyou-page .card {
+    transition: transform 0.3s ease;
+}
+
+.order-items-boutique img {
+    border: 1px solid #edf2f7;
+    padding: 2px;
+    background: #fff;
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+}
+
+.order-items-boutique h6 {
+    font-size: 1rem;
+    color: #1a1a1a;
+    letter-spacing: -0.2px;
+}
+
+.order-totals-boutique .d-flex {
+    padding: 4px 0;
+}
+
+.order-totals-boutique .h5 {
+    color: #1a1a1a;
+    font-weight: 800 !important;
+}
+
+/* Ajustes para la grilla de productos destacados en el Thank You */
+.boutique-thankyou-page .product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.boutique-thankyou-page .product-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08) !important;
+}
+
+.boutique-thankyou-page .btn-primary:hover {
+    background: #9ab93b !important;
+    transform: scale(1.02);
+}
+
+/* --- ESTILOS PARA DETALLES DE MÉTODOS DE PAGO (BACS, etc.) --- */
+.payment-method-info-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.payment-method-info-card h2, 
+.payment-method-info-card h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin-bottom: 1rem;
+    letter-spacing: -0.5px;
+}
+
+.payment-method-info-card p {
+    color: #4a5568;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+/* Estilos para Transferencia Bancaria (BACS) */
+.woocommerce-bacs-details {
+    padding: 0 !important;
+}
+
+.woocommerce-bacs-details h2 {
+    font-size: 1.1rem !important;
+    text-align: center;
+    color: #718096 !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2rem !important;
+}
+
+.wc-bacs-bank-details {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem 0 !important;
+    display: block !important; /* Cada cuenta en su propio bloque */
+}
+
+/* El nombre del beneficiario o "Account name" */
+.wc-bacs-bank-details h3 {
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    color: #1a1a1a !important;
+    margin: 1.5rem 0 1rem 0 !important;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed #e2e8f0;
+}
+
+/* Contenedor de los datos (Banco, Cuenta, etc) */
+.wc-bacs-bank-details {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.75rem !important;
+    justify-content: flex-start !important;
+}
+
+.wc-bacs-bank-details li {
+    flex: 1 1 calc(33.333% - 0.75rem) !important;
+    min-width: 140px !important;
+    background: #f8fafc !important;
+    padding: 0.85rem !important;
+    border-radius: 12px !important;
+    border: 1px solid #edf2f7 !important;
+    margin: 0 !important;
+}
+
+@media (max-width: 576px) {
+    .wc-bacs-bank-details li {
+        flex: 1 1 calc(50% - 0.75rem) !important;
+    }
+}
+
+.wc-bacs-bank-details li strong {
+    display: block !important;
+    font-size: 0.7rem !important;
+    text-transform: uppercase !important;
+    color: #a0aec0 !important;
+    margin-bottom: 0.25rem !important;
+}
+
+.wc-bacs-bank-details li {
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 0.95rem;
+    color: #2d3748;
+}
+
+/* Estilos para tablas generadas por métodos de pago */
+.payment-method-info-card table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 1rem;
+}
+
+.payment-method-info-card table th,
+.payment-method-info-card table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #edf2f7;
+    font-size: 0.9rem;
+}
+
+.payment-method-info-card table th {
+    text-align: left;
+    font-weight: 700;
+    color: #2d3748;
+}
