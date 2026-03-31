@@ -61,7 +61,7 @@ class AdminController {
         );
 
         add_submenu_page(
-            'expotodo-settings',
+            'expotodo-main',
             'Cola de Envío',
             'Cola de Envío',
             'manage_options',
