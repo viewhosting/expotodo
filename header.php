@@ -287,7 +287,7 @@
                 Tu lista de deseos está vacía.
             </div>
             <div class="wishlist-summary p-3 bg-light border-top mt-auto">
-                <a href="<?php echo home_url('/cuenta/?tab=wishlist'); ?>" class="btn btn-primary btn-sm w-100">Ver Lista Completa</a>
+                <a href="<?php echo home_url('/my-account/?tab=wishlist'); ?>" class="btn btn-primary btn-sm w-100">Ver Lista Completa</a>
             </div>
         </div>
     </div>

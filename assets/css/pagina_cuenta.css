@@ -37,6 +37,9 @@
     border-radius: var(--border-radius-boutique);
     overflow: hidden;
     box-shadow: var(--shadow-boutique);
+    position: sticky;
+    top: 90px;
+    z-index: 10;
 }
 
 .account-nav .list-group-item {
@@ -262,10 +265,6 @@
  * WISHLIST BOUTIQUE STYLES
  */
 
-.wishlist-wrapper {
-    display: flex;
-    flex-direction: column;
-}
 
 .wishlist-item {
     transition: all 0.3s ease;
@@ -314,8 +313,8 @@
 
 /* Page Account Styling */
 .wishlist-page-container {
-    max-height: 500px;
-    overflow-y: auto;
+    max-height: none;
+    overflow-y: visible;
 }
 
 .wishlist-page-container .wishlist-item {

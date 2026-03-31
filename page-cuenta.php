@@ -226,6 +226,7 @@ get_header();
                                     </div>
                                 </div>
                             </div>
+                        </div>
                         <!-- Lista de Deseos (Wishlist) -->
                         <div class="tab-pane fade" id="wishlist">
                             <div class="card account-main-card">
@@ -234,7 +235,11 @@ get_header();
                                 </div>
                                 <div class="card-body p-0">
                                     <div class="wishlist-page-container">
-                                        <?php echo expotodo_get_wishlist_items_html(0, 'grid'); ?>
+                                        <?php 
+                                        $debug_items = expotodo_get_user_wishlist();
+                                        echo "<!-- DEBUG ITEMS: " . print_r($debug_items, true) . " -->"; 
+                                        echo expotodo_get_wishlist_items_html(0, 'grid'); 
+                                        ?>
                                     </div>
                                     <?php if (empty(expotodo_get_user_wishlist())) : ?>
                                         <div class="p-5 text-center">

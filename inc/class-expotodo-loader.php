@@ -16,7 +16,7 @@ class Expotodo_Loader {
         
         // Buscamos todos los archivos PHP en la carpeta de controladores
         $controllers = glob($controller_path . '*.php');
-
+        error_log('EXPOTODO LOADER: Found controllers: ' . print_r($controllers, true));
         if (empty($controllers)) return;
 
         foreach ($controllers as $file) {

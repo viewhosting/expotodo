@@ -71,6 +71,17 @@ class ThemeController {
             ));
         }
 
+        // Custom Checkout Assets
+        if ( is_checkout() && ! is_order_received_page() ) {
+            wp_enqueue_style( 'expotodo-checkout-css', get_template_directory_uri() . '/assets/css/pagina_checkout.css?ver='.rand(1,9999), array('expotodo-style'), '1.1.0' );
+            wp_enqueue_script( 'expotodo-checkout-custom', get_template_directory_uri() . '/assets/js/checkout-custom.js?ver='.rand(1,9999), array('jquery'), '1.1.0', true );
+            
+            wp_localize_script( 'expotodo-checkout-custom', 'expotodo_checkout_params', array(
+                'ajax_url' => admin_url( 'admin-ajax.php' ),
+                'nonce'    => wp_create_nonce( 'expotodo_checkout_nonce' ),
+            ));
+        }
+
         // Thank you & Account Boutique
         if ( is_order_received_page() ) {
             wp_enqueue_style( 'expotodo-thankyou', get_template_directory_uri() . '/assets/css/pagina_gracias.css', array(), '1.1.0' );

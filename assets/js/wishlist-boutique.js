@@ -42,6 +42,18 @@ jQuery(document).ready(function ($) {
 
                     // Sincronizar UI Global
                     updateWishlistUI(response.data);
+
+                    // SI ESTAMOS EN LA PÁGINA DE CUENTA: Eliminar la tarjeta del grid
+                    if ($('.wishlist-page-container').length > 0 && response.data.action === 'removed') {
+                        const productCol = btn.closest('[class*="col-"]');
+                        productCol.fadeOut(300, function () {
+                            $(this).remove();
+                            // Verificar si quedó vacía para mostrar el mensaje
+                            if ($('.wishlist-page-container .product-card').length === 0) {
+                                location.reload(); // Recarga simple para mostrar el estado vacío oficial
+                            }
+                        });
+                    }
                 } else if (response.data.require_login) {
                     showToast('Atención', response.data.message, 'warning');
                     // Opcional: abrir panel de login

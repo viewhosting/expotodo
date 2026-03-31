@@ -31,8 +31,19 @@ function expotodo_get_user_wishlist($user_id = 0) {
  * Obtiene el HTML de la wishlist para el panel (Wrapper de WishlistController)
  */
 function expotodo_get_wishlist_items_html($user_id = 0, $view = 'sidebar') {
+    $path = get_template_directory() . '/inc/controllers/WishlistController.php';
+    if (file_exists($path)) require_once $path;
+    
     if (class_exists('WishlistController')) {
         return WishlistController::get_wishlist_items_html($user_id, $view);
+    }
+    return '<!-- WishlistController NOT FOUND -->';
+}/**
+ * Obtiene el HTML de los items del carrito para el panel (Wrapper de WooCommerceController)
+ */
+function expotodo_get_cart_items_html() {
+    if (class_exists('WooCommerceController')) {
+        return WooCommerceController::get_cart_items_html();
     }
     return '';
 }

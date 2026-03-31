@@ -69,14 +69,40 @@ class WooCommerceController {
 
     public function ajax_get_cities() {
         $state = isset( $_POST['state'] ) ? sanitize_text_field( $_POST['state'] ) : '';
+        
         $cities_by_state = array(
-            'AG' => array('Aguascalientes', 'Calvillo'),
-            'BC' => array('Mexicali', 'Tijuana'),
-            // ... (simplificado para brevedad, restaurar lista completa del functions.php original)
+            'AG' => array('Aguascalientes', 'Asientos', 'Calvillo', 'Cosío', 'Jesús María', 'Pabellón de Arteaga', 'Rincón de Romos', 'San José de Gracia', 'Tepezalá', 'El Llano', 'San Francisco de los Romo'),
+            'BC' => array('Ensenada', 'Mexicali', 'Tecate', 'Tijuana', 'Playas de Rosarito', 'San Quintín', 'San Felipe'),
+            'BS' => array('La Paz', 'Los Cabos', 'Comondú', 'Loreto', 'Mulegé'),
+            'CM' => array('Campeche', 'Carmen', 'Champotón', 'Escárcega', 'Calkiní', 'Hecelchakán', 'Hopelchén', 'Palizada', 'Tenabo', 'Candelaria', 'Calakmul'),
+            'CO' => array('Saltillo', 'Torreón', 'Monclova', 'Piedras Negras', 'Acuña', 'Matamoros', 'San Pedro', 'Ramos Arizpe', 'Frontera', 'Múzquiz'),
+            'CL' => array('Colima', 'Manzanillo', 'Tecomán', 'Villa de Álvarez', 'Armería', 'Coquimatlán', 'Cuauhtémoc', 'Ixtlahuacán', 'Minatitlán', 'Comala'),
+            'JA' => array('Guadalajara', 'Zapopan', 'Tlaquepaque', 'Tonalá', 'Puerto Vallarta', 'Tlajomulco de Zúñiga', 'Lagos de Moreno', 'Tepatitlán de Morelos', 'Ciudad Guzmán', 'Ocotlán'),
+            'MX' => array('Ecatepec de Morelos', 'Nezahualcóyotl', 'Toluca de Lerdo', 'Naucalpan de Juárez', 'Chimalhuacán', 'Tlalnepantla de Baz', 'Cuautitlán Izcalli', 'Tecámac', 'Ixtapaluca', 'Atizapán de Zaragoza'),
+            'MI' => array('Morelia', 'Uruapan', 'Zamora', 'Lázaro Cárdenas', 'Zitácuaro', 'Apatzingán', 'La Piedad', 'Pátzcuaro', 'Sahuayo', 'Maravatío'),
+            'MO' => array('Cuernavaca', 'Jiutepec', 'Cuautla', 'Temixco', 'Yautepec', 'Emiliano Zapata', 'Zacatepec', 'Xochitepec', 'Tlaltizapán', 'Jojutla'),
+            'NA' => array('Tepic', 'Xalisco', 'Santiago Ixcuintla', 'Bahía de Banderas', 'Compostela', 'Ixtlán del Río', 'Tecuala', 'San Blas', 'Acaponeta', 'Tuxpan'),
+            'NL' => array('Monterrey', 'Guadalupe', 'Apodaca', 'San Nicolás de los Garza', 'General Escobedo', 'Santa Catarina', 'Juárez', 'García', 'San Pedro Garza García', 'Cadereyta Jiménez'),
+            'OA' => array('Oaxaca de Juárez', 'San Juan Bautista Tuxtepec', 'Salina Cruz', 'Juchitán de Zaragoza', 'Santa Cruz Xoxocotlán', 'Huajuapan de León', 'Santo Domingo Tehuantepec', 'Loma Bonita', 'Miahuatlán de Porfirio Díaz', 'Puerto Escondido'),
+            'PU' => array('Puebla', 'Tehuacán', 'Cholula', 'Atlixco', 'San Martín Texmelucan'),
+            'QE' => array('Santiago de Querétaro', 'San Juan del Río', 'El Marqués', 'Corregidora', 'Tequisquiapan'),
+            'QR' => array('Cancún', 'Playa del Carmen', 'Chetumal', 'Cozumel', 'Tulum'),
+            'SL' => array('San Luis Potosí', 'Soledad de Graciano Sánchez', 'Ciudad Valles', 'Matehuala', 'Rioverde'),
+            'SI' => array('Culiacán', 'Mazatlán', 'Los Mochis', 'Guasave', 'Guamúchil'),
+            'SO' => array('Hermosillo', 'Ciudad Obregón', 'Nogales', 'San Luis Río Colorado', 'Navojoa'),
+            'TB' => array('Villahermosa', 'Cárdenas', 'Comalcalco', 'Huimanguillo', 'Macuspana'),
+            'TM' => array('Reynosa', 'Matamoros', 'Nuevo Laredo', 'Tampico', 'Ciudad Victoria'),
+            'TL' => array('Tlaxcala', 'Apizaco', 'Huamantla', 'Chiautempan', 'Zacatelco'),
+            'VE' => array('Veracruz', 'Xalapa', 'Coatzacoalcos', 'Córdoba', 'Poza Rica'),
+            'YU' => array('Mérida', 'Kanasín', 'Valladolid', 'Tizimín', 'Progreso'),
+            'ZA' => array('Zacatecas', 'Guadalupe', 'Fresnillo', 'Jerez', 'Río Grande'),
         );
-        // Nota: He mantenido la lógica, el usuario deberá restaurar la lista completa de ciudades si es crítica
-        if ( isset( $cities_by_state[ $state ] ) ) wp_send_json_success( $cities_by_state[ $state ] );
-        wp_send_json_error();
+
+        if ( isset( $cities_by_state[ $state ] ) ) {
+            wp_send_json_success( $cities_by_state[ $state ] );
+        } else {
+            wp_send_json_error( array( 'message' => 'No se encontraron ciudades para este estado.' ) );
+        }
     }
 
     public function ajax_filter_products() {
@@ -198,5 +224,66 @@ class WooCommerceController {
         check_ajax_referer('expotodo_address_nonce', 'security');
         $user_id = get_current_user_id();
         wp_send_json_success('Dirección actualizada correctamente.');
+    }
+
+    /**
+     * Genera el HTML de los items del carrito para el panel lateral
+     */
+    public static function get_cart_items_html() {
+        ob_start();
+        ?>
+        <div class="cart-items flex-grow-1">
+            <?php if ( function_exists('WC') && ! WC()->cart->is_empty() ) : ?>
+                <ul class="list-unstyled p-3 mb-0">
+                    <?php
+                    foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+                        $_product   = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
+                        $product_id = apply_filters( 'woocommerce_cart_item_product_id', $cart_item['product_id'], $cart_item, $cart_item_key );
+
+                        if ( $_product && $_product->exists() && $cart_item['quantity'] > 0 && apply_filters( 'woocommerce_cart_item_visible', true, $cart_item, $cart_item_key ) ) {
+                            $product_permalink = apply_filters( 'woocommerce_cart_item_permalink', $_product->is_visible() ? $_product->get_permalink( $cart_item ) : '', $cart_item, $cart_item_key );
+                            ?>
+                            <li class="d-flex mb-3 pb-2 border-bottom align-items-center">
+                                <div class="me-3" style="width: 50px; height: 50px; flex-shrink: 0;">
+                                    <?php 
+                                    $thumbnail = apply_filters( 'woocommerce_cart_item_thumbnail', $_product->get_image(), $cart_item, $cart_item_key );
+                                    echo str_replace('class="', 'class="img-fluid rounded shadow-sm ', $thumbnail);
+                                    ?>
+                                </div>
+                                <div class="flex-grow-1 overflow-hidden">
+                                    <h6 class="mb-0 text-truncate fw-bold small">
+                                        <?php
+                                        $name = apply_filters( 'woocommerce_cart_item_name', $_product->get_name(), $cart_item, $cart_item_key );
+                                        if ( $product_permalink ) {
+                                            echo sprintf( '<a href="%s" class="text-dark text-decoration-none">%s</a>', esc_url( $product_permalink ), esc_html($name) );
+                                        } else {
+                                            echo esc_html($name);
+                                        }
+                                        ?>
+                                    </h6>
+                                    <div class="text-muted small">
+                                        <?php echo sprintf( '%d &times; %s', $cart_item['quantity'], WC()->cart->get_product_price( $_product ) ); ?>
+                                    </div>
+                                </div>
+                                <div class="ms-2">
+                                    <?php
+                                    echo apply_filters( 'woocommerce_cart_item_remove_link', sprintf(
+                                        '<a href="%s" class="remove_from_cart_button text-danger small" aria-label="%s" data-product_id="%s" data-cart_item_key="%s" data-product_sku="%s"><i class="fas fa-trash-alt"></i></a>',
+                                        esc_url( wc_get_cart_remove_url( $cart_item_key ) ),
+                                        esc_html__( 'Remove this item', 'woocommerce' ),
+                                        esc_attr( $product_id ),
+                                        esc_attr( $cart_item_key ),
+                                        esc_attr( $_product->get_sku() )
+                                    ), $cart_item_key );
+                                    ?>
+                                </div>
+                            </li>
+                        <?php }
+                    } ?>
+                </ul>
+            <?php endif; ?>
+        </div>
+        <?php
+        return ob_get_clean();
     }
 }

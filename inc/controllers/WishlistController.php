@@ -70,6 +70,8 @@ class WishlistController {
 
     public static function get_wishlist_items_html($user_id = 0, $view = 'sidebar') {
         $wishlist = self::get_user_wishlist($user_id);
+        // SONDA DE DIAGNÓSTICO
+        if (isset($_GET['debug_wishlist'])) echo "<!-- DEBUG: Wishlist Count: " . count($wishlist) . " -->";
         
         if (empty($wishlist)) {
             return '<div class="p-5 text-center text-muted"><i class="far fa-heart fa-3x mb-3 opacity-25"></i><p>Tu lista de deseos está vacía.</p></div>';
@@ -84,24 +86,45 @@ class WishlistController {
                 if (!$product) continue;
                 
                 if ($view === 'grid') : ?>
-                    <div class="col-md-4 col-sm-6">
-                        <div class="wishlist-grid-item card h-100 border-0 shadow-sm overflow-hidden">
-                            <div class="position-relative">
-                                <a href="<?php echo get_permalink($item_id); ?>">
-                                    <?php echo $product->get_image('medium', array('class' => 'card-img-top', 'style' => 'height: 200px; object-fit: cover;')); ?>
-                                </a>
-                                <button class="btn btn-sm btn-light rounded-circle shadow-sm position-absolute top-0 end-0 m-2 btn-remove-wishlist" data-id="<?php echo $item_id; ?>">
-                                    <i class="fas fa-trash text-danger"></i>
+                    <div class="col-4 col-lg-3">
+                        <article class="product-card h-100" data-product-id="<?php echo esc_attr($item_id); ?>" data-product-name="<?php echo esc_attr($product->get_name()); ?>" data-product-price="<?php echo esc_attr($product->get_price()); ?>">
+                            <div class="product-image-container">
+                                <?php 
+                                $terms = get_the_terms($item_id, 'product_cat');
+                                $category_name = !empty($terms) && !is_wp_error($terms) ? $terms[0]->name : 'Producto';
+                                ?>
+                                <div class="product-category"><?php echo esc_html($category_name); ?></div>
+                                <?php if ($product->is_on_sale()) : ?>
+                                    <div class="product-category sale" style="top: 40px; background-color: #dc3545;">Oferta</div>
+                                <?php endif; ?>
+                                <button type="button" class="btn-add-wishlist btn-remove-wishlist" data-id="<?php echo $item_id; ?>" title="Eliminar de lista de deseos">
+                                    <i class="fas fa-heart text-danger"></i>
                                 </button>
+                                <img src="<?php echo esc_url(get_the_post_thumbnail_url($item_id, 'large') ?: 'https://via.placeholder.com/400'); ?>" 
+                                     class="product-image" 
+                                     alt="<?php echo esc_attr($product->get_name()); ?>">
                             </div>
-                            <div class="card-body p-3">
-                                <h6 class="card-title mb-1 text-truncate"><?php echo $product->get_name(); ?></h6>
-                                <div class="price mb-3 fw-bold text-primary"><?php echo $product->get_price_html(); ?></div>
-                                <div class="d-grid gap-2">
-                                    <a href="<?php echo esc_url($product->add_to_cart_url()); ?>" class="btn btn-primary btn-sm ajax_add_to_cart" data-product_id="<?php echo $item_id; ?>">Al carrito</a>
+                            <div class="product-content p-3 text-center">
+                                <h3 class="product-title" style="font-size: 1rem; min-height: 48px;"><?php echo esc_html($product->get_name()); ?></h3>
+                                <div class="product-price mb-3">
+                                    <?php echo $product->get_price_html(); ?>
+                                </div>
+                                <div class="d-flex flex-wrap gap-2">
+                                     <a href="<?php echo get_permalink($item_id); ?>" class="btn-card btn-primary flex-grow-1 py-2" style="font-size: 0.85rem;">
+                                        <i class="fas fa-eye me-1"></i> Ver
+                                    </a>
+                                     <?php if ( $product->is_type('variable') ) : ?>
+                                         <a href="<?php echo get_permalink($item_id); ?>" class="btn-card btn-primary flex-grow-1 py-2" style="font-size: 0.85rem;">
+                                             <i class="fas fa-eye me-1"></i> Opciones
+                                         </a>
+                                     <?php else : ?>
+                                         <a href="<?php echo esc_url($product->add_to_cart_url()); ?>" class="btn-card btn-primary ajax_add_to_cart flex-grow-1 py-2" style="font-size: 0.85rem;" data-quantity="1" data-product_id="<?php echo $item_id; ?>">
+                                             <i class="fas fa-shopping-cart me-1"></i> Agregar
+                                         </a>
+                                     <?php endif; ?>
                                 </div>
                             </div>
-                        </div>
+                        </article>
                     </div>
                 <?php else : ?>
                     <div class="wishlist-item d-flex align-items-center p-3 border-bottom">
