@@ -69,11 +69,12 @@ function expotodo_scripts() {
 
     // Product Filters JS (Shop & List Page)
     if ( is_shop() || is_product_category() || is_page_template('page-lista-productos.php') || is_page('lista-productos') || is_page('productos') ) {
-        wp_enqueue_script( 'expotodo-productos-js', get_template_directory_uri() . '/assets/js/productos.js?ver='.rand(1,9999), array('jquery'), '1.0.0', true );
+        wp_enqueue_script( 'expotodo-ajax-shop-js', get_template_directory_uri() . '/assets/js/ajax-shop.js?ver='.rand(1,9999), array('jquery'), '1.0.0', true );
         
         // Localize script to pass data to JS
-        wp_localize_script( 'expotodo-productos-js', 'expotodo_params', array(
+        wp_localize_script( 'expotodo-ajax-shop-js', 'expotodo_ajax', array(
             'ajax_url' => admin_url( 'admin-ajax.php' ),
+            'nonce' => wp_create_nonce('expotodo_filter_nonce')
         ));
     }
 
@@ -274,16 +275,26 @@ add_action( 'wp_ajax_expotodo_filter_products', 'expotodo_ajax_filter_products' 
 add_action( 'wp_ajax_nopriv_expotodo_filter_products', 'expotodo_ajax_filter_products' );
 
 function expotodo_ajax_filter_products() {
-    $category = isset($_POST['category']) ? $_POST['category'] : '';
+    $category = isset($_POST['categories']) ? (array) $_POST['categories'] : array();
+    if ( empty($category) && isset($_POST['category']) ) $category = (array) $_POST['category']; // Backward compatibility
+    
+    $paged = isset($_POST['page']) ? intval($_POST['page']) : 1;
     $min_price = isset($_POST['min_price']) ? floatval($_POST['min_price']) : 0;
     $max_price = isset($_POST['max_price']) ? floatval($_POST['max_price']) : 9999999;
     
+    // Support for Price Range select (archive-product.php)
+    $price_range = isset($_POST['price_range']) ? $_POST['price_range'] : '';
+    if ($price_range === 'low') { $max_price = 300; }
+    elseif ($price_range === 'mid') { $min_price = 300; $max_price = 600; }
+    elseif ($price_range === 'high') { $min_price = 600; }
+
     // Flags: nuevo, oferta, mas-vendido
     $flags = isset($_POST['flags']) ? (array) $_POST['flags'] : array();
 
     $args = array(
         'post_type' => 'product',
-        'posts_per_page' => 12,
+        'posts_per_page' => 16,
+        'paged' => $paged,
         'status' => 'publish',
         'meta_query' => array('relation' => 'AND'),
         'tax_query' => array('relation' => 'AND'),
@@ -901,4 +912,84 @@ function expotodo_enqueue_thankyou_styles() {
     if ( is_order_received_page() ) {
         wp_enqueue_style( 'expotodo-thankyou', get_template_directory_uri() . '/assets/css/pagina_gracias.css', array(), '1.1.0' );
     }
+    
+    // Estilos para la página de Ver Pedido (My Account)
+    if ( is_view_order_page() ) {
+        wp_enqueue_style( 'expotodo-view-order', get_template_directory_uri() . '/assets/css/pagina_view_order.css', array(), '1.0.0' );
+    }
+
+    // Estilos para la página de Mi Cuenta (Boutique)
+    if ( is_account_page() ) {
+        wp_enqueue_style( 'expotodo-account-boutique', get_template_directory_uri() . '/assets/css/pagina_cuenta.css', array(), '1.1.0' );
+        wp_enqueue_script( 'expotodo-account-address-js', get_template_directory_uri() . '/assets/js/account-address.js', array('jquery'), '1.1.0', true );
+        
+        // Localize for AJAX
+        wp_localize_script( 'expotodo-account-address-js', 'expotodo_account_params', array(
+            'ajax_url' => admin_url( 'admin-ajax.php' ),
+            'nonce'    => wp_create_nonce( 'expotodo_address_nonce' ),
+        ));
+    }
+}
+
+/**
+ * AJAX: Obtener formulario de edición de dirección
+ */
+add_action('wp_ajax_expotodo_get_address_form', 'expotodo_get_address_form');
+function expotodo_get_address_form() {
+    check_ajax_referer('expotodo_address_nonce', 'security');
+    
+    $load_address = isset($_POST['address_type']) ? sanitize_text_field($_POST['address_type']) : 'billing';
+    $current_user_id = get_current_user_id();
+
+    // Obtener los campos de dirección de WooCommerce
+    $address = WC()->countries->get_address_fields( 
+        WC()->countries->get_base_country(), 
+        $load_address === 'billing' ? 'billing_' : 'shipping_' 
+    );
+
+    // Rellenar con los valores actuales del usuario
+    foreach ( $address as $key => $field ) {
+        $value = get_user_meta( $current_user_id, $key, true );
+        $address[ $key ]['value'] = $value;
+    }
+    
+    // WooCommerce logic to render the form
+    ob_start();
+    wc_get_template( 'myaccount/form-edit-address.php', array(
+        'load_address' => $load_address,
+        'address'      => $address,
+    ) );
+    $html = ob_get_clean();
+    
+    wp_send_json_success( array('html' => $html) );
+}
+
+/**
+ * AJAX: Guardar dirección desde el modal
+ */
+add_action('wp_ajax_expotodo_save_address_ajax', 'expotodo_save_address_ajax');
+function expotodo_save_address_ajax() {
+    check_ajax_referer('expotodo_address_nonce', 'security');
+    
+    $address_type = isset($_POST['address_type']) ? sanitize_text_field($_POST['address_type']) : 'billing';
+    $user_id = get_current_user_id();
+    
+    if ( ! $user_id ) wp_send_json_error('Usuario no identificado.');
+
+    // Recolectar datos y guardar (WooCommerce way)
+    $address = array();
+    foreach ($_POST as $key => $value) {
+        if ( strpos($key, $address_type . '_') === 0 ) {
+            $field_name = str_replace($address_type . '_', '', $key);
+            update_user_meta( $user_id, $address_type . '_' . $field_name, sanitize_text_field($value) );
+        }
+    }
+
+    // Actualizar nombre y apellido si vienen en la facturación
+    if ($address_type === 'billing') {
+        if (isset($_POST['billing_first_name'])) update_user_meta($user_id, 'first_name', sanitize_text_field($_POST['billing_first_name']));
+        if (isset($_POST['billing_last_name'])) update_user_meta($user_id, 'last_name', sanitize_text_field($_POST['billing_last_name']));
+    }
+
+    wp_send_json_success('La dirección se ha actualizado correctamente.');
 }

@@ -296,7 +296,7 @@
             <?php if ( is_user_logged_in() ) : ?>
                 <div class="text-center p-3">
                     <p class="mb-3">Hola, <strong><?php echo wp_get_current_user()->display_name; ?></strong></p>
-                    <a href="<?php echo home_url('/cuenta'); ?>" class="btn btn-primary w-100 mb-2">Ir a Mi Cuenta</a>
+                    <a href="<?php echo home_url('/my-account'); ?>" class="btn btn-primary w-100 mb-2">Ir a Mi Cuenta</a>
                     <a href="<?php echo wp_logout_url(home_url()); ?>" class="btn btn-outline-danger w-100">Cerrar Sesión</a>
                 </div>
             <?php else : ?>
@@ -314,9 +314,9 @@
                         <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
                         Iniciar sesión
                     </button>
-                    <a href="<?php echo home_url('/cuenta'); ?>" class="btn btn-outline-dark w-100">Crear cuenta</a>
+                    <a href="<?php echo home_url('/my-account'); ?>" class="btn btn-outline-dark w-100">Crear cuenta</a>
                     <div class="mt-3 text-center">
-                        <a href="<?php echo home_url('/cuenta'); ?>" class="text-decoration-none small">Ir a Configuración de Cuenta</a>
+                        <a href="<?php echo home_url('/my-account'); ?>" class="text-decoration-none small">Ir a Configuración de Cuenta</a>
                     </div>
                 </form>
             <?php endif; ?>

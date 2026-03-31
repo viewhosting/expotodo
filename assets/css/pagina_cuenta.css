@@ -1,0 +1,259 @@
+/**
+ * Estilos Boutique para Mi Cuenta
+ * Expotodo - 2026
+ */
+
+:root {
+    --primary-boutique: #2c3e50;
+    --secondary-boutique: #ecf0f1;
+    --accent-boutique: #27ae60;
+    --text-muted-boutique: #7f8c8d;
+    --border-radius-boutique: 12px;
+    --shadow-boutique: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+/* Contenedor Principal */
+.account-main-card {
+    border: none;
+    border-radius: var(--border-radius-boutique);
+    box-shadow: var(--shadow-boutique);
+    background: #fff;
+}
+
+.account-header {
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    padding: 1.5rem;
+}
+
+.account-header h5 {
+    font-weight: 700;
+    color: var(--primary-boutique);
+    margin: 0;
+}
+
+/* Sidebar Navigation */
+.account-nav {
+    border: none;
+    border-radius: var(--border-radius-boutique);
+    overflow: hidden;
+    box-shadow: var(--shadow-boutique);
+}
+
+.account-nav .list-group-item {
+    border: none;
+    padding: 1rem 1.5rem;
+    font-weight: 500;
+    color: var(--primary-boutique);
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.account-nav .list-group-item:hover {
+    background-color: var(--secondary-boutique);
+    padding-left: 2rem;
+}
+
+.account-nav .list-group-item.active {
+    background-color: #fff;
+    color: var(--accent-boutique);
+    border-left-color: var(--accent-boutique);
+    font-weight: 700;
+}
+
+.account-nav .list-group-item.text-danger:hover {
+    background-color: #fff5f5;
+}
+
+/* Grid de Pedidos (Reemplazo de Table) */
+.order-grid-header {
+    background-color: #f8f9fa;
+    padding: 0.75rem 1.5rem;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted-boutique);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.order-row {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+    align-items: center;
+}
+
+.order-row:last-child {
+    border-bottom: none;
+}
+
+.order-row:hover {
+    background-color: #fafafa;
+}
+
+.order-number {
+    font-weight: 700;
+    color: var(--primary-boutique);
+}
+
+.order-date {
+    color: var(--text-muted-boutique);
+    font-size: 0.9rem;
+}
+
+.order-total {
+    font-weight: 600;
+    color: var(--primary-boutique);
+}
+
+/* Status Badges Premium */
+.status-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.status-completed { background-color: #e8f5e9; color: #2e7d32; }
+.status-processing { background-color: #e3f2fd; color: #1565c0; }
+.status-on-hold { background-color: #fff3e0; color: #ef6c00; }
+.status-pending { background-color: #fafafa; color: #616161; }
+.status-cancelled, .status-failed { background-color: #ffebee; color: #c62828; }
+
+/* Tarjetas de Dirección Simétricas */
+.address-card {
+    border: 1px solid #eee;
+    border-radius: var(--border-radius-boutique);
+    padding: 1.5rem;
+    height: 100%;
+    transition: border-color 0.3s ease;
+}
+
+.address-card:hover {
+    border-color: var(--accent-boutique);
+}
+
+.address-card h6 {
+    font-weight: 700;
+    color: var(--primary-boutique);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.address-content {
+    color: #555;
+    line-height: 1.6;
+    font-style: normal;
+}
+
+/* Formularios */
+.account-form label {
+    font-weight: 600;
+    color: #444;
+    font-size: 0.9rem;
+}
+
+.account-form .form-control {
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    border-color: #ddd;
+}
+
+.account-form .form-control:focus {
+    border-color: var(--accent-boutique);
+    box-shadow: 0 0 0 0.2rem rgba(39, 174, 96, 0.1);
+}
+
+/* Estilos para el Modal de Direcciones */
+#addressModal .modal-content {
+    border: none;
+    overflow: hidden;
+}
+
+#addressModal .modal-header {
+    background-color: #fcfdfc;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 1.5rem 2rem;
+}
+
+#addressModal .modal-body {
+    background-color: #fff;
+    padding: 2rem;
+}
+
+/* Ajustes para el formulario de WooCommerce dentro del modal */
+#address-modal-container .woocommerce-address-fields__field-wrapper {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+#address-modal-container p.form-row {
+    margin-bottom: 1rem;
+    padding: 0;
+    width: 100% !important;
+}
+
+#address-modal-container p.form-row-wide {
+    grid-column: span 2;
+}
+
+#address-modal-container label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--primary-boutique);
+}
+
+#address-modal-container input.input-text, 
+#address-modal-container select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+#address-modal-container input.input-text:focus,
+#address-modal-container select:focus {
+    border-color: var(--accent-boutique);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+}
+
+#address-modal-container .select2-container--default .select2-selection--single {
+    height: 45px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+}
+
+/* Animación de entrada suave */
+.modal.fade .modal-dialog {
+    transform: scale(0.9);
+    transition: transform 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1);
+}
+
+/* Responsividad del Modal */
+@media (max-width: 768px) {
+    #address-modal-container .woocommerce-address-fields__field-wrapper {
+        grid-template-columns: 1fr;
+    }
+    #address-modal-container p.form-row-wide {
+        grid-column: span 1;
+    }
+    #addressModal .modal-body {
+        padding: 1.5rem;
+    }
+}
