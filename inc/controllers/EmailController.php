@@ -10,8 +10,57 @@ class EmailController {
     public function __construct() {
         add_action( 'phpmailer_init', array( $this, 'configure_smtp' ) );
         add_action( 'after_setup_theme', array( $this, 'setup_queue_table' ) );
-        // Hook para registrar envíos en la cola
+        
+        // Hook para errores
         add_action( 'wp_mail_failed', array( $this, 'log_failed_email' ) );
+
+        // 🛍️ Interceptar WooCommerce (Nuevos Pedidos y Pagos)
+        add_action( 'woocommerce_order_status_pending_to_processing', array( $this, 'send_boutique_order_email' ), 10, 2 );
+        add_action( 'woocommerce_order_status_failed_to_processing', array( $this, 'send_boutique_order_email' ), 10, 2 );
+        add_action( 'woocommerce_order_status_on-hold_to_processing', array( $this, 'send_boutique_order_email' ), 10, 2 );
+
+        // Desactivar correos nativos de WC (para que solo salga el nuestro boutique)
+        add_filter( 'woocommerce_email_enabled_customer_processing_order', '__return_false' );
+    }
+
+    /**
+     * Envía un correo boutique basado en la plantilla de compra
+     */
+    public function send_boutique_order_email( $order_id, $order ) {
+        $user_email = $order->get_billing_email();
+        $user_name  = $order->get_billing_first_name();
+        $total      = $order->get_formatted_order_total();
+        
+        $template = get_option('expotodo_template_purchase');
+        if ( empty($template) ) return; // Si no hay plantilla, no interceptamos
+
+        $subject = "¡Confirmación de tu pedido boutique #{$order_id}!";
+        
+        // Reemplazar tags
+        $body = str_replace(
+            array('{name}', '{amount}', '{order_id}'),
+            array($user_name, $total, $order_id),
+            $template
+        );
+
+        // Intentar enviar
+        $sent = wp_mail($user_email, $subject, $body, array('Content-Type: text/html; charset=UTF-8'));
+
+        // Registrar en cola (Éxito o Fallo)
+        $this->log_queued_email($user_email, $subject, $sent ? 'sent' : 'failed');
+    }
+
+    /**
+     * Registra un envío en la tabla de cola
+     */
+    private function log_queued_email($recipient, $subject, $status) {
+        global $wpdb;
+        $wpdb->insert($wpdb->prefix . 'expotodo_email_queue', array(
+            'recipient'  => $recipient,
+            'subject'    => $subject,
+            'status'     => $status,
+            'created_at' => current_time('mysql')
+        ));
     }
 
     /**
