@@ -35,6 +35,14 @@
             }, 3800);
         };
 
+        // Verificar si hay Toasts pendientes después de una recarga de página
+        const pendingToast = localStorage.getItem('expotodo_pending_toast');
+        if (pendingToast) {
+            const data = JSON.parse(pendingToast);
+            window.expotodo_show_toast(data.message, data.type);
+            localStorage.removeItem('expotodo_pending_toast');
+        }
+
         // Escuchar clics en tarjetas del Dashboard para cambiar de pestaña
         $('.stat-card').on('click', function (e) {
             const target = $(this).attr('href');

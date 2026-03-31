@@ -74,9 +74,14 @@ jQuery(document).ready(function ($) {
                 if (response.success) {
                     btn.removeClass('btn-primary').addClass('btn-success').text('¡Guardado!');
 
+                    // Guardar notificación para después de la recarga
+                    localStorage.setItem('expotodo_pending_toast', JSON.stringify({
+                        message: 'Dirección actualizada con éxito.',
+                        type: 'success'
+                    }));
+
                     setTimeout(() => {
                         bootstrap.Modal.getInstance(modalElement[0]).hide();
-                        // Recargar la sección de direcciones para reflejar cambios (o simplemente recargar la página)
                         location.reload();
                     }, 1000);
                 } else {

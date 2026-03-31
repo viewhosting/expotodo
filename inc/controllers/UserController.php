@@ -64,7 +64,7 @@ class UserController {
     }
 
     public function ajax_login() {
-        check_ajax_referer( 'expotodo_login_nonce', 'security' );
+        check_ajax_referer( 'expotodo_account_nonce', 'security' );
 
         $info = array();
         $info['user_login']    = isset($_POST['username']) ? sanitize_text_field( $_POST['username'] ) : '';
@@ -81,7 +81,7 @@ class UserController {
     }
 
     public function ajax_update_profile() {
-        check_ajax_referer( 'expotodo_profile_nonce', 'security' );
+        check_ajax_referer( 'expotodo_account_nonce', 'security' );
 
         $current_user_id = get_current_user_id();
         if ( ! $current_user_id ) wp_send_json_error( array( 'message' => 'No tienes permiso.' ) );
