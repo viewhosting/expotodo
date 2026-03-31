@@ -1,4 +1,0 @@
-expotodo_get_cart_items_html
-expotodo_get_user_wishlist
-expotodo_get_wishlist_items_html
-expotodo_handle_login
