@@ -42,15 +42,19 @@ get_header();
         ?>
             <div class="row g-4">
                 <!-- Sidebar Navigation -->
+                <!-- Sidebar Navigation -->
                 <div class="col-md-3">
-                    <div class="list-group account-nav shadow-sm mb-4">
-                        <a href="#perfil" class="list-group-item list-group-item-action active" data-bs-toggle="list">
-                            <i class="fas fa-id-card me-2"></i> Perfil Personal
+                    <div class="list-group account-nav shadow-sm mb-4 sticky-top" style="top: 100px; z-index: 100;">
+                        <a href="#dashboard" class="list-group-item list-group-item-action active" data-bs-toggle="list" id="tab-dashboard-link">
+                            <i class="fas fa-th-large me-2"></i> Escritorio
                         </a>
-                        <a href="#pedidos" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <a href="#perfil" class="list-group-item list-group-item-action" data-bs-toggle="list" id="tab-perfil-link">
+                            <i class="fas fa-user-edit me-2"></i> Mi Perfil
+                        </a>
+                        <a href="#pedidos" class="list-group-item list-group-item-action" data-bs-toggle="list" id="tab-pedidos-link">
                             <i class="fas fa-shopping-bag me-2"></i> Mis Pedidos
                         </a>
-                        <a href="#direcciones" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <a href="#direcciones" class="list-group-item list-group-item-action" data-bs-toggle="list" id="tab-direcciones-link">
                             <i class="fas fa-map-marked-alt me-2"></i> Direcciones
                         </a>
                         <a href="#wishlist" class="list-group-item list-group-item-action" data-bs-toggle="list" id="tab-wishlist-link">
@@ -79,11 +83,16 @@ get_header();
                     } else {
                     ?>
                     <div class="tab-content">
+                        <!-- Dashboard -->
+                        <div class="tab-pane fade show active" id="dashboard">
+                            <?php echo expotodo_render_account_dashboard(get_current_user_id()); ?>
+                        </div>
+
                         <!-- Perfil -->
-                        <div class="tab-pane fade show active" id="perfil">
+                        <div class="tab-pane fade" id="perfil">
                             <div class="card account-main-card">
                                 <div class="account-header">
-                                    <h5 class="mb-0"><i class="fas fa-user-edit me-2"></i>Mi Información Personal</h5>
+                                    <h5 class="mb-0"><i class="fas fa-user-edit me-2"></i>Información Personal</h5>
                                 </div>
                                 <div class="card-body p-4">
                                     <form id="profile-form" class="account-form">
@@ -101,13 +110,38 @@ get_header();
                                                 <input type="email" class="form-control bg-light" value="<?php echo esc_attr($current_user->user_email); ?>" readonly disabled>
                                             </div>
                                             <div class="col-12 text-end">
-                                                <div class="profile-message mb-3 small"></div>
-                                                <button type="button" id="btn-save-profile" class="btn btn-primary px-4 py-2 fw-bold" onclick="if(typeof expotodo_save_profile === 'function') { expotodo_save_profile(this, event); } else { alert('Procesando...'); }">
+                                                <button type="button" class="btn btn-primary px-4 py-2 fw-bold" onclick="expotodo_save_profile_boutique(this, event)">
                                                     Actualizar Perfil <i class="fas fa-save ms-2"></i>
                                                 </button>
                                             </div>
                                         </div>
                                     </form>
+
+                                    <hr class="my-5">
+
+                                    <!-- Sección de Seguridad -->
+                                    <div class="password-section">
+                                        <h4 class="password-section-title"><i class="fas fa-shield-alt me-2 text-primary"></i>Seguridad y Contraseña</h4>
+                                        <p class="text-muted small mb-4">Recomendamos usar una contraseña fuerte que no utilices en otros sitios.</p>
+                                        
+                                        <form id="password-form" class="account-form">
+                                            <div class="row g-4">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Nueva Contraseña</label>
+                                                    <input type="password" name="password" class="form-control" placeholder="••••••••">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Confirmar Contraseña</label>
+                                                    <input type="password" name="confirm_password" class="form-control" placeholder="••••••••">
+                                                </div>
+                                                <div class="col-12 text-end">
+                                                    <button type="button" class="btn btn-outline-dark px-4 py-2 fw-bold" onclick="expotodo_change_password_boutique(this, event)">
+                                                        Cambiar Contraseña <i class="fas fa-key ms-2"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -236,8 +270,6 @@ get_header();
                                 <div class="card-body p-0">
                                     <div class="wishlist-page-container">
                                         <?php 
-                                        $debug_items = expotodo_get_user_wishlist();
-                                        echo "<!-- DEBUG ITEMS: " . print_r($debug_items, true) . " -->"; 
                                         echo expotodo_get_wishlist_items_html(0, 'grid'); 
                                         ?>
                                     </div>
@@ -292,98 +324,15 @@ get_header();
     </div>
 </main>
 
-<!-- Sección de Productos Destacados -->
-<section class="featured-section py-5" id="coleccion">
-    <div class="container">
-        <h2 class="section-title text-center mb-5">Nuestra Colección</h2>
-        
-        <div class="row g-4 mb-5">
-            <?php
-            // Consulta de productos destacados aleatorios de WooCommerce
-            $args = array(
-                'post_type'      => 'product',
-                'posts_per_page' => 4,
-                'orderby'        => 'rand',
-                'tax_query'      => array(
-                    array(
-                        'taxonomy' => 'product_visibility',
-                        'field'    => 'name',
-                        'terms'    => 'featured',
-                    ),
-                ),
-            );
-
-            $featured_products = new WP_Query($args);
-
-            if ($featured_products->have_posts()) :
-                while ($featured_products->have_posts()) : $featured_products->the_post();
-                    global $product;
-                    $product_id = get_the_ID();
-                    $product_name = get_the_title();
-                    $product_price = $product->get_price();
-                    
-                    // Obtener categoría principal
-                    $terms = get_the_terms($product_id, 'product_cat');
-                    $category_name = !empty($terms) && !is_wp_error($terms) ? $terms[0]->name : 'Producto';
-                    
-                    // Obtener imagen
-                    $image_url = has_post_thumbnail() ? get_the_post_thumbnail_url($product_id, 'large') : 'https://via.placeholder.com/400';
-            ?>
-            <div class="col-md-3">
-                <article class="product-card h-100" data-product-id="<?php echo esc_attr($product_id); ?>" data-product-name="<?php echo esc_attr($product_name); ?>" data-product-price="<?php echo esc_attr($product_price); ?>">
-                    <div class="product-image-container">
-                        <div class="product-category"><?php echo esc_html($category_name); ?></div>
-                        <?php if ($product->is_on_sale()) : ?>
-                            <div class="product-category sale" style="top: 40px; background-color: #dc3545;">Oferta</div>
-                        <?php endif; ?>
-                        <button type="button" class="btn-add-wishlist" data-id="<?php echo $product_id; ?>" title="Agregar a lista de deseos">
-                            <i class="far fa-heart <?php echo in_array($product_id, expotodo_get_user_wishlist()) ? 'fas text-danger' : 'far'; ?>"></i>
-                        </button>
-                        <img src="<?php echo esc_url($image_url); ?>" 
-                             class="product-image" 
-                             alt="<?php echo esc_attr($product_name); ?>">
-                    </div>
-                    <div class="product-content p-3">
-                        <h3 class="product-title"><?php echo esc_html($product_name); ?></h3>
-                        <p class="product-description">
-                            <?php echo wp_trim_words(get_the_excerpt(), 15, '...'); ?>
-                        </p>
-                        <div class="product-price mb-3">
-                            <?php echo $product->get_price_html(); ?>
-                        </div>
-                        <div class="d-flex flex-wrap gap-2">
-                             <a href="<?php echo get_permalink(); ?>" class="btn-card btn-primary flex-grow-1">
-                                <i class="fas fa-eye me-2"></i> Ver
-                            </a>
-                             <?php if ( $product->is_type('variable') ) : ?>
-                                 <a href="<?php echo get_permalink(); ?>" class="btn-card btn-primary flex-grow-1">
-                                     <i class="fas fa-eye me-2"></i> Opciones
-                                 </a>
-                             <?php else : ?>
-                                 <a href="<?php echo esc_url($product->add_to_cart_url()); ?>" class="btn-card btn-primary ajax_add_to_cart flex-grow-1" data-quantity="1" data-product_id="<?php echo get_the_ID(); ?>" aria-label="Agregar “<?php the_title_attribute(); ?>” al carrito">
-                                     <i class="fas fa-shopping-cart me-2"></i> Agregar
-                                 </a>
-                             <?php endif; ?>
-                        </div>
-                    </div>
-                </article>
-            </div>
-            <?php
-                endwhile;
-                wp_reset_postdata();
-            else :
-                echo '<div class="col-12 text-center"><p>No hay productos destacados disponibles en este momento.</p></div>';
-            endif;
-            ?>
-        </div>
-        
-        <div class="text-center">
-            <a href="<?php echo home_url('/productos'); ?>" class="btn btn-outline-dark btn-lg px-5">
-                Ver Catálogo Completo
-            </a>
-        </div>
-    </div>
-</section>
+<?php 
+// Renderizar la colección usando el nuevo controlador centralizado
+echo expotodo_render_collection(array(
+    'title'          => 'Nuestra Colección',
+    'posts_per_page' => 4,
+    'type'           => 'featured', 
+    'orderby'        => 'rand',
+)); 
+?>
 
 
 <?php get_footer(); ?>

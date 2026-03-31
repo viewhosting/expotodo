@@ -95,65 +95,15 @@ $loop = new WP_Query( $args );
         </div>
     </section>
     
-    <section class="featured-section py-5">
-        <div class="container">
-            <h2 class="section-title text-center mb-5">Productos recomendados</h2>
-            <div class="row g-4 row-cols-1 row-cols-sm-2 row-cols-md-4 row-cols-lg-4">
-                <?php
-                // Show 4 random products
-                $related_args = array(
-                    'post_type' => 'product',
-                    'posts_per_page' => 4,
-                    'orderby' => 'rand',
-                    'post__not_in' => array( get_the_ID() )
-                );
-                $related = new WP_Query( $related_args );
-                
-                if ( $related->have_posts() ) :
-                    while ( $related->have_posts() ) : $related->the_post();
-                        global $product;
-                ?>
-                <div class="col product-grid-item">
-                    <article class="product-card h-100">
-                        <div class="product-image-container">
-                             <?php 
-                             $terms = get_the_terms( $product->get_id(), 'product_cat' );
-                             if ( !empty($terms) && !is_wp_error($terms) ) {
-                                 echo '<div class="product-category">' . esc_html( $terms[0]->name ) . '</div>';
-                             }
-                             ?>
-                            <button class="btn-add-wishlist" title="Agregar a lista de deseos" type="button"><i class="far fa-heart"></i></button>
-                            <?php 
-                            if ( has_post_thumbnail() ) {
-                                echo '<img src="' . get_the_post_thumbnail_url() . '" alt="' . get_the_title() . '" class="product-image">';
-                            } else {
-                                echo '<img src="' . wc_placeholder_img_src() . '" class="product-image" alt="Placeholder">';
-                            }
-                            ?>
-                        </div>
-                        <div class="product-content p-3">
-                            <h3 class="product-title"><?php the_title(); ?></h3>
-                            <p class="product-description"><?php echo wp_trim_words( get_the_excerpt(), 10 ); ?></p>
-                            <div class="product-price mb-3"><span class="price new-price"><?php echo $product->get_price_html(); ?></span></div>
-                            <a class="btn-card btn-primary" href="<?php the_permalink(); ?>"><i class="fas fa-eye me-2"></i> Ver detalles</a>
-                            <a href="<?php echo esc_url( $product->add_to_cart_url() ); ?>" 
-                               class="btn-card btn-primary mt-2 ajax_add_to_cart" 
-                               data-quantity="1" 
-                               data-product_id="<?php echo get_the_ID(); ?>"
-                               rel="nofollow">
-                                <i class="fas fa-shopping-cart me-2"></i> Agregar al carrito
-                            </a>
-                        </div>
-                    </article>
-                </div>
-                <?php 
-                    endwhile; 
-                    wp_reset_postdata();
-                endif; 
-                ?>
-            </div>
-        </div>
-    </section>
+<?php 
+// Renderizar recomendaciones reales usando el nuevo controlador centralizado
+echo expotodo_render_collection(array(
+    'title'          => 'Productos recomendados',
+    'posts_per_page' => 4,
+    'type'           => 'featured',
+    'orderby'        => 'rand'
+)); 
+?>
 </main>
 
 <?php get_footer(); ?>
