@@ -15,6 +15,7 @@ class UserController {
         add_action( 'wp_ajax_expotodo_get_address_form', array( $this, 'ajax_get_address_form' ) );
         add_action( 'wp_ajax_expotodo_save_address_ajax', array( $this, 'ajax_save_address' ) );
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+        add_filter( 'show_admin_bar', '__return_false' );
     }
 
     public function enqueue_assets() {
