@@ -155,8 +155,8 @@ get_header();
                                             <div class="product-category"><?php echo esc_html($cat_name); ?></div>
                                             <?php endif; ?>
                                             
-                                            <button type="button" class="btn-add-wishlist" title="Agregar a lista de deseos">
-                                                <i class="far fa-heart"></i>
+                                            <button type="button" class="btn-add-wishlist" data-id="<?php echo $product->get_id(); ?>" title="Agregar a lista de deseos">
+                                                <i class="far fa-heart <?php echo in_array($product->get_id(), expotodo_get_user_wishlist()) ? 'fas text-danger' : 'far'; ?>"></i>
                                             </button>
 
                                             <?php 

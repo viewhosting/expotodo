@@ -6,103 +6,93 @@ get_header();
 <!-- Main Content -->
 <main class="py-5 bg-light">
     <div class="container">
-        <h1 class="mb-4">Finalizar Compra</h1>
+        <!-- <h1 class="mb-4">Finalizar Compra</h1> -->
         <?php echo do_shortcode('[woocommerce_checkout]'); ?>
     </div>
 </main>
 
-<!-- Sección de Productos Destacados -->
-<section class="featured-section py-5" id="coleccion">
-    <div class="container">
-        <h2 class="section-title text-center mb-5">Nuestra Colección</h2>
-        
-        <div class="row g-4 mb-5">
-            <?php
-            // Consulta de productos destacados aleatorios de WooCommerce
-            $args = array(
-                'post_type'      => 'product',
-                'posts_per_page' => 4,
-                'orderby'        => 'rand',
-                'tax_query'      => array(
-                    array(
-                        'taxonomy' => 'product_visibility',
-                        'field'    => 'name',
-                        'terms'    => 'featured',
-                    ),
-                ),
-            );
-
-            $featured_products = new WP_Query($args);
-
-            if ($featured_products->have_posts()) :
-                while ($featured_products->have_posts()) : $featured_products->the_post();
-                    global $product;
-                    $product_id = get_the_ID();
-                    $product_name = get_the_title();
-                    $product_price = $product->get_price();
+<!-- Productos Relacionados -->
+    <?php if ( ! is_order_received_page() ) : ?>
+        <section class="featured-section py-5">
+            <div class="container">
+                <h2 class="section-title text-center mb-5">Productos recomendados</h2>
+                <div class="row g-4 row-cols-1 row-cols-sm-2 row-cols-md-4 row-cols-lg-4">
+                    <?php
+                    // Obtener el primer producto del carrito para basar las recomendaciones
+                    $cart = WC()->cart->get_cart();
+                    $base_product_id = 0;
                     
-                    // Obtener categoría principal
-                    $terms = get_the_terms($product_id, 'product_cat');
-                    $category_name = !empty($terms) && !is_wp_error($terms) ? $terms[0]->name : 'Producto';
+                    if ( ! empty( $cart ) ) {
+                        $first_item = reset( $cart );
+                        $base_product_id = $first_item['product_id'];
+                    }
+
+                    $related_ids = $base_product_id ? wc_get_related_products( $base_product_id, 4 ) : array();
                     
-                    // Obtener imagen
-                    $image_url = has_post_thumbnail() ? get_the_post_thumbnail_url($product_id, 'large') : 'https://via.placeholder.com/400';
-            ?>
-            <div class="col-md-3">
-                <article class="product-card h-100" data-product-id="<?php echo esc_attr($product_id); ?>" data-product-name="<?php echo esc_attr($product_name); ?>" data-product-price="<?php echo esc_attr($product_price); ?>">
-                    <div class="product-image-container">
-                        <div class="product-category"><?php echo esc_html($category_name); ?></div>
-                        <?php if ($product->is_on_sale()) : ?>
-                            <div class="product-category sale" style="top: 40px; background-color: #dc3545;">Oferta</div>
-                        <?php endif; ?>
-                        <button type="button" class="btn-add-wishlist" title="Agregar a lista de deseos">
-                            <i class="far fa-heart"></i>
-                        </button>
-                        <img src="<?php echo esc_url($image_url); ?>" 
-                             class="product-image" 
-                             alt="<?php echo esc_attr($product_name); ?>">
-                    </div>
-                    <div class="product-content p-3">
-                        <h3 class="product-title"><?php echo esc_html($product_name); ?></h3>
-                        <p class="product-description">
-                            <?php echo wp_trim_words(get_the_excerpt(), 15, '...'); ?>
-                        </p>
-                        <div class="product-price mb-3">
-                            <?php echo $product->get_price_html(); ?>
-                        </div>
-                        <div class="d-flex flex-wrap gap-2">
-                             <a href="<?php echo get_permalink(); ?>" class="btn-card btn-primary flex-grow-1">
-                                <i class="fas fa-eye me-2"></i> Ver
-                            </a>
-                             <?php if ( $product->is_type('variable') ) : ?>
-                                 <a href="<?php echo get_permalink(); ?>" class="btn-card btn-primary flex-grow-1">
-                                     <i class="fas fa-eye me-2"></i> Opciones
-                                 </a>
-                             <?php else : ?>
-                                 <a href="<?php echo esc_url($product->add_to_cart_url()); ?>" class="btn-card btn-primary ajax_add_to_cart flex-grow-1" data-quantity="1" data-product_id="<?php echo get_the_ID(); ?>" aria-label="Agregar “<?php the_title_attribute(); ?>” al carrito">
-                                     <i class="fas fa-shopping-cart me-2"></i> Agregar
-                                 </a>
-                             <?php endif; ?>
-                        </div>
-                    </div>
-                </article>
+                    if( !empty($related_ids) ) :
+                        $args = array(
+                            'post_type' => 'product',
+                            'post__in' => $related_ids,
+                            'posts_per_page' => 4
+                        );
+                        $related_products = new WP_Query( $args );
+
+                        if ( $related_products->have_posts() ) :
+                            while ( $related_products->have_posts() ) : $related_products->the_post();
+                                $_rel_product = wc_get_product( get_the_ID() );
+                                if ( ! $_rel_product ) continue;
+                                ?>
+                                <div class="col product-grid-item">
+                                    <article class="product-card h-100" data-product-id="<?php echo get_the_ID(); ?>">
+                                        <div class="product-image-container">
+                                            <?php 
+                                            $terms = get_the_terms( get_the_ID(), 'product_cat' );
+                                            $cat_name = !empty($terms) && !is_wp_error($terms) ? $terms[0]->name : 'Producto';
+                                            ?>
+                                            <div class="product-category"><?php echo esc_html($cat_name); ?></div>
+                                            
+                                            <button type="button" class="btn-add-wishlist" title="Agregar a lista de deseos">
+                                                <i class="far fa-heart"></i>
+                                            </button>
+
+                                            <?php 
+                                            if (has_post_thumbnail()) {
+                                                the_post_thumbnail('medium', array('class' => 'product-image'));
+                                            } else {
+                                                echo '<img src="https://via.placeholder.com/300x300?text=No+Image" class="product-image" alt="' . get_the_title() . '">';
+                                            }
+                                            ?>
+                                        </div>
+                                        <div class="product-content p-3">
+                                            <h3 class="product-title"><?php the_title(); ?></h3>
+                                            <p class="product-description">
+                                                <?php echo wp_trim_words(get_the_excerpt(), 10, '...'); ?>
+                                            </p>
+                                            <div class="product-price mb-3">
+                                                <?php echo $_rel_product->get_price_html(); ?>
+                                            </div>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <a href="<?php the_permalink(); ?>" class="btn-card btn-primary flex-grow-1">
+                                                    <i class="fas fa-eye me-2"></i> Ver
+                                                </a>
+                                                <a href="<?php echo esc_url( $_rel_product->add_to_cart_url() ); ?>" class="btn-card btn-primary ajax_add_to_cart flex-grow-1" data-quantity="1" data-product_id="<?php echo get_the_ID(); ?>">
+                                                    <i class="fas fa-shopping-cart me-2"></i> Agregar
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </article>
+                                </div>
+                                <?php
+                            endwhile;
+                            wp_reset_postdata();
+                        endif;
+                    else: 
+                        echo '<div class="col-12 text-center"><p>No hay productos relacionados disponibles.</p></div>';
+                    endif;
+                    ?>
+                </div>
             </div>
-            <?php
-                endwhile;
-                wp_reset_postdata();
-            else :
-                echo '<div class="col-12 text-center"><p>No hay productos destacados disponibles en este momento.</p></div>';
-            endif;
-            ?>
-        </div>
-        
-        <div class="text-center">
-            <a href="<?php echo home_url('/productos'); ?>" class="btn btn-outline-dark btn-lg px-5">
-                Ver Catálogo Completo
-            </a>
-        </div>
-    </div>
-</section>
-
+        </section>
+    <?php endif; ?>
 
 <?php get_footer(); ?>

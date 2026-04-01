@@ -4,9 +4,21 @@
  */
 ?>
     <!-- Footer -->
+    <?php 
+    $footer_bg_url = get_option('expotodo_footer_bg', ''); 
+    $footer_bg_align = get_option('expotodo_footer_bg_align', 'center center');
+    if (!empty($footer_bg_url)) : ?>
+        <style>
+            :root { 
+                --footer-bg: url('<?php echo esc_url($footer_bg_url); ?>');
+                --footer-bg-align: <?php echo esc_attr($footer_bg_align); ?>;
+            }
+        </style>
+    <?php endif; ?>
+
     <footer class="main-footer">
-        <div class="container">
-            <div class="footer-container py-4">
+        <div class="container-fluid px-5">
+            <div class="footer-container">
                 <div class="footer-info">
                     <div class="footer-left">
                         <a href="<?php echo home_url(); ?>" class="logo">

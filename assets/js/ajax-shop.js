@@ -1,16 +1,12 @@
-jQuery(document).ready(function($) {
+jQuery(document).ready(function ($) {
     let currentPage = 1;
     let isLoading = false;
-    let maxPages = 999; // Assume more pages initially, updated by first AJAX response
+    let maxPages = $('#page-end').data('max-pages') || 999;
     const productContainer = $('#product-grid-container');
     const spinner = $('#loading-spinner');
-    
-    // Initial max pages from PHP if available (could be added to localize script)
-    // For now, we rely on the first pagination request to correct this if needed.
 
     function fetchProducts(page, append = false) {
         if (isLoading) return;
-        // If we know we reached the end, stop
         if (page > maxPages && maxPages !== 999) return;
 
         isLoading = true;
@@ -18,19 +14,38 @@ jQuery(document).ready(function($) {
 
         // Collect Filters
         let categories = [];
-        $('.filter-category:checked').each(function() {
-            categories.push($(this).val());
-        });
-        
-        // Handle "All" logic
-        if ($('#cat-all').is(':checked')) {
-            categories = ['all'];
-        } else if (categories.length === 0) {
-            // Fallback to all if nothing selected manually (though UI logic handles this)
-            categories = ['all'];
+
+        // Mode 1: Checkboxes (archive-product.php)
+        if ($('.filter-category').length > 0) {
+            $('.filter-category:checked').each(function () {
+                categories.push($(this).val());
+            });
+            if ($('#cat-all').is(':checked') || categories.length === 0) {
+                categories = ['all'];
+            }
+        }
+        // Mode 2: Radios (page-lista-productos.php)
+        else if ($('.filter-category-radio').length > 0) {
+            categories = [$('.filter-category-radio:checked').val()];
         }
 
-        const priceRange = $('#price-filter').val();
+        // Price Logic
+        let minPrice = 0;
+        let maxPrice = 9999999;
+        let priceRange = '';
+
+        if ($('#price-filter').length > 0) {
+            priceRange = $('#price-filter').val();
+        } else if ($('#priceMin').length > 0) {
+            minPrice = $('#priceMin').val() || 0;
+            maxPrice = $('#priceMax').val() || 9999999;
+        }
+
+        // Flags Logic
+        let flags = [];
+        $('.filter-flag:checked').each(function () {
+            flags.push($(this).val());
+        });
 
         $.ajax({
             url: expotodo_ajax.ajax_url,
@@ -40,71 +55,82 @@ jQuery(document).ready(function($) {
                 nonce: expotodo_ajax.nonce,
                 page: page,
                 categories: categories,
-                price_range: priceRange
+                price_range: priceRange,
+                min_price: minPrice,
+                max_price: maxPrice,
+                flags: flags
             },
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     if (!append) {
                         productContainer.html(response.data.html);
                     } else {
                         productContainer.append(response.data.html);
                     }
-                    
+
                     maxPages = response.data.max_pages;
-                    
+
                     if (response.data.html.trim() === '' && !append) {
                         productContainer.html('<div class="col-12 text-center py-5">No se encontraron productos.</div>');
                     }
                 }
             },
-            complete: function() {
+            complete: function () {
                 isLoading = false;
                 spinner.addClass('d-none');
             }
         });
     }
 
-    // Filter Change Events
-    $('.filter-category').on('change', function() {
-        const val = $(this).val();
-        
-        if (val === 'all') {
-            if ($(this).is(':checked')) {
-                $('.filter-category').not(this).prop('checked', false);
+    // Event Listeners: Categories
+    $(document).on('change', '.filter-category, .filter-category-radio', function () {
+        // UI Sync for checkboxes
+        if ($(this).hasClass('filter-category')) {
+            const val = $(this).val();
+            if (val === 'all') {
+                if ($(this).is(':checked')) $('.filter-category').not(this).prop('checked', false);
+            } else {
+                if ($(this).is(':checked')) $('#cat-all').prop('checked', false);
             }
-        } else {
-            if ($(this).is(':checked')) {
-                $('#cat-all').prop('checked', false);
-            }
-        }
-        
-        // If nothing is checked, check "All"
-        if ($('.filter-category:checked').length === 0) {
-            $('#cat-all').prop('checked', true);
+            if ($('.filter-category:checked').length === 0) $('#cat-all').prop('checked', true);
         }
 
         currentPage = 1;
-        maxPages = 999; // Reset max pages
+        maxPages = 999;
         fetchProducts(currentPage, false);
     });
 
-    $('#price-filter').on('change', function() {
+    // Event Listeners: Flags
+    $(document).on('change', '.filter-flag', function () {
         currentPage = 1;
-        maxPages = 999; // Reset max pages
+        maxPages = 999;
+        fetchProducts(currentPage, false);
+    });
+
+    // Event Listeners: Price
+    $(document).on('change', '#price-filter', function () {
+        currentPage = 1;
+        maxPages = 999;
+        fetchProducts(currentPage, false);
+    });
+
+    $(document).on('click', '#btnFilterPrice', function (e) {
+        e.preventDefault();
+        currentPage = 1;
+        maxPages = 999;
         fetchProducts(currentPage, false);
     });
 
     // Infinite Scroll (Intersection Observer)
     const observer = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && !isLoading) {
-            // Only load next page if we haven't reached the limit
             if (currentPage < maxPages) {
                 currentPage++;
                 fetchProducts(currentPage, true);
             }
         }
     }, {
-        rootMargin: '200px' // Load before reaching bottom
+        rootMargin: '400px' // Increased for smoother UX
     });
 
     const pageEnd = document.getElementById('page-end');

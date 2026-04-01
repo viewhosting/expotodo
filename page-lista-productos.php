@@ -68,7 +68,7 @@ get_header();
                                     // Custom Query for Products
                                     $args = array(
                                         'post_type' => 'product',
-                                        'posts_per_page' => 12,
+                                        'posts_per_page' => 16,
                                         'status' => 'publish',
                                     );
                                     $loop = new WP_Query( $args );
@@ -127,8 +127,17 @@ get_header();
                                         echo '<div class="col-12"><p>No se encontraron productos.</p></div>';
                                     endif;
                                     ?>
+                            </div>
+
+                            <!-- Loader para scroll infinito -->
+                            <div id="loading-spinner" class="text-center py-4 d-none">
+                                <div class="spinner-border text-success" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
                                 </div>
                             </div>
+                            
+                            <!-- Elemento centinela para IntersectionObserver -->
+                            <div id="page-end" data-max-pages="<?php echo $loop->max_num_pages; ?>" style="height: 20px;"></div>
                         </div>
                     </div>
                 </div>

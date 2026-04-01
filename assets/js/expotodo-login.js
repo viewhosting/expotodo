@@ -1,32 +1,32 @@
 // ==========================================
 // GLOBAL LOGIN HANDLER
 // ==========================================
-window.expotodo_handle_login = function(btn, e) {
+window.expotodo_handle_login = function (btn, e) {
     if (e) e.preventDefault();
-    
+
     var $ = jQuery;
     const $btn = $(btn);
     const $form = $btn.closest('form');
-    
+
     // Support both ID based (sidebar) and class based (main page) message containers
     let $msg = $form.find('#login-message');
     if ($msg.length === 0) {
         $msg = $form.find('.login-message');
     }
-    
+
     const $spinner = $btn.find('.spinner-border');
-    
+
     console.log('Login attempt started for form:', $form.attr('id'));
-    
+
     if (typeof expotodo_globals === 'undefined') {
         console.error('expotodo_globals is not defined');
         $msg.text('Error de configuración del sitio.').addClass('text-danger');
         return;
     }
-    
+
     $msg.text('').removeClass('text-success text-danger');
     $btn.prop('disabled', true);
-    
+
     // Show spinner
     if ($spinner.length) {
         $spinner.removeClass('d-none');
@@ -36,27 +36,27 @@ window.expotodo_handle_login = function(btn, e) {
         $btn.prepend(spinnerHtml);
         $btn.find('.spinner-border').removeClass('d-none');
     }
-    
+
     const formData = {
         action: 'expotodo_login',
         username: $form.find('input[name="username"]').val(),
         password: $form.find('input[name="password"]').val(),
         security: expotodo_globals.login_nonce
     };
-    
+
     $.ajax({
         url: expotodo_globals.ajax_url,
         type: 'POST',
         data: formData,
-        success: function(response) {
+        success: function (response) {
             console.log('Login response:', response);
             if (response.success) {
                 $msg.html(response.data.message).addClass('text-success');
                 // Reload page if on my-account or if redirect url matches current
                 if (window.location.href.indexOf('cuenta') > -1 || window.location.href === expotodo_globals.redirect_url) {
-                     window.location.reload();
+                    window.location.reload();
                 } else {
-                     window.location.href = expotodo_globals.redirect_url;
+                    window.location.href = expotodo_globals.redirect_url;
                 }
             } else {
                 $msg.html(response.data.message).addClass('text-danger');
@@ -64,7 +64,7 @@ window.expotodo_handle_login = function(btn, e) {
                 $btn.find('.spinner-border').addClass('d-none');
             }
         },
-        error: function(xhr, status, error) {
+        error: function (xhr, status, error) {
             console.error('Login error:', error);
             console.error('Response:', xhr.responseText);
             $msg.html('Error de conexión. Inténtalo de nuevo.').addClass('text-danger');
@@ -77,7 +77,67 @@ window.expotodo_handle_login = function(btn, e) {
 // ==========================================
 // PROFILE SAVE HANDLER
 // ==========================================
-window.expotodo_save_profile = function(btn, e) {
+// ==========================================
+// PASSWORD CHANGE HANDLER
+// ==========================================
+window.expotodo_change_password_boutique = function (btn, e) {
+    if (e) e.preventDefault();
+
+    var $ = jQuery;
+    const $btn = $(btn);
+    const $form = $btn.closest('form');
+    const $msg = $form.find('.password-message');
+
+    const password = $form.find('input[name="password"]').val();
+    const confirm = $form.find('input[name="confirm_password"]').val();
+
+    if (!password || !confirm) {
+        $msg.text('Por favor, completa ambos campos.').addClass('text-danger');
+        return;
+    }
+
+    if (password !== confirm) {
+        $msg.text('Las contraseñas no coinciden.').addClass('text-danger');
+        return;
+    }
+
+    // Reset message
+    $msg.text('').removeClass('text-success text-danger');
+    $btn.prop('disabled', true);
+
+    const originalText = $btn.html();
+    $btn.html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Cambiando...');
+
+    const formData = {
+        action: 'expotodo_change_password',
+        password: password,
+        confirm_password: confirm,
+        security: expotodo_globals.profile_nonce
+    };
+
+    $.ajax({
+        url: expotodo_globals.ajax_url,
+        type: 'POST',
+        data: formData,
+        success: function (response) {
+            if (response.success) {
+                $msg.html(response.data).addClass('text-success');
+                $form.find('input').val(''); // Limpiar campos
+            } else {
+                $msg.html(response.data).addClass('text-danger');
+            }
+        },
+        error: function () {
+            $msg.html('Error de conexión. Inténtalo de nuevo.').addClass('text-danger');
+        },
+        complete: function () {
+            $btn.prop('disabled', false);
+            $btn.html(originalText);
+        }
+    });
+};
+
+window.expotodo_save_profile_boutique = function (btn, e) {
     if (e) e.preventDefault();
 
     var $ = jQuery;
@@ -105,7 +165,7 @@ window.expotodo_save_profile = function(btn, e) {
         url: expotodo_globals.ajax_url,
         type: 'POST',
         data: formData,
-        success: function(response) {
+        success: function (response) {
             console.log('Profile update response:', response);
             if (response.success) {
                 $msg.html(response.data.message).addClass('text-success');
@@ -115,11 +175,11 @@ window.expotodo_save_profile = function(btn, e) {
                 $msg.html(response.data.message).addClass('text-danger');
             }
         },
-        error: function(xhr, status, error) {
+        error: function (xhr, status, error) {
             console.error('Profile update error:', error);
             $msg.html('Error de conexión. Inténtalo de nuevo.').addClass('text-danger');
         },
-        complete: function() {
+        complete: function () {
             $btn.prop('disabled', false);
             $btn.html(originalText);
         }

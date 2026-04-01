@@ -1,0 +1,33 @@
+/* 
+ * ⚙️ Boutique Settings: Configuración y Pestañas
+ */
+
+.nav-tab-wrapper {
+    border-bottom: 2px solid var(--exp-border) !important;
+    margin-bottom: 0 !important;
+}
+
+.nav-tab {
+    border: none !important;
+    background: transparent !important;
+    margin: 0 20px 0 0 !important;
+    padding: 12px 0 !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: var(--exp-text-muted) !important;
+    border-bottom: 3px solid transparent !important;
+}
+
+.nav-tab-active {
+    color: var(--exp-text) !important;
+    border-bottom-color: var(--exp-primary) !important;
+}
+
+.expotodo-admin-wrap .card {
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05) !important;
+    border: none !important;
+    background: #fff;
+    padding: 30px;
+    margin-top: 20px;
+}

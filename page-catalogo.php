@@ -67,8 +67,8 @@ get_header();
                         <?php if ($product->is_on_sale()) : ?>
                             <div class="product-category sale" style="top: 40px; background-color: #dc3545;">Oferta</div>
                         <?php endif; ?>
-                        <button type="button" class="btn-add-wishlist" title="Agregar a lista de deseos">
-                            <i class="far fa-heart"></i>
+                        <button type="button" class="btn-add-wishlist" data-id="<?php echo $product_id; ?>" title="Agregar a lista de deseos">
+                            <i class="far fa-heart <?php echo in_array($product_id, expotodo_get_user_wishlist()) ? 'fas text-danger' : 'far'; ?>"></i>
                         </button>
                         <img src="<?php echo esc_url($image_url); ?>" 
                              class="product-image" 

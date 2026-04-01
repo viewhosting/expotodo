@@ -42,7 +42,10 @@
                             <a class="nav-link" href="<?php echo home_url('/#amazon'); ?>">Amazon</a>
                         </li>
                         <li class="nav-item pt-3">
-                            <a class="nav-link" href="<?php echo home_url('/contacto'); ?>">Contacto</a>
+                            <a class="nav-link buscar-icon" href="#buscar">Búsqueda</a>
+                        </li>
+                        <li class="nav-item pt-3">
+                            <a class="nav-link" href="<?php echo home_url('/contacto'); ?>">Contácto</a>
                         </li>
                         
                         <!-- Teléfono -->
@@ -51,7 +54,7 @@
                                 <i class="fas fa-phone icon-telephone"></i>
                                 <div class="ms-2 hotline-content">
                                     <label class="mb-0">LLAMA AHORA</label>
-                                    <span>(55) 5510 1477</span>
+                                    <span><?php echo esc_html(get_option('expotodo_whatsapp', '(55) 5510 1477')); ?></span>
                                 </div>
                             </div>
                         </li>
@@ -67,7 +70,7 @@
                                 </a>
                                 <a href="#wishlist" class="wishlist-icon position-relative no-smooth-scroll" title="Lista de deseos" role="button">
                                     <i class="fas fa-heart"></i>
-                                    <span class="wishlist-count">0</span>
+                                    <span class="wishlist-count"><?php echo count(expotodo_get_user_wishlist()); ?></span>
                                 </a>
                                 <a href="#carrito" class="cart-icon position-relative no-smooth-scroll" title="Carrito" role="button">
                                     <i class="fas fa-shopping-bag"></i>
@@ -280,8 +283,15 @@
             </button>
         </div>
         <div class="d-flex flex-column flex-grow-1 overflow-hidden">
-            <div class="wishlist-items flex-grow-1"></div>
-            <div class="wishlist-empty-message text-muted small">Tu lista de deseos está vacía.</div>
+            <div id="wishlist-items-container" class="wishlist-items flex-grow-1 overflow-auto">
+                <?php echo expotodo_get_wishlist_items_html(); ?>
+            </div>
+            <div class="wishlist-empty-message text-muted small <?php echo count(expotodo_get_user_wishlist()) > 0 ? 'd-none' : ''; ?>">
+                Tu lista de deseos está vacía.
+            </div>
+            <div class="wishlist-summary p-3 bg-light border-top mt-auto">
+                <a href="<?php echo home_url('/my-account/?tab=wishlist'); ?>" class="btn btn-primary btn-sm w-100">Ver Lista Completa</a>
+            </div>
         </div>
     </div>
 
@@ -296,7 +306,7 @@
             <?php if ( is_user_logged_in() ) : ?>
                 <div class="text-center p-3">
                     <p class="mb-3">Hola, <strong><?php echo wp_get_current_user()->display_name; ?></strong></p>
-                    <a href="<?php echo home_url('/cuenta'); ?>" class="btn btn-primary w-100 mb-2">Ir a Mi Cuenta</a>
+                    <a href="<?php echo home_url('/my-account'); ?>" class="btn btn-primary w-100 mb-2">Ir a Mi Cuenta</a>
                     <a href="<?php echo wp_logout_url(home_url()); ?>" class="btn btn-outline-danger w-100">Cerrar Sesión</a>
                 </div>
             <?php else : ?>
@@ -314,9 +324,9 @@
                         <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
                         Iniciar sesión
                     </button>
-                    <a href="<?php echo home_url('/cuenta'); ?>" class="btn btn-outline-dark w-100">Crear cuenta</a>
+                    <a href="<?php echo home_url('/my-account'); ?>" class="btn btn-outline-dark w-100">Crear cuenta</a>
                     <div class="mt-3 text-center">
-                        <a href="<?php echo home_url('/cuenta'); ?>" class="text-decoration-none small">Ir a Configuración de Cuenta</a>
+                        <a href="<?php echo home_url('/my-account'); ?>" class="text-decoration-none small">Ir a Configuración de Cuenta</a>
                     </div>
                 </form>
             <?php endif; ?>
