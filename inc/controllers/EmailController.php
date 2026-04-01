@@ -328,11 +328,11 @@ class EmailController {
         <div class="wrap expotodo-dashboard">
             <div class="exp-header">
                 <div>
-                    <h1 style="font-weight: 800; letter-spacing: -1px;">Cola de Envío</h1>
-                    <p style="color: #64748b; margin: 0;">Supervisión en tiempo real de las comunicaciones de Expotodo.</p>
+                    <h1>Cola de Envío</h1>
+                    <p>Supervisión en tiempo real de las comunicaciones de Expotodo.</p>
                 </div>
-                <div id="sync-indicator" style="font-size: 12px; color: #94a3b8;">
-                    <span class="spinner is-active" style="float:none; margin:0 5px 0 0;"></span> Sincronizando...
+                <div id="sync-indicator">
+                    <span class="spinner is-active"></span> Sincronizando...
                 </div>
             </div>
 
@@ -362,46 +362,7 @@ class EmailController {
             </div>
         </div>
 
-        <script>
-        let lastId = 0;
-
-        function refreshGrid() {
-            jQuery.post(ajaxurl, { action: 'expotodo_fetch_queue' }, function(res) {
-                if (res.success) {
-                    jQuery('#email-grid-container').html(res.data);
-                    jQuery('#sync-indicator').html('✅ Actualizado ahora');
-                }
-            });
-        }
-
-        function showPreview(id) {
-            let body = jQuery('#email-body-' + id).html();
-            let sub = jQuery('#email-sub-' + id).text();
-            jQuery('#previewSub').text(sub);
-            jQuery('#previewBody').html(body);
-            jQuery('#previewModal').fadeIn(200);
-        }
-
-        function showLog(id) {
-            let log = jQuery('#email-log-' + id).html();
-            jQuery('#logContent').text(log || 'No hay logs técnicos registrados todavía para este envío.');
-            jQuery('#logModal').fadeIn(200);
-        }
-
-        function closeModal(modalId) { jQuery('#' + modalId).fadeOut(200); }
-
-        function performAction(action, id) {
-            if (!confirm('¿Estás seguro de ' + action + ' este envío?')) return;
-            jQuery.post(ajaxurl, { action: 'expotodo_queue_action', email_action: action, id: id }, function(res) {
-                alert(res.data);
-                refreshGrid();
-            });
-        }
-
-        // Auto-refresh cada 10 segundos
-        setInterval(refreshGrid, 10000);
-        refreshGrid();
-        </script>
+        </div> <!-- .wrap -->
         <?php
     }
 

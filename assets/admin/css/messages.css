@@ -1,0 +1,32 @@
+/* 
+ * 📨 Boutique Messages: Bandeja de Entrada y Respuestas
+ */
+
+.wp-list-table.widefat {
+    border: 1px solid var(--exp-border) !important;
+    border-radius: var(--exp-radius) !important;
+    box-shadow: var(--exp-shadow-sm) !important;
+    overflow: hidden;
+    background: #fff;
+    margin-top: 25px !important;
+}
+
+.wp-list-table th {
+    background: #f8fafc !important;
+    padding: 18px 20px !important;
+    text-transform: uppercase !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1px !important;
+}
+
+#replyModal {
+    backdrop-filter: blur(8px);
+    background: rgba(15, 23, 42, 0.7) !important;
+}
+
+#replyModal > div {
+    border-radius: 28px !important;
+    padding: 40px !important;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5) !important;
+}

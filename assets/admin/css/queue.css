@@ -1,18 +1,7 @@
 /* 
- * 💎 Expotodo Boutique Admin Stylings 
- * Diseño premium para la Suite de Comunicación
+ * 📊 Boutique Queue: Restauración Premium desde Git (Commit bc5fd2f)
+ * Diseño fiel para la Suite de Comunicación
  */
-
-:root {
-    --exp-primary: #8b5cf6;
-    --exp-success: #10b981;
-    --exp-danger: #ef4444;
-    --exp-warning: #f59e0b;
-    --exp-text: #1e293b;
-    --exp-bg: #f8f9fa;
-    --exp-card-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-    --exp-card-hover: 0 20px 25px -5px rgba(0,0,0,0.1);
-}
 
 .expotodo-dashboard { 
     font-family: 'Inter', -apple-system, sans-serif; 
@@ -39,8 +28,8 @@
     background: #fff; 
     border-radius: 16px; 
     padding: 25px; 
-    box-shadow: var(--exp-card-shadow);
-    border: 1px solid #e2e8f0; 
+    box-shadow: var(--exp-shadow-sm);
+    border: 1px solid var(--exp-border); 
     transition: transform 0.2s, box-shadow 0.2s;
     position: relative; 
     overflow: hidden;
@@ -48,7 +37,7 @@
 
 .exp-card:hover { 
     transform: translateY(-5px); 
-    box-shadow: var(--exp-card-hover); 
+    box-shadow: var(--exp-shadow-lg); 
 }
 
 .exp-status { 
@@ -68,10 +57,10 @@
 .status-cancelled { background: #f1f5f9; color: #475569; }
 
 .exp-card h3 { 
-    margin: 0 0 10px 0; 
-    font-size: 16px; 
-    font-weight: 700; 
-    color: #0f172a; 
+    margin: 0 0 10px 0 !important; 
+    font-size: 16px !important; 
+    font-weight: 700 !important; 
+    color: #0f172a !important; 
     white-space: nowrap; 
     overflow: hidden; 
     text-overflow: ellipsis; 
@@ -79,7 +68,7 @@
 
 .exp-card .meta { 
     font-size: 13px; 
-    color: #64748b; 
+    color: var(--exp-text-muted); 
     margin-bottom: 20px; 
     line-height: 1.5;
 }
@@ -108,12 +97,12 @@
 
 .btn-view { background: #f1f5f9; color: #475569; }
 .btn-log { background: #f1f5f9; color: #475569; }
-.btn-send { background: var(--exp-primary); color: #fff; }
+.btn-send { background: var(--exp-primary); color: #1a1a1a; }
 .btn-cancel { background: #fff; color: var(--exp-danger); border: 1px solid var(--exp-danger); }
 
 .exp-btn:hover { filter: brightness(0.95); transform: scale(1.02); }
 
-/* 🎭 Modales */
+/* 🎭 Modales Profesionales */
 .exp-modal { 
     display: none; 
     position: fixed; 
@@ -166,11 +155,4 @@
     font-size: 13px;
     line-height: 1.5;
     overflow: auto;
-}
-
-/* ⚙️ Ajustes generales de Admin Cards */
-.expotodo-admin-wrap .card {
-    border: none;
-    box-shadow: var(--exp-card-shadow);
-    border-radius: 16px;
 }

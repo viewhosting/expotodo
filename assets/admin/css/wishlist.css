@@ -1,0 +1,23 @@
+/* 
+ * 🏢 Boutique Wishlist: Analítica y Insights de Favoritos
+ */
+
+.expotodo-admin-dashboard {
+    border-radius: var(--exp-radius) !important;
+    overflow: hidden;
+    box-shadow: var(--exp-shadow-sm);
+    border: 1px solid var(--exp-border) !important;
+    background: #fff;
+    margin-top: 25px;
+}
+
+.dashboard-header {
+    background: #f8fafc !important;
+    border-bottom: 1px solid var(--exp-border) !important;
+    padding: 20px 25px !important;
+    font-weight: 800;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #475569;
+}

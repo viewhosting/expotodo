@@ -1,0 +1,75 @@
+/* 
+ * 💎 Boutique Core: Estilos Base y Variables (Referencia Git bc5fd2f)
+ * Compartido por todas las páginas de la Suite.
+ */
+
+:root {
+    --exp-primary: #8b5cf6;
+    --exp-primary-dark: #7c3aed;
+    --exp-success: #10b981;
+    --exp-danger: #ef4444;
+    --exp-warning: #f59e0b;
+    --exp-text: #1e293b;
+    --exp-text-muted: #64748b;
+    --exp-bg: #f8fafc;
+    --exp-border: #e2e8f0;
+    --exp-radius: 16px;
+    --exp-shadow-sm: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+    --exp-shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.1);
+}
+
+.expotodo-admin-wrap, 
+.expotodo-admin-boutique,
+.expotodo-dashboard {
+    font-family: 'Inter', -apple-system, system-ui, sans-serif !important;
+    padding: 30px 20px 30px 0;
+    color: var(--exp-text);
+}
+
+.expotodo-admin-wrap h1, 
+.expotodo-admin-boutique h1,
+.expotodo-dashboard h1 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    margin-bottom: 8px;
+    color: #0f172a;
+}
+
+.description, .exp-header p {
+    font-size: 16px;
+    color: var(--exp-text-muted);
+    margin-bottom: 35px;
+}
+
+/* 💎 Botones Boutique Globales */
+.button-primary, .exp-btn.btn-send, #btn-send-reply {
+    background: var(--exp-primary) !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    padding: 10px 25px !important;
+    border-radius: 10px !important;
+    text-shadow: none !important;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4) !important;
+    transition: all 0.3s !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+}
+
+.button-primary:hover, .exp-btn.btn-send:hover, #btn-send-reply:hover {
+    background: var(--exp-primary-dark) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.5) !important;
+}
+
+/* ⚙️ Utilidades Bootstrap-lite */
+.d-flex { display: flex !important; }
+.gap-2 { gap: 10px !important; }
+.justify-content-between { justify-content: space-between !important; }
+.align-items-center { align-items: center !important; }
+.text-danger { color: var(--exp-danger) !important; }
+.text-muted { color: var(--exp-text-muted) !important; }

@@ -71,7 +71,7 @@ class AccountController {
 
         <div class="account-dashboard-grid">
             <!-- Pedidos -->
-            <a href="#pedidos" class="stat-card" onclick="jQuery('#tab-pedidos-link').tab('show'); return false;">
+            <a href="#pedidos" class="stat-card" onclick="if(typeof bootstrap !== 'undefined') { bootstrap.Tab.getOrCreateInstance(document.querySelector('#tab-pedidos-link')).show(); } return false;">
                 <div class="stat-icon">
                     <i class="fas fa-shopping-bag"></i>
                 </div>
@@ -80,7 +80,7 @@ class AccountController {
             </a>
 
             <!-- Wishlist -->
-            <a href="#wishlist" class="stat-card" onclick="jQuery('#tab-wishlist-link').tab('show'); return false;">
+            <a href="#wishlist" class="stat-card" onclick="if(typeof bootstrap !== 'undefined') { bootstrap.Tab.getOrCreateInstance(document.querySelector('#tab-wishlist-link')).show(); } return false;">
                 <div class="stat-icon">
                     <i class="fas fa-heart"></i>
                 </div>
@@ -89,7 +89,7 @@ class AccountController {
             </a>
 
             <!-- Direcciones -->
-            <a href="#direcciones" class="stat-card" onclick="jQuery('#tab-direcciones-link').tab('show'); return false;">
+            <a href="#direcciones" class="stat-card" onclick="if(typeof bootstrap !== 'undefined') { bootstrap.Tab.getOrCreateInstance(document.querySelector('#tab-direcciones-link')).show(); } return false;">
                 <div class="stat-icon">
                     <i class="fas fa-map-marked-alt"></i>
                 </div>

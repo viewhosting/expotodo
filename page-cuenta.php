@@ -39,25 +39,42 @@ get_header();
             </div>
         <?php else : 
             $current_user = wp_get_current_user();
+            $endpoint = WC()->query->get_current_endpoint();
+            $is_endpoint = !empty($endpoint);
+            $base_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('myaccount') : get_permalink();
         ?>
             <div class="row g-4">
                 <!-- Sidebar Navigation -->
-                <!-- Sidebar Navigation -->
                 <div class="col-md-3">
-                    <div class="list-group account-nav shadow-sm mb-4 sticky-top" style="top: 100px; z-index: 100;">
-                        <a href="#dashboard" class="list-group-item list-group-item-action active" data-bs-toggle="list" id="tab-dashboard-link">
+                    <div class="list-group account-nav shadow-sm mb-4 sticky-top" id="account-tabs-menu" role="tablist" style="top: 100px; z-index: 100;">
+                        <a href="<?php echo $is_endpoint ? $base_url . '#dashboard' : '#dashboard'; ?>" 
+                           class="list-group-item list-group-item-action <?php echo (!$is_endpoint) ? 'active' : ''; ?>" 
+                           <?php echo (!$is_endpoint) ? 'data-bs-toggle="list"' : ''; ?>
+                           id="tab-dashboard-link" role="tab" aria-controls="dashboard" aria-selected="true">
                             <i class="fas fa-th-large me-2"></i> Escritorio
                         </a>
-                        <a href="#perfil" class="list-group-item list-group-item-action" data-bs-toggle="list" id="tab-perfil-link">
+                        <a href="<?php echo $is_endpoint ? $base_url . '#perfil' : '#perfil'; ?>" 
+                           class="list-group-item list-group-item-action" 
+                           <?php echo (!$is_endpoint) ? 'data-bs-toggle="list"' : ''; ?>
+                           id="tab-perfil-link" role="tab" aria-controls="perfil" aria-selected="false">
                             <i class="fas fa-user-edit me-2"></i> Mi Perfil
                         </a>
-                        <a href="#pedidos" class="list-group-item list-group-item-action" data-bs-toggle="list" id="tab-pedidos-link">
+                        <a href="<?php echo $is_endpoint ? $base_url . '#pedidos' : '#pedidos'; ?>" 
+                           class="list-group-item list-group-item-action <?php echo ($endpoint === 'view-order') ? 'active' : ''; ?>" 
+                           <?php echo (!$is_endpoint) ? 'data-bs-toggle="list"' : ''; ?>
+                           id="tab-pedidos-link" role="tab" aria-controls="pedidos" aria-selected="false">
                             <i class="fas fa-shopping-bag me-2"></i> Mis Pedidos
                         </a>
-                        <a href="#direcciones" class="list-group-item list-group-item-action" data-bs-toggle="list" id="tab-direcciones-link">
+                        <a href="<?php echo $is_endpoint ? $base_url . '#direcciones' : '#direcciones'; ?>" 
+                           class="list-group-item list-group-item-action <?php echo ($endpoint === 'edit-address') ? 'active' : ''; ?>" 
+                           <?php echo (!$is_endpoint) ? 'data-bs-toggle="list"' : ''; ?>
+                           id="tab-direcciones-link" role="tab" aria-controls="direcciones" aria-selected="false">
                             <i class="fas fa-map-marked-alt me-2"></i> Direcciones
                         </a>
-                        <a href="#wishlist" class="list-group-item list-group-item-action" data-bs-toggle="list" id="tab-wishlist-link">
+                        <a href="<?php echo $is_endpoint ? $base_url . '#wishlist' : '#wishlist'; ?>" 
+                           class="list-group-item list-group-item-action" 
+                           <?php echo (!$is_endpoint) ? 'data-bs-toggle="list"' : ''; ?>
+                           id="tab-wishlist-link" role="tab" aria-controls="wishlist" aria-selected="false">
                             <i class="fas fa-heart me-2"></i> Mi Wishlist
                         </a>
                         <a href="<?php echo wp_logout_url(home_url()); ?>" class="list-group-item list-group-item-action text-danger mt-2 border-top">
@@ -69,9 +86,6 @@ get_header();
                 <!-- Content Area -->
                 <div class="col-md-9">
                     <?php 
-                    // Soporte para endpoints de WooCommerce
-                    $endpoint = WC()->query->get_current_endpoint();
-                    
                     if ( $endpoint && $endpoint === 'view-order' ) {
                         $order_id = get_query_var( 'view-order' );
                         if ( $order_id ) {
@@ -84,12 +98,12 @@ get_header();
                     ?>
                     <div class="tab-content">
                         <!-- Dashboard -->
-                        <div class="tab-pane fade show active" id="dashboard">
+                        <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="tab-dashboard-link">
                             <?php echo expotodo_render_account_dashboard(get_current_user_id()); ?>
                         </div>
 
                         <!-- Perfil -->
-                        <div class="tab-pane fade" id="perfil">
+                        <div class="tab-pane fade" id="perfil" role="tabpanel" aria-labelledby="tab-perfil-link">
                             <div class="card account-main-card">
                                 <div class="account-header">
                                     <h5 class="mb-0"><i class="fas fa-user-edit me-2"></i>Información Personal</h5>
@@ -147,7 +161,7 @@ get_header();
                         </div>
 
                         <!-- Pedidos -->
-                        <div class="tab-pane fade" id="pedidos">
+                        <div class="tab-pane fade" id="pedidos" role="tabpanel" aria-labelledby="tab-pedidos-link">
                             <div class="card account-main-card">
                                 <div class="account-header">
                                     <h5 class="mb-0"><i class="fas fa-shopping-bag me-2"></i>Historial de Pedidos</h5>
@@ -218,7 +232,7 @@ get_header();
                         </div>
 
                         <!-- Direcciones -->
-                        <div class="tab-pane fade" id="direcciones">
+                        <div class="tab-pane fade" id="direcciones" role="tabpanel" aria-labelledby="tab-direcciones-link">
                             <div class="card account-main-card">
                                 <div class="account-header">
                                     <h5 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Mis Direcciones Registradas</h5>
@@ -262,7 +276,7 @@ get_header();
                             </div>
                         </div>
                         <!-- Lista de Deseos (Wishlist) -->
-                        <div class="tab-pane fade" id="wishlist">
+                        <div class="tab-pane fade" id="wishlist" role="tabpanel" aria-labelledby="tab-wishlist-link">
                             <div class="card account-main-card">
                                 <div class="account-header">
                                     <h5 class="mb-0"><i class="fas fa-heart me-2"></i>Mi Lista de Deseos</h5>
@@ -287,13 +301,33 @@ get_header();
                     
                     <script>
                     document.addEventListener('DOMContentLoaded', function() {
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const tab = urlParams.get('tab');
-                        if (tab === 'wishlist') {
-                            const wishlistTab = document.querySelector('#tab-wishlist-link');
-                            if (wishlistTab) {
-                                bootstrap.Tab.getOrCreateInstance(wishlistTab).show();
+                        // Función segura para mostrar pestañas
+                        function safeShowTab(tabId) {
+                            const tabLink = document.querySelector(tabId);
+                            if (tabLink && typeof bootstrap !== 'undefined' && bootstrap.Tab) {
+                                bootstrap.Tab.getOrCreateInstance(tabLink).show();
+                            } else {
+                                // Reintento si bootstrap aún no está listo (footer delay)
+                                setTimeout(() => {
+                                    if (tabLink && typeof bootstrap !== 'undefined' && bootstrap.Tab) {
+                                        bootstrap.Tab.getOrCreateInstance(tabLink).show();
+                                    }
+                                }, 500);
                             }
+                        }
+
+                        // 1. Manejo por parámetros (Legacy/Wishlist)
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const tabParam = urlParams.get('tab');
+                        if (tabParam === 'wishlist') {
+                            safeShowTab('#tab-wishlist-link');
+                        }
+
+                        // 2. Manejo por Hash (Navegación desde endpoints)
+                        const hash = window.location.hash;
+                        if (hash) {
+                            const hashTab = `#tab-${hash.replace('#', '')}-link`;
+                            safeShowTab(hashTab);
                         }
                     });
                     </script>

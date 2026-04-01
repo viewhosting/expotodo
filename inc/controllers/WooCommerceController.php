@@ -131,18 +131,57 @@ class WooCommerceController {
                 global $product;
                 ?>
                 <div class="col product-grid-item">
-                    <div class="card h-100 product-card border-0 shadow-sm">
+                    <article class="product-card h-100">
                         <div class="product-image-container">
-                            <?php the_post_thumbnail('medium', array('class' => 'product-image')); ?>
+                            <?php 
+                            // Categoría principal para mostrar
+                            $terms = get_the_terms( $product->get_id(), 'product_cat' );
+                            $cat_name = !empty($terms) && !is_wp_error($terms) ? $terms[0]->name : '';
+                            if ($cat_name) : 
+                            ?>
+                            <div class="product-category"><?php echo esc_html($cat_name); ?></div>
+                            <?php endif; ?>
+
+                            <?php if ( $product->is_on_sale() ) : ?>
+                                <div class="product-category sale" style="top: 40px; background-color: #dc3545;">Oferta</div>
+                            <?php endif; ?>
+                            
+                            <button type="button" class="btn-add-wishlist" data-id="<?php echo $product->get_id(); ?>" title="Agregar a lista de deseos">
+                                <i class="far fa-heart <?php echo in_array($product->get_id(), expotodo_get_user_wishlist()) ? 'fas text-danger' : 'far'; ?>"></i>
+                            </button>
+
+                            <a href="<?php the_permalink(); ?>">
+                                <?php 
+                                if (has_post_thumbnail()) {
+                                    the_post_thumbnail('medium', array('class' => 'product-image'));
+                                } else {
+                                    echo '<img src="https://via.placeholder.com/300x300?text=No+Image" class="product-image" alt="' . get_the_title() . '">';
+                                }
+                                ?>
+                            </a>
                         </div>
                         <div class="product-content p-3">
-                            <h3 class="product-title"><?php the_title(); ?></h3>
-                            <div class="product-price"><?php echo $product->get_price_html(); ?></div>
-                            <a class="btn-card btn-primary" href="<?php the_permalink(); ?>">Ver detalles</a>
+                            <h3 class="product-title"><a href="<?php the_permalink(); ?>" class="text-decoration-none text-dark"><?php the_title(); ?></a></h3>
+                            <p class="product-description small text-muted">
+                                <?php echo wp_trim_words(get_the_excerpt(), 10, '...'); ?>
+                            </p>
+                            <div class="product-price mb-3">
+                                <?php echo $product->get_price_html(); ?>
+                            </div>
+                            <a href="<?php the_permalink(); ?>" class="btn-card btn-primary w-100 mb-2">
+                                <i class="fas fa-eye me-2"></i> Ver detalles
+                            </a>
+                            <a href="<?php echo esc_url( $product->add_to_cart_url() ); ?>" 
+                               class="btn-card btn-outline-primary w-100 <?php echo $product->is_type('simple') ? 'ajax_add_to_cart' : ''; ?>" 
+                               data-quantity="1" 
+                               data-product_id="<?php echo get_the_ID(); ?>"
+                               data-product_sku="<?php echo esc_attr( $product->get_sku() ); ?>">
+                                <i class="fas fa-shopping-cart me-2"></i> <?php echo $product->is_type('variable') ? 'Seleccionar opciones' : 'Agregar'; ?>
+                            </a>
                         </div>
-                    </div>
+                    </article>
                 </div>
-                <?php
+<?php
             endwhile;
             wp_reset_postdata();
         endif;

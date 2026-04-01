@@ -16,23 +16,6 @@ class ContactController {
         // Acciones Admin para mensajes
         add_action( 'wp_ajax_expotodo_delete_message', array( $this, 'ajax_delete_message' ) );
         add_action( 'wp_ajax_expotodo_reply_message', array( $this, 'ajax_reply_message' ) );
-        add_action( 'admin_enqueue_scripts', array( $this, 'admin_assets' ) );
-    }
-
-    public function admin_assets($hook) {
-        if (strpos($hook, 'expotodo-messages') !== false || strpos($hook, 'expotodo-templates') !== false) {
-            wp_enqueue_script('expotodo-admin-contact', get_template_directory_uri() . '/assets/js/admin-contact.js', array('jquery'), '1.0.0', true);
-            wp_localize_script('expotodo-admin-contact', 'expotodo_admin_params', array(
-                'ajax_url' => admin_url('admin-ajax.php'),
-                'nonce'    => wp_create_nonce('expotodo_admin_nonce')
-            ));
-
-            if (strpos($hook, 'expotodo-templates') !== false) {
-                // Editor de código para plantillas
-                $settings = wp_enqueue_code_editor(array('type' => 'text/html'));
-                wp_add_inline_script('code-editor', sprintf('jQuery(function(){ wp.codeEditor.initialize("template_contact", %s); wp.codeEditor.initialize("template_purchase", %s); });', wp_json_encode($settings), wp_json_encode($settings)));
-            }
-        }
     }
 
     public function enqueue_assets() {
