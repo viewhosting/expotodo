@@ -42,7 +42,10 @@
                             <a class="nav-link" href="<?php echo home_url('/#amazon'); ?>">Amazon</a>
                         </li>
                         <li class="nav-item pt-3">
-                            <a class="nav-link" href="<?php echo home_url('/contacto'); ?>">Contacto</a>
+                            <a class="nav-link buscar-icon" href="#buscar">Búsqueda</a>
+                        </li>
+                        <li class="nav-item pt-3">
+                            <a class="nav-link" href="<?php echo home_url('/contacto'); ?>">Contácto</a>
                         </li>
                         
                         <!-- Teléfono -->

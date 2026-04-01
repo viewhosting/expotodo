@@ -192,6 +192,15 @@ class WooCommerceController {
     public function cart_fragments( $fragments ) {
         $fragments['span.cart-count'] = '<span class="cart-count">' . WC()->cart->get_cart_contents_count() . '</span>';
         $fragments['span.cart-total'] = '<span class="cart-total">' . WC()->cart->get_total() . '</span>';
+        $fragments['span.cart-subtotal'] = '<span class="cart-subtotal">' . WC()->cart->get_cart_subtotal() . '</span>';
+        
+        // Actualizar la lista de productos
+        $fragments['div.cart-items'] = self::get_cart_items_html();
+        
+        // Actualizar el estado de "vacío"
+        $is_empty = WC()->cart->is_empty();
+        $fragments['div.cart-empty-message'] = '<div class="cart-empty-message text-muted small ' . ($is_empty ? '' : 'd-none') . '">Tu carrito está vacío.</div>';
+        
         return $fragments;
     }
 

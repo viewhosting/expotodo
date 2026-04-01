@@ -19,4 +19,46 @@ jQuery(document).ready(function ($) {
             else $('#test_smtp_status').html(' ❌ Error: ' + res.data).css('color', '#dc2626');
         });
     });
+
+    // 🖼️ Selector de Medios y Previsualización para el Fondo del Footer Premium
+    const $footerBgInput = $('#footer_bg');
+    const $footerPreviewWrapper = $('#footer-preview-wrapper');
+    const $footerPreviewBox = $('#footer_bg_preview_img');
+
+    function updateFooterPreview() {
+        const url = $footerBgInput.val();
+        const align = $('input[name="footer_bg_align"]:checked').val() || 'center center';
+
+        if (url) {
+            $footerPreviewWrapper.show();
+            let safeUrl = url.replace(/'/g, "\\'");
+            $footerPreviewBox.css({
+                'background-image': "url('" + safeUrl + "')",
+                'background-position': align
+            });
+        } else {
+            $footerPreviewWrapper.hide();
+        }
+    }
+
+    $footerBgInput.on('input change', updateFooterPreview);
+    // Escuchar el cambio en cualquier radio button de la grid
+    $('input[name="footer_bg_align"]').on('change', updateFooterPreview);
+
+    $('#btn_upload_footer_bg').on('click', function (e) {
+        e.preventDefault();
+
+        const frame = wp.media({
+            title: 'Seleccionar Fondo para Footer',
+            button: { text: 'Usar como fondo' },
+            multiple: false
+        });
+
+        frame.on('select', function () {
+            const attachment = frame.state().get('selection').first().toJSON();
+            $footerBgInput.val(attachment.url).trigger('change');
+        });
+
+        frame.open();
+    });
 });

@@ -10,6 +10,15 @@ class AdminController {
     public function __construct() {
         add_action('admin_menu', array($this, 'register_menu'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_styles'));
+        
+        // Registrar opciones generales para asegurar consistencia
+        add_action('admin_init', array($this, 'register_settings'));
+    }
+
+    public function register_settings() {
+        register_setting('expotodo_settings_group', 'expotodo_whatsapp');
+        register_setting('expotodo_settings_group', 'expotodo_boutique_mode');
+        register_setting('expotodo_settings_group', 'expotodo_footer_bg');
     }
 
     /**
@@ -23,6 +32,7 @@ class AdminController {
         $ver = time(); // 🧪 cache-busting Boutique
 
         // 1. Assets Globales de la Suite (Core)
+        wp_enqueue_media(); // 🖼️ Habilitar Biblioteca de Medios
         wp_enqueue_style('expotodo-admin-core', $base_url . '/css/core.css', array(), $ver);
 
         // 2. Assets Condicionales por Página
@@ -326,6 +336,8 @@ class AdminController {
                 if ($active_tab === 'general') {
                     update_option('expotodo_whatsapp', isset($_POST['whatsapp']) ? sanitize_text_field($_POST['whatsapp']) : '');
                     update_option('expotodo_boutique_mode', isset($_POST['boutique_mode']) ? 'yes' : 'no');
+                    update_option('expotodo_footer_bg', isset($_POST['footer_bg']) ? sanitize_text_field($_POST['footer_bg']) : '');
+                    update_option('expotodo_footer_bg_align', isset($_POST['footer_bg_align']) ? sanitize_text_field($_POST['footer_bg_align']) : 'center center');
                 }
 
                 if ($active_tab === 'smtp') {
@@ -383,6 +395,90 @@ class AdminController {
                                         <input name="boutique_mode" type="checkbox" id="boutique_mode" value="yes" <?php checked('yes', $boutique); ?>>
                                         Activar visuales premium en el sitio.
                                     </label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="footer_bg">Fondo de Footer</label></th>
+                                <td>
+                                    <?php 
+                                        $footer_bg = get_option('expotodo_footer_bg', '');
+                                        $footer_align = get_option('expotodo_footer_bg_align', 'center center');
+                                    ?>
+                                    
+                                    <style>
+                                        /* 💎 Boutique Settings UI */
+                                        .boutique-upl-wrap { display: flex; gap: 10px; margin-bottom: 25px; align-items: center; }
+                                        .boutique-upl-wrap input { flex-grow: 1; border-color: #cbd5e1; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+                                        .boutique-upl-wrap button { background: #b0d443 !important; border-color: #8ca835 !important; color: #1a1a1a !important; font-weight: 600; border-radius: 6px; }
+                                        
+                                        .boutique-control-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; margin-bottom: 30px; }
+                                        
+                                        .boutique-pos-panel { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; }
+                                        .boutique-pos-panel h4 { margin: 0 0 10px 0; font-size: 13px; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+                                        
+                                        .pos-grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; width: 100px; height: 100px; background: #fff; border: 1px solid #cbd5e1; padding: 5px; border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+                                        .pos-cell { position: relative; cursor: pointer; }
+                                        .pos-cell input[type="radio"] { opacity: 0; position: absolute; width: 0; height: 0; }
+                                        .pos-cell span { display: block; width: 100%; height: 100%; background: #f1f5f9; border-radius: 4px; transition: all 0.2s; border: 2px solid transparent; }
+                                        .pos-cell:hover span { background: #e2e8f0; }
+                                        .pos-cell input[type="radio"]:checked + span { background: #b0d443; border-color: #8ca835; box-shadow: 0 2px 5px rgba(176, 212, 67, 0.4); }
+                                        
+                                        .boutique-preview-card { border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+                                        .boutique-preview-header { padding: 10px 15px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: #334155; font-size: 13px; }
+                                        .boutique-preview-header .badge { background: #b0d443; color: #111; font-size: 10px; padding: 2px 8px; border-radius: 12px; text-transform: uppercase; letter-spacing: 1px; }
+                                        
+                                        .boutique-preview-window { height: 140px; position: relative; overflow: hidden; background: #111; display: flex; align-items: center; }
+                                        .b-prev-img { position: absolute; top: -10px; left: -10px; width: calc(100% + 20px); height: calc(100% + 20px); background-size: cover; background-repeat: no-repeat; filter: blur(8px); -webkit-filter: blur(8px); z-index: 1; transition: background-position 0.3s; }
+                                        .b-prev-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7)); z-index: 2; }
+                                        .b-prev-content { position: relative; z-index: 10; width: 100%; display: flex; justify-content: space-between; padding: 0 25px; color: #fff; font-family: -apple-system, sans-serif; align-items: center; }
+                                        .b-prev-logo { font-size: 16px; font-weight: 800; letter-spacing: 2px; }
+                                        .b-prev-menu { display: flex; gap: 15px; font-size: 11px; text-transform: uppercase; font-weight: 500; opacity: 0.9; }
+                                    </style>
+
+                                    <!-- 🔗 Selector de Imagen -->
+                                    <div class="boutique-upl-wrap">
+                                        <input name="footer_bg" type="text" id="footer_bg" value="<?php echo esc_attr($footer_bg); ?>" placeholder="URL de la imagen (selecciona o pega aquí)">
+                                        <button type="button" class="button button-secondary" id="btn_upload_footer_bg">
+                                            <span class="dashicons dashicons-format-image" style="margin-top:2px;"></span> Galería
+                                        </button>
+                                    </div>
+
+                                    <div class="boutique-control-grid">
+                                        <!-- 🕹️ Panel de Posición -->
+                                        <div class="boutique-pos-panel">
+                                            <h4>Punto de Enfoque</h4>
+                                            <div class="pos-grid-container" id="boutique-align-grid">
+                                                <?php 
+                                                    $positions = ['left top', 'center top', 'right top', 'left center', 'center center', 'right center', 'left bottom', 'center bottom', 'right bottom'];
+                                                    foreach ($positions as $pos) {
+                                                        $checked = checked($pos, $footer_align, false);
+                                                        echo "<label class='pos-cell' title='{$pos}'>";
+                                                        echo "<input type='radio' name='footer_bg_align' value='{$pos}' {$checked}>";
+                                                        echo "<span></span>";
+                                                        echo "</label>";
+                                                    }
+                                                ?>
+                                            </div>
+                                            <p style="font-size: 11px; color: #64748b; margin-top: 10px; line-height: 1.4;">Dirige la parte visible de la imagen (Grid de 9 puntos).</p>
+                                        </div>
+
+                                        <!-- 🖥️ Previsualización -->
+                                        <div class="boutique-preview-card" style="display: <?php echo empty($footer_bg) ? 'none' : 'block'; ?>;" id="footer-preview-wrapper">
+                                            <div class="boutique-preview-header">
+                                                <span>Aesthetic Footer</span>
+                                                <span class="badge">Live</span>
+                                            </div>
+                                            <div class="boutique-preview-window">
+                                                <div class="b-prev-img" id="footer_bg_preview_img" style="background-image: url('<?php echo esc_url($footer_bg); ?>'); background-position: <?php echo esc_attr($footer_align); ?>;"></div>
+                                                <div class="b-prev-overlay"></div>
+                                                <div class="b-prev-content">
+                                                    <div class="b-prev-logo">EXPOTODO</div>
+                                                    <div class="b-prev-menu"><span>Catálogo</span><span>Contacto</span></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </td>
                             </tr>
                         </table>
