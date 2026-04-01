@@ -256,33 +256,46 @@ class EmailController {
     }
 
     /**
-     * Genera el HTML boutique del pedido
+     * Genera el HTML boutique del pedido (Diseño WOW)
      */
     public function get_order_template( $order ) {
         $items = $order->get_items();
         $items_html = '';
         foreach ( $items as $item_id => $item ) {
             $product = $item->get_product();
-            $items_html .= '<tr>';
-            $items_html .= '<td style="padding: 10px; border-bottom: 1px solid #eee;">' . esc_html( $item->get_name() ) . ' x ' . $item->get_quantity() . '</td>';
-            $items_html .= '<td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">' . $order->get_formatted_line_subtotal( $item ) . '</td>';
-            $items_html .= '</tr>';
+            $items_html .= '<div style="display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #f1f5f9;">';
+            $items_html .= '<div style="font-size: 14px; color: #1e293b;"><strong>' . esc_html( $item->get_name() ) . '</strong> <span style="color: #64748b;">x' . $item->get_quantity() . '</span></div>';
+            $items_html .= '<div style="font-size: 14px; font-weight: 700; color: #8b5cf6;">' . $order->get_formatted_line_subtotal( $item ) . '</div>';
+            $items_html .= '</div>';
         }
 
-        $template = get_option('expotodo_email_template_order', '');
-        if ( empty($template) ) {
-            $template = '<h2>Gracias por tu pedido #{order_number}</h2><p>Estado: {order_status}</p><table>{order_items}</table><p>Total: {order_total}</p>';
-        }
+        $brand_color = '#8b5cf6';
+        $order_num = $order->get_order_number();
+        $status = wc_get_order_status_name( $order->get_status() );
+        $total = $order->get_formatted_order_total();
+        $customer = $order->get_billing_first_name() . ' ' . $order->get_billing_last_name();
 
-        $placeholders = array(
-            '{order_number}' => $order->get_order_number(),
-            '{order_status}' => wc_get_order_status_name( $order->get_status() ),
-            '{order_items}'  => $items_html,
-            '{order_total}'  => $order->get_formatted_order_total(),
-            '{customer_name}' => $order->get_billing_first_name() . ' ' . $order->get_billing_last_name()
-        );
+        return "
+        <div style='background: #f8fafc; padding: 40px; border-radius: 24px; border: 1px solid #e2e8f0;'>
+            <div style='text-align: center; margin-bottom: 30px;'>
+                <span style='background: {$brand_color}20; color: {$brand_color}; padding: 8px 20px; border-radius: 100px; font-size: 12px; font-weight: 800; text-transform: uppercase;'>Pedido #{$order_num}</span>
+                <h1 style='color: #0f172a; font-size: 28px; margin-top: 15px; letter-spacing: -1px;'>¡Gracias por tu compra, {$customer}!</h1>
+                <p style='color: #64748b; font-size: 16px;'>Tu pedido está siendo procesado con cuidado artesanal.</p>
+            </div>
+            
+            <div style='background: #ffffff; border-radius: 20px; padding: 30px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);'>
+                <h2 style='font-size: 16px; color: #1e293b; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;'>Detalles del Pedido</h2>
+                {$items_html}
+                <div style='display: flex; justify-content: space-between; padding-top: 25px; margin-top: 10px;'>
+                    <div style='font-size: 18px; color: #0f172a; font-weight: 800;'>Total Final</div>
+                    <div style='font-size: 22px; color: {$brand_color}; font-weight: 800;'>{$total}</div>
+                </div>
+            </div>
 
-        return str_replace( array_keys($placeholders), array_values($placeholders), $template );
+            <div style='margin-top: 30px; text-align: center;'>
+                <p style='font-size: 14px; color: #94a3b8;'>Estado actual: <strong style='color: #1e293b;'>{$status}</strong></p>
+            </div>
+        </div>";
     }
 
     /**
