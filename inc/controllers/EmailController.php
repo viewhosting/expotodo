@@ -14,13 +14,24 @@ class EmailController {
         // Hook para errores genéricos
         add_action( 'wp_mail_failed', array( $this, 'log_failed_email' ) );
 
-        // 🛍️ Interceptar WooCommerce (Nuevos Pedidos y Pagos)
-        add_action( 'woocommerce_order_status_pending_to_processing', array( $this, 'send_boutique_order_email' ), 10, 2 );
-        add_action( 'woocommerce_order_status_failed_to_processing', array( $this, 'send_boutique_order_email' ), 10, 2 );
-        add_action( 'woocommerce_order_status_on-hold_to_processing', array( $this, 'send_boutique_order_email' ), 10, 2 );
+        // 🛍️ Interceptar WooCommerce (Cualquier cambio de estado)
+        add_action( 'woocommerce_order_status_changed', array( $this, 'maybe_send_boutique_email' ), 10, 4 );
 
         // Desactivar correos nativos de WC (para que solo salga el nuestro boutique)
         add_filter( 'woocommerce_email_enabled_customer_processing_order', '__return_false' );
+        add_filter( 'woocommerce_email_enabled_customer_on_hold_order', '__return_false' );
+    }
+
+    /**
+     * Evalúa si debe enviar un correo boutique según el cambio de estado
+     */
+    public function maybe_send_boutique_email( $order_id, $old_status, $new_status, $order ) {
+        // Solo nos interesan estados de 'pago o preventa'
+        $target_statuses = array( 'processing', 'on-hold' );
+        
+        if ( in_array( $new_status, $target_statuses ) ) {
+            $this->send_boutique_order_email( $order_id, $order );
+        }
     }
 
     /**

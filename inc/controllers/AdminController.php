@@ -83,23 +83,23 @@ class AdminController {
             if (check_admin_referer('expotodo_settings_verify')) {
                 
                 if ($active_tab === 'general') {
-                    update_option('expotodo_whatsapp', sanitize_text_field($_POST['whatsapp']));
+                    update_option('expotodo_whatsapp', isset($_POST['whatsapp']) ? sanitize_text_field($_POST['whatsapp']) : '');
                     update_option('expotodo_boutique_mode', isset($_POST['boutique_mode']) ? 'yes' : 'no');
                 }
 
                 if ($active_tab === 'smtp') {
-                    update_option('expotodo_smtp_host', sanitize_text_field($_POST['smtp_host']));
-                    update_option('expotodo_smtp_port', sanitize_text_field($_POST['smtp_port']));
-                    update_option('expotodo_smtp_user', sanitize_text_field($_POST['smtp_user']));
+                    if (isset($_POST['smtp_host'])) update_option('expotodo_smtp_host', sanitize_text_field($_POST['smtp_host']));
+                    if (isset($_POST['smtp_port'])) update_option('expotodo_smtp_port', sanitize_text_field($_POST['smtp_port']));
+                    if (isset($_POST['smtp_user'])) update_option('expotodo_smtp_user', sanitize_text_field($_POST['smtp_user']));
                     if (!empty($_POST['smtp_pass'])) {
                         update_option('expotodo_smtp_pass', sanitize_text_field($_POST['smtp_pass']));
                     }
-                    update_option('expotodo_smtp_secure', sanitize_text_field($_POST['smtp_secure']));
-                    update_option('expotodo_smtp_from_name', sanitize_text_field($_POST['smtp_from_name']));
+                    if (isset($_POST['smtp_secure'])) update_option('expotodo_smtp_secure', sanitize_text_field($_POST['smtp_secure']));
+                    if (isset($_POST['smtp_from_name'])) update_option('expotodo_smtp_from_name', sanitize_text_field($_POST['smtp_from_name']));
                 }
 
                 if ($active_tab === 'tracking') {
-                    update_option('expotodo_google_analytics', sanitize_text_field($_POST['google_analytics']));
+                    update_option('expotodo_google_analytics', isset($_POST['google_analytics']) ? sanitize_text_field($_POST['google_analytics']) : '');
                 }
 
                 echo '<div class="updated"><p>¡Ajustes de la sección <strong>' . strtoupper($active_tab) . '</strong> actualizados correctamente!</p></div>';
@@ -184,6 +184,13 @@ class AdminController {
                                         <option value="tls" <?php selected('tls', $smtp_secure); ?>>TLS</option>
                                         <option value="none" <?php selected('none', $smtp_secure); ?>>Sin cifrado</option>
                                     </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><label for="smtp_from_name">Nombre Remitente</label></th>
+                                <td>
+                                    <input name="smtp_from_name" type="text" id="smtp_from_name" value="<?php echo esc_attr($smtp_from_name); ?>" class="regular-text">
+                                    <p class="description">Nombre que aparecerá al enviar los correos boutique.</p>
                                 </td>
                             </tr>
                         </table>
