@@ -7,49 +7,200 @@ if (!defined('ABSPATH')) exit;
  */
 class EmailController {
 
+    private $is_intercepting = false;
+
     public function __construct() {
         add_action( 'phpmailer_init', array( $this, 'configure_smtp' ) );
         add_action( 'after_setup_theme', array( $this, 'setup_queue_table' ) );
         
-        // Hook para errores genéricos
-        add_action( 'wp_mail_failed', array( $this, 'log_failed_email' ) );
+        // 🛡️ INTERCEPTOR UNIVERSAL
+        add_filter( 'wp_mail', array( $this, 'global_intercept_and_log' ), 5 );
 
-        // 🛍️ Interceptar WooCommerce (Cualquier cambio de estado)
-        add_action( 'woocommerce_order_status_changed', array( $this, 'maybe_send_boutique_email' ), 10, 4 );
+        // 🚑 Lógica de Fallos
+        add_action( 'wp_mail_failed', array( $this, 'handle_mail_failure' ) );
 
-        // Desactivar correos nativos de WC (para que solo salga el nuestro boutique)
-        add_filter( 'woocommerce_email_enabled_customer_processing_order', '__return_false' );
-        add_filter( 'woocommerce_email_enabled_customer_on_hold_order', '__return_false' );
+        // 🧪 AJAX: Prueba y Gestión de Cola
+        add_action( 'wp_ajax_expotodo_test_smtp', array( $this, 'ajax_test_smtp' ) );
+        add_action( 'wp_ajax_expotodo_fetch_queue', array( $this, 'ajax_fetch_queue' ) );
+        add_action( 'wp_ajax_expotodo_queue_action', array( $this, 'ajax_queue_action' ) );
     }
 
     /**
-     * Evalúa si debe enviar un correo boutique según el cambio de estado
+     * AJAX: Obtiene los elementos de la cola formateados en el nuevo Grid
      */
-    public function maybe_send_boutique_email( $order_id, $old_status, $new_status, $order ) {
-        // Solo nos interesan estados de 'pago o preventa'
-        $target_statuses = array( 'processing', 'on-hold' );
-        
-        if ( in_array( $new_status, $target_statuses ) ) {
-            $this->send_boutique_order_email( $order_id, $order );
+    public function ajax_fetch_queue() {
+        if (!current_user_can('manage_options')) wp_send_json_error('No autorizado');
+
+        global $wpdb;
+        $table = $wpdb->prefix . 'expotodo_email_queue';
+        $logs = $wpdb->get_results("SELECT * FROM $table ORDER BY id DESC LIMIT 20");
+
+        if (!$logs) {
+            wp_send_json_success('<div style="grid-column: 1/-1; padding: 100px; text-align: center; color: #94a3b8;">No hay correos en la cola boutique todavía.</div>');
+        }
+
+        ob_start();
+        foreach ($logs as $log) : 
+            $status_class = 'status-' . strtolower($log->status);
+            $date = date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($log->created_at));
+            ?>
+            <div class="exp-card">
+                <div class="exp-status <?php echo $status_class; ?>"><?php echo esc_html($log->status); ?></div>
+                <h3 id="email-sub-<?php echo $log->id; ?>"><?php echo esc_html($log->subject); ?></h3>
+                <div class="meta">
+                    <strong>Para:</strong> <?php echo esc_html($log->recipient); ?><br>
+                    <strong>Fecha:</strong> <?php echo $date; ?>
+                </div>
+                
+                <div id="email-body-<?php echo $log->id; ?>" style="display:none;"><?php echo $log->body; ?></div>
+                <div id="email-log-<?php echo $log->id; ?>" style="display:none;"><?php echo $log->technical_log; ?></div>
+
+                <div class="exp-actions">
+                    <button onclick="showPreview(<?php echo $log->id; ?>)" class="exp-btn btn-view">Ver Correo</button>
+                    <button onclick="showLog(<?php echo $log->id; ?>)" class="exp-btn btn-log">Ver Log</button>
+                    
+                    <?php if ($log->status === 'Failed' || $log->status === 'Pending') : ?>
+                        <button onclick="performAction('send', <?php echo $log->id; ?>)" class="exp-btn btn-send">Enviar Ahora</button>
+                    <?php else : ?>
+                        <button onclick="performAction('resend', <?php echo $log->id; ?>)" class="exp-btn btn-send">Reenviar</button>
+                    <?php endif; ?>
+                    
+                    <button onclick="performAction('cancel', <?php echo $log->id; ?>)" class="exp-btn btn-cancel">Cancelar</button>
+                </div>
+            </div>
+            <?php
+        endforeach;
+        $html = ob_get_clean();
+        wp_send_json_success($html);
+    }
+
+    /**
+     * AJAX: Procesa acciones (Enviar, Reenviar, Cancelar)
+     */
+    public function ajax_queue_action() {
+        if (!current_user_can('manage_options')) wp_send_json_error('No autorizado');
+
+        $action = $_POST['email_action'];
+        $id = intval($_POST['id']);
+        global $wpdb;
+        $table = $wpdb->prefix . 'expotodo_email_queue';
+        $email = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $id));
+
+        if (!$email) wp_send_json_error('Correo no encontrado');
+
+        $log_entry = "\n[" . current_time('mysql') . "] Acción manual detectada: " . strtoupper($action);
+
+        if ($action === 'cancel') {
+            $wpdb->update($table, array(
+                'status' => 'Cancelled',
+                'technical_log' => $email->technical_log . $log_entry
+            ), array('id' => $id));
+            wp_send_json_success('Envío cancelado correctamente.');
+        }
+
+        if ($action === 'send' || $action === 'resend') {
+            $headers = array('Content-Type: text/html; charset=UTF-8');
+            $sent = wp_mail($email->recipient, $email->subject, $email->body, $headers);
+            
+            if ($sent) {
+                $wpdb->update($table, array(
+                    'status' => 'Sent',
+                    'technical_log' => $email->technical_log . $log_entry . " -> Éxito en el reenvío."
+                ), array('id' => $id));
+                wp_send_json_success('Correo enviado con éxito.');
+            } else {
+                $wpdb->update($table, array(
+                    'status' => 'Failed',
+                    'technical_log' => $email->technical_log . $log_entry . " -> El servidor SMTP volvió a fallar."
+                ), array('id' => $id));
+                wp_send_json_error('El reenvío falló nuevamente.');
+            }
         }
     }
 
     /**
-     * Configura PHPMailer para usar el SMTP boutique
+     * Intercepta CUALQUIER correo de WordPress y le aplica el diseño Boutique
+     */
+    public function global_intercept_and_log( $args ) {
+        // Evitar doble interceptación
+        if ( isset($args['boutique_processed']) || defined('INTERCEPTING_MAIL') ) {
+            return $args;
+        }
+
+        define('INTERCEPTING_MAIL', true);
+
+        $to = $args['to'];
+        $subject = $args['subject'];
+        $original_message = $args['message'];
+
+        // Si ya es HTML bonito (por ejemplo los que ya procesamos), no lo tocamos
+        if ( strpos($original_message, 'expotodo-boutique-container') !== false ) {
+            return $args;
+        }
+
+        // 💎 Envolvemos el mensaje en el Layout Boutique
+        $boutique_message = $this->wrap_in_boutique_layout( $original_message, $subject );
+
+        $args['message'] = $boutique_message;
+        $args['headers'] = array('Content-Type: text/html; charset=UTF-8');
+        $args['boutique_processed'] = true;
+
+        // Registramos en la cola para auditoría
+        $this->log_queued_email($to, $subject, 'Sent', $boutique_message);
+
+        return $args;
+    }
+
+    /**
+     * Envuelve un mensaje plano o HTML simple en el diseño Premium
+     */
+    private function wrap_in_boutique_layout( $content, $title ) {
+        return '
+        <div class="expotodo-boutique-container" style="background:#f8f9fa; padding:40px; font-family:sans-serif;">
+            <div style="max-width:600px; margin:0 auto; background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.05);">
+                <div style="background:#8b5cf6; padding:40px; text-align:center; color:#fff;">
+                    <h1 style="margin:0; font-size:24px; letter-spacing:-0.5px;">' . esc_html($title) . '</h1>
+                </div>
+                <div style="padding:40px; color:#1e293b; line-height:1.6;">
+                    ' . $content . '
+                </div>
+                <div style="padding:20px; text-align:center; background:#f1f5f9; color:#64748b; font-size:12px;">
+                    © ' . date('Y') . ' Expotodo Boutique. Todos los derechos reservados.
+                </div>
+            </div>
+        </div>';
+    }
+
+    /**
+     * Configura PHPMailer para usar SMTP personalizado
      */
     public function configure_smtp( $phpmailer ) {
         $host = get_option('expotodo_smtp_host');
-        if ( empty($host) ) return;
+        $port = get_option('expotodo_smtp_port');
+        $user = get_option('expotodo_smtp_user');
+        $pass = get_option('expotodo_smtp_pass');
+        $secure = get_option('expotodo_smtp_secure');
+        $from_name = get_option('expotodo_smtp_from_name', 'Expotodo Boutique');
+
+        // 🛡️ MODO SALVA-VIDAS: Si no hay datos, no toques nada (deja el correo nativo)
+        if ( empty($host) || empty($user) || empty($pass) ) {
+            return; 
+        }
 
         $phpmailer->isSMTP();
-        $phpmailer->Host       = $host;
-        $phpmailer->SMTPAuth   = true;
-        $phpmailer->Port       = get_option('expotodo_smtp_port', '465');
-        $phpmailer->Username   = get_option('expotodo_smtp_user');
-        $phpmailer->Password   = get_option('expotodo_smtp_pass');
-        $phpmailer->SMTPSecure = get_option('expotodo_smtp_secure', 'ssl');
-        $phpmailer->From       = get_option('expotodo_smtp_user');
-        $phpmailer->FromName   = get_option('expotodo_smtp_from_name', 'Expotodo Boutique');
+        $phpmailer->Host = $host;
+        $phpmailer->SMTPAuth = true;
+        $phpmailer->Port = $port ? intval($port) : 587;
+        $phpmailer->Username = $user;
+        $phpmailer->Password = $pass;
+        $phpmailer->SMTPSecure = $secure ? $secure : 'tls';
+        $phpmailer->FromName = $from_name;
+        
+        // 🔍 DEBUG: Si el envío falla, esto guardará el error real en los logs del servidor
+        $phpmailer->SMTPDebug = 2; 
+        $phpmailer->Debugoutput = function($str, $level) {
+            error_log("SMTP-DEBUG: $str");
+        };
     }
 
     /**
@@ -82,7 +233,7 @@ class EmailController {
     }
 
     /**
-     * Crea la tabla de cola de envío en la BD
+     * Crea/Actualiza la tabla de cola de envío con soporte para Logs Técnicos
      */
     public function setup_queue_table() {
         global $wpdb;
@@ -95,7 +246,7 @@ class EmailController {
             subject varchar(200) NOT NULL,
             body longtext NOT NULL,
             status varchar(20) DEFAULT 'pending' NOT NULL,
-            error_message text DEFAULT '',
+            technical_log longtext DEFAULT '',
             created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
             PRIMARY KEY  (id)
         ) $charset_collate;";
@@ -105,15 +256,45 @@ class EmailController {
     }
 
     /**
-     * Registra un envío en la tabla de cola
+     * Genera el HTML boutique del pedido
      */
-    private function log_queued_email($recipient, $subject, $status, $body = '') {
+    public function get_order_template( $order ) {
+        $items = $order->get_items();
+        $items_html = '';
+        foreach ( $items as $item_id => $item ) {
+            $product = $item->get_product();
+            $items_html .= '<tr>';
+            $items_html .= '<td style="padding: 10px; border-bottom: 1px solid #eee;">' . esc_html( $item->get_name() ) . ' x ' . $item->get_quantity() . '</td>';
+            $items_html .= '<td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">' . $order->get_formatted_line_subtotal( $item ) . '</td>';
+            $items_html .= '</tr>';
+        }
+
+        $template = get_option('expotodo_email_template_order', '');
+        if ( empty($template) ) {
+            $template = '<h2>Gracias por tu pedido #{order_number}</h2><p>Estado: {order_status}</p><table>{order_items}</table><p>Total: {order_total}</p>';
+        }
+
+        $placeholders = array(
+            '{order_number}' => $order->get_order_number(),
+            '{order_status}' => wc_get_order_status_name( $order->get_status() ),
+            '{order_items}'  => $items_html,
+            '{order_total}'  => $order->get_formatted_order_total(),
+            '{customer_name}' => $order->get_billing_first_name() . ' ' . $order->get_billing_last_name()
+        );
+
+        return str_replace( array_keys($placeholders), array_values($placeholders), $template );
+    }
+
+    /**
+     * Registra un envío en la tabla de cola (Atemporal para auditoría)
+     */
+    public function log_queued_email($recipient, $subject, $status, $body = '') {
         global $wpdb;
         $wpdb->insert($wpdb->prefix . 'expotodo_email_queue', array(
             'recipient'  => $recipient,
             'subject'    => $subject,
-            'body'       => $body,
             'status'     => $status,
+            'body'       => $body,
             'created_at' => current_time('mysql')
         ));
     }
@@ -126,65 +307,134 @@ class EmailController {
     }
 
     /**
-     * Renderiza la página de registro de cola
+     * Renderiza la Suite de Comunicación Boutique (Modern Grid UI)
      */
     public static function render_queue_page() {
         if (!current_user_can('manage_options')) return;
-        
-        global $wpdb;
-        $table = $wpdb->prefix . 'expotodo_email_queue';
-        $logs = $wpdb->get_results("SELECT * FROM $table ORDER BY created_at DESC LIMIT 50");
         ?>
-        <div class="wrap expotodo-admin-wrap">
-            <h1>Cola de Envío Boutique</h1>
-            <p class="description">Historial de auditoría para los correos enviados vía SMTP y WooCommerce.</p>
-            <hr class="wp-header-end">
-            
-            <div class="card" style="max-width: 100%; padding: 0; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: none;">
-                <table class="wp-list-table widefat fixed striped table-view-list">
-                    <thead>
-                        <tr>
-                            <th style="padding: 15px;">Fecha</th>
-                            <th>Destinatario</th>
-                            <th>Asunto</th>
-                            <th>Estado</th>
-                            <th style="width: 100px; text-align: center;">Accines</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if ($logs) : foreach ($logs as $log) : ?>
-                            <tr>
-                                <td style="padding: 12px 15px;"><?php echo date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($log->created_at)); ?></td>
-                                <td><strong><?php echo esc_html($log->recipient); ?></strong></td>
-                                <td><?php echo esc_html($log->subject); ?></td>
-                                <td>
-                                    <?php if ($log->status === 'sent') : ?>
-                                        <span class="status-pill" style="background: #e6fffa; color: #234e52; padding: 4px 12px; border-radius: 12px; font-size: 10px; font-weight: bold; text-transform: uppercase;">Enviado</span>
-                                    <?php else : ?>
-                                        <span class="status-pill" style="background: #fff5f5; color: #742a2a; padding: 4px 12px; border-radius: 12px; font-size: 10px; font-weight: bold; text-transform: uppercase;">Error</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td style="text-align: center;">
-                                    <button onclick="previewEmail(<?php echo $log->id; ?>)" class="button button-small" title="Ver contenido"><i class="fas fa-eye"></i></button>
-                                    <div id="email-body-<?php echo $log->id; ?>" style="display:none;"><?php echo $log->body; ?></div>
-                                </td>
-                            </tr>
-                        <?php endforeach; else : ?>
-                            <tr><td colspan="5" style="padding: 30px; text-align: center;">No hay registros de envíos boutique todavía.</td></tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+        <div class="wrap expotodo-dashboard">
+            <div class="exp-header">
+                <div>
+                    <h1 style="font-weight: 800; letter-spacing: -1px;">Cola de Envío</h1>
+                    <p style="color: #64748b; margin: 0;">Supervisión en tiempo real de las comunicaciones de Expotodo.</p>
+                </div>
+                <div id="sync-indicator" style="font-size: 12px; color: #94a3b8;">
+                    <span class="spinner is-active" style="float:none; margin:0 5px 0 0;"></span> Sincronizando...
+                </div>
+            </div>
+
+            <div id="email-grid-container" class="exp-grid">
+                <!-- Se carga vía AJAX -->
+            </div>
+        </div>
+
+        <!-- Modales -->
+        <div id="previewModal" class="exp-modal" onclick="closeModal('previewModal')">
+            <div class="exp-modal-content" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h2 id="previewSub" style="margin:0; font-size:18px;">Vista Previa</h2>
+                    <button class="button" onclick="closeModal('previewModal')">Cerrar</button>
+                </div>
+                <div class="modal-body" id="previewBody"></div>
+            </div>
+        </div>
+
+        <div id="logModal" class="exp-modal" onclick="closeModal('logModal')">
+            <div class="exp-modal-content" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h2 style="margin:0; font-size:18px;">Log de Auditoría Técnica</h2>
+                    <button class="button" onclick="closeModal('logModal')">Cerrar</button>
+                </div>
+                <div class="modal-body"><pre id="logContent" style="background:#f8fafc; padding:20px; border-radius:10px; overflow:auto;"></pre></div>
             </div>
         </div>
 
         <script>
-        function previewEmail(id) {
-            let body = document.getElementById('email-body-' + id).innerHTML;
-            let win = window.open("", "Expotodo Preview", "width=900,height=750");
-            win.document.write('<html><head><title>Vista Previa Boutique</title><style>body{font-family:sans-serif;margin:0;background:#f8f9fa;} .container{max-width:700px;margin:40px auto;background:#fff;padding:40px;box-shadow:0 10px 40px rgba(0,0,0,0.1);border-radius:12px;}</style></head><body><div class="container">' + body + '</div></body></html>');
-            win.document.close();
+        let lastId = 0;
+
+        function refreshGrid() {
+            jQuery.post(ajaxurl, { action: 'expotodo_fetch_queue' }, function(res) {
+                if (res.success) {
+                    jQuery('#email-grid-container').html(res.data);
+                    jQuery('#sync-indicator').html('✅ Actualizado ahora');
+                }
+            });
         }
+
+        function showPreview(id) {
+            let body = jQuery('#email-body-' + id).html();
+            let sub = jQuery('#email-sub-' + id).text();
+            jQuery('#previewSub').text(sub);
+            jQuery('#previewBody').html(body);
+            jQuery('#previewModal').fadeIn(200);
+        }
+
+        function showLog(id) {
+            let log = jQuery('#email-log-' + id).html();
+            jQuery('#logContent').text(log || 'No hay logs técnicos registrados todavía para este envío.');
+            jQuery('#logModal').fadeIn(200);
+        }
+
+        function closeModal(modalId) { jQuery('#' + modalId).fadeOut(200); }
+
+        function performAction(action, id) {
+            if (!confirm('¿Estás seguro de ' + action + ' este envío?')) return;
+            jQuery.post(ajaxurl, { action: 'expotodo_queue_action', email_action: action, id: id }, function(res) {
+                alert(res.data);
+                refreshGrid();
+            });
+        }
+
+        // Auto-refresh cada 10 segundos
+        setInterval(refreshGrid, 10000);
+        refreshGrid();
         </script>
         <?php
+    }
+
+    /**
+     * Maneja el fallo de wp_mail y actualiza la cola con el error real
+     */
+    public function handle_mail_failure( $error ) {
+        global $wpdb;
+        $error_message = $error->get_error_message();
+        $table = $wpdb->prefix . 'expotodo_email_queue';
+        
+        // Buscamos el último envío para documentar el fallo técnico
+        $last_entry = $wpdb->get_row("SELECT id, technical_log FROM $table ORDER BY id DESC LIMIT 1");
+
+        if ($last_entry) {
+            $log_entry = "\n[" . current_time('mysql') . "] ERROR TÉCNICO DETECTADO: " . $error_message;
+            $wpdb->update($table, array(
+                'status' => 'Failed',
+                'technical_log' => $last_entry->technical_log . $log_entry
+            ), array('id' => $last_entry->id));
+        }
+    }
+
+    /**
+     * AJAX: Realiza un envío de prueba
+     */
+    public function ajax_test_smtp() {
+        check_ajax_referer('expotodo_test_smtp');
+        
+        if ( !current_user_can('manage_options') ) {
+            wp_send_json_error('No tienes permisos');
+        }
+
+        $to = sanitize_email($_POST['email']);
+        $subject = '🧪 Prueba de Configuración Boutique - ' . get_bloginfo('name');
+        $message = '<h1>¡Hola Emanuel!</h1><p>Si estás leyendo esto, tu configuración de correo boutique está <strong>OPERATIVA</strong>.</p>';
+        $headers = array('Content-Type: text/html; charset=UTF-8');
+
+        $sent = wp_mail( $to, $subject, $message, $headers );
+
+        if ( $sent ) {
+            $this->log_queued_email($to, $subject, 'Sent (Test)', $message);
+            wp_send_json_success('Correo enviado con éxito');
+        } else {
+            $this->log_queued_email($to, $subject, 'Failed (Test)', $message);
+            wp_send_json_error('Error al enviar. Revisa la Cola de Envío para más detalles.');
+        }
     }
 }

@@ -8,7 +8,23 @@ if (!defined('ABSPATH')) exit;
 class AdminController {
 
     public function __construct() {
-        add_action( 'admin_menu', array( $this, 'register_menu' ) );
+        add_action('admin_menu', array($this, 'register_menu'));
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_styles'));
+    }
+
+    /**
+     * Carga los estilos premium solo en las páginas de Expotodo
+     */
+    public function enqueue_admin_styles($hook) {
+        // Solo cargamos si estamos en una de nuestras páginas
+        if (strpos($hook, 'expotodo') === false) return;
+        
+        wp_enqueue_style(
+            'expotodo-admin-css', 
+            get_template_directory_uri() . '/assets/css/admin-style.css', 
+            array(), 
+            time() // 🧪 cache-busting durante desarrollo
+        );
     }
 
     public function register_menu() {
@@ -102,14 +118,14 @@ class AdminController {
                     update_option('expotodo_google_analytics', isset($_POST['google_analytics']) ? sanitize_text_field($_POST['google_analytics']) : '');
                 }
 
-                echo '<div class="updated"><p>¡Ajustes de la sección <strong>' . strtoupper($active_tab) . '</strong> actualizados correctamente!</p></div>';
+                echo '<div class="updated"><p>Ajustes de <strong>' . strtoupper($active_tab) . '</strong> actualizados.</p></div>';
             }
         }
 
         ?>
         <div class="wrap expotodo-admin-wrap">
             <h1>Configuración Boutique Expotodo</h1>
-            <p class="description">Gestiona tu ecosistema digital desde un solo lugar.</p>
+            <p class="description">Gestión centralizada del ecosistema digital.</p>
             <hr class="wp-header-end">
 
             <h2 class="nav-tab-wrapper">
@@ -121,27 +137,26 @@ class AdminController {
             <form method="post" action="">
                 <?php wp_nonce_field('expotodo_settings_verify'); ?>
                 
-                <div class="card" style="max-width: 900px; margin-top: 0; padding: 30px; border-top: none; border-radius: 0 0 12px 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+                <div class="card" style="max-width: 900px; margin-top: 20px; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border:none; background:#fff;">
                     
                     <?php if ($active_tab === 'general') : 
                         $whatsapp = get_option('expotodo_whatsapp', '');
                         $boutique = get_option('expotodo_boutique_mode', 'yes');
                     ?>
-                        <h2 class="title">Identidad y Estilo</h2>
+                        <h2 class="title" style="margin-bottom:20px;">Identidad y Estilo</h2>
                         <table class="form-table" role="presentation">
                             <tr>
                                 <th scope="row"><label for="whatsapp">WhatsApp Directo</label></th>
                                 <td>
                                     <input name="whatsapp" type="text" id="whatsapp" value="<?php echo esc_attr($whatsapp); ?>" class="regular-text" placeholder="Ej: 5219991234567">
-                                    <p class="description">Número que alimenta el header y botones flotantes.</p>
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row">Capas Visuales Boutique</th>
+                                <th scope="row">Dashboard Boutique</th>
                                 <td>
                                     <label class="switch">
                                         <input name="boutique_mode" type="checkbox" id="boutique_mode" value="yes" <?php checked('yes', $boutique); ?>>
-                                        Activar Dashboard avanzado y Toasts informativos en el Front-end.
+                                        Activar visuales premium en el sitio.
                                     </label>
                                 </td>
                             </tr>
@@ -149,68 +164,91 @@ class AdminController {
 
                     <?php elseif ($active_tab === 'smtp') : 
                         $smtp_host = get_option('expotodo_smtp_host', '');
-                        $smtp_port = get_option('expotodo_smtp_port', '465');
+                        $smtp_port = get_option('expotodo_smtp_port', '587');
                         $smtp_user = get_option('expotodo_smtp_user', '');
-                        $smtp_secure = get_option('expotodo_smtp_secure', 'ssl');
+                        $smtp_secure = get_option('expotodo_smtp_secure', 'tls');
                         $smtp_from_name = get_option('expotodo_smtp_from_name', 'Expotodo Boutique');
                     ?>
-                        <h2 class="title">Motor de Envío Profesional</h2>
-                        <p class="description">Configura las credenciales de tu servidor de correo para evitar el SPAM.</p>
-                        <table class="form-table" role="presentation">
+                        <h2 class="title" style="margin-bottom:20px;">Motor de Envío Profesional (SMTP)</h2>
+                        <table class="form-table">
                             <tr>
-                                <th scope="row"><label for="smtp_host">Servidor SMTP</label></th>
-                                <td><input name="smtp_host" type="text" id="smtp_host" value="<?php echo esc_attr($smtp_host); ?>" class="regular-text"></td>
+                                <th scope="row">Nombre Remitente</th>
+                                <td><input type="text" name="smtp_from_name" value="<?php echo esc_attr($smtp_from_name); ?>" class="regular-text" /></td>
                             </tr>
                             <tr>
-                                <th scope="row"><label for="smtp_port">Puerto</label></th>
-                                <td><input name="smtp_port" type="text" id="smtp_port" value="<?php echo esc_attr($smtp_port); ?>" class="small-text"></td>
+                                <th scope="row">Servidor Host</th>
+                                <td><input type="text" name="smtp_host" value="<?php echo esc_attr($smtp_host); ?>" class="regular-text" /></td>
                             </tr>
                             <tr>
-                                <th scope="row"><label for="smtp_user">Usuario (Email)</label></th>
-                                <td><input name="smtp_user" type="text" id="smtp_user" value="<?php echo esc_attr($smtp_user); ?>" class="regular-text"></td>
+                                <th scope="row">Puerto</th>
+                                <td><input type="text" name="smtp_port" value="<?php echo esc_attr($smtp_port); ?>" class="small-text" /></td>
                             </tr>
                             <tr>
-                                <th scope="row"><label for="smtp_pass">Contraseña</label></th>
+                                <th scope="row">Seguridad</th>
                                 <td>
-                                    <input name="smtp_pass" type="password" id="smtp_pass" value="" class="regular-text">
-                                    <p class="description">Se mantiene la actual si se deja vacío.</p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><label for="smtp_secure">Cifrado</label></th>
-                                <td>
-                                    <select name="smtp_secure" id="smtp_secure">
-                                        <option value="ssl" <?php selected('ssl', $smtp_secure); ?>>SSL</option>
-                                        <option value="tls" <?php selected('tls', $smtp_secure); ?>>TLS</option>
-                                        <option value="none" <?php selected('none', $smtp_secure); ?>>Sin cifrado</option>
+                                    <select name="smtp_secure">
+                                        <option value="tls" <?php selected($smtp_secure, 'tls'); ?>>TLS (587)</option>
+                                        <option value="ssl" <?php selected($smtp_secure, 'ssl'); ?>>SSL (465)</option>
+                                        <option value="none" <?php selected($smtp_secure, 'none'); ?>>Ninguna</option>
                                     </select>
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row"><label for="smtp_from_name">Nombre Remitente</label></th>
-                                <td>
-                                    <input name="smtp_from_name" type="text" id="smtp_from_name" value="<?php echo esc_attr($smtp_from_name); ?>" class="regular-text">
-                                    <p class="description">Nombre que aparecerá al enviar los correos boutique.</p>
-                                </td>
+                                <th scope="row">Usuario</th>
+                                <td><input type="text" name="smtp_user" value="<?php echo esc_attr($smtp_user); ?>" class="regular-text" /></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Contraseña</th>
+                                <td><input type="password" name="smtp_pass" value="" class="regular-text" placeholder="●●●●●●●●" /></td>
                             </tr>
                         </table>
+
+                        <div style="margin-top: 30px; padding: 25px; background: #f0f4f8; border-radius: 12px; border-left: 5px solid #3b82f6;">
+                            <h4 style="margin:0 0 10px 0; color:#1e293b;">🧪 Prueba de Envío Botique</h4>
+                            <p style="color:#64748b; font-size:13px; margin-bottom:15px;">Verifica que tus credenciales funcionen antes de activarlo para los clientes.</p>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <input type="email" id="test_smtp_email" class="regular-text" style="margin:0;" placeholder="tu@correo.com" />
+                                <button type="button" id="btn_test_smtp" class="button button-secondary">Realizar Prueba</button>
+                                <span id="test_smtp_status" style="font-weight:bold;"></span>
+                            </div>
+                        </div>
+
+                        <script>
+                        jQuery(document).ready(function($) {
+                            $('#btn_test_smtp').on('click', function() {
+                                const email = $('#test_smtp_email').val();
+                                if (!email) return alert('Ingresa un correo');
+                                const btn = $(this);
+                                btn.prop('disabled', true).text('⏳ Enviando...');
+                                $('#test_smtp_status').html(' Procesando...').css('color', '#666');
+                                $.post(ajaxurl, {
+                                    action: 'expotodo_test_smtp',
+                                    email: email,
+                                    _ajax_nonce: '<?php echo wp_create_nonce("expotodo_test_smtp"); ?>'
+                                }, function(res) {
+                                    btn.prop('disabled', false).text('Realizar Prueba');
+                                    if (res.success) $('#test_smtp_status').html(' ✅ Éxito').css('color', '#059669');
+                                    else $('#test_smtp_status').html(' ❌ Error: ' + res.data).css('color', '#dc2626');
+                                });
+                            });
+                        });
+                        </script>
 
                     <?php elseif ($active_tab === 'tracking') : 
                         $ga = get_option('expotodo_google_analytics', '');
                     ?>
-                        <h2 class="title">Analítica y Rastreo</h2>
+                        <h2 class="title" style="margin-bottom:20px;">Rastreo y Analítica</h2>
                         <table class="form-table" role="presentation">
                             <tr>
                                 <th scope="row"><label for="google_analytics">Google Analytics ID</label></th>
                                 <td>
                                     <input name="google_analytics" type="text" id="google_analytics" value="<?php echo esc_attr($ga); ?>" class="regular-text" placeholder="G-XXXXXXXXXX">
-                                    <p class="description">Pega tu ID para activar el rastreo de eventos boutique.</p>
                                 </td>
                             </tr>
                         </table>
                     <?php endif; ?>
 
-                    <p class="submit">
+                    <p class="submit" style="margin-top:30px; border-top:1px solid #eee; padding-top:20px;">
                         <input type="submit" name="expotodo_save_settings" id="submit" class="button button-primary button-large" value="Guardar Cambios de <?php echo strtoupper($active_tab); ?>">
                     </p>
                 </div>

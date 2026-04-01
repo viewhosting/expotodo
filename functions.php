@@ -6,10 +6,38 @@
 
 if (!defined('ABSPATH')) exit;
 
-// 1. Cargador Maestro de Módulos
-// Escanea 'inc/controllers/*.php' e inicializa cada clase automáticamente.
+/**
+ * 1. Cargador Maestro de Módulos
+ * Escanea 'inc/controllers/*.php' e inicializa cada clase automáticamente.
+ */
 require_once get_template_directory() . '/inc/class-expotodo-loader.php';
 new Expotodo_Loader();
+
+/**
+ * 📧 INTERCEPTACIÓN BOUTIQUE DINÁMICA (Transformación Directa)
+ * Captura wp_mail y cambia el cuerpo del mensaje por la plantilla boutique al vuelo.
+ */
+add_filter('wp_mail', function($args) {
+    if (stripos($args['subject'], 'pedido') !== false || stripos($args['subject'], 'order') !== false) {
+        preg_match('/#(\d+)/', $args['subject'], $matches);
+        $order_id = isset($matches[1]) ? $matches[1] : 0;
+
+        if ($order_id && class_exists('EmailController')) {
+            $email_controller = new EmailController();
+            $order = wc_get_order($order_id);
+            
+            if ($order) {
+                // 🔄 TRANSFORMAR: Reemplazamos el mensaje original por el Boutique
+                $args['message'] = $email_controller->get_order_template($order);
+                $args['headers'] = array('Content-Type: text/html; charset=UTF-8');
+                
+                // Registramos en la cola para auditoría
+                $email_controller->log_queued_email($args['to'], $args['subject'], 'Intercepted', $args['message']);
+            }
+        }
+    }
+    return $args;
+}, 5, 1); // Prioridad 5 para entrar antes de cualquier SMTP
 
 /**
  * 2. Funciones globales de ayuda para compatibilidad con plantillas (Wrappers)
