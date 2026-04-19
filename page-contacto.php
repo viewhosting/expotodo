@@ -15,8 +15,50 @@ get_header();
                     <div class="bg-white p-4 rounded-3 shadow-sm h-100">
                         <h3 class="mb-4">Nuestras Sucursales</h3>
                         <div class="ratio ratio-4x3 mb-4">
-                            <iframe src="https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d60200.70636886737!2d-99.17557356616606!3d19.432607699999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1sexpotodo%20sucursales!5e0!3m2!1ses!2smx!4v1709660000000!5m2!1ses!2smx" 
-                                    style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                            <!-- Mapa Interactivo Multi-sucursal (Leaflet) -->
+                            <div id="map-sucursales" class="rounded-3 shadow-sm border" style="background: #f8f9fa;"></div>
+                            
+                            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+                            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+                            
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    // Inicializar mapa centrado entre CDMX y León
+                                    var map = L.map('map-sucursales', {
+                                        scrollWheelZoom: false
+                                    }).setView([20.268, -100.412], 6);
+
+                                    // Capa de mapa Estilo Boutique (Grisáceo/Limpio)
+                                    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                                        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+                                    }).addTo(map);
+
+                                    // Ubicaciones proporcionadas
+                                    var sucursales = [
+                                        {
+                                            coords: [19.4184973, -99.1474255],
+                                            nombre: "Matriz Centro",
+                                            info: "República de Uruguay 37, CDMX"
+                                        },
+                                        {
+                                            coords: [21.1193878, -101.6775186],
+                                            nombre: "Sucursal León",
+                                            info: "5 de Febrero 515, León, Gto."
+                                        }
+                                    ];
+
+                                    var group = new L.featureGroup();
+
+                                    sucursales.forEach(function(s) {
+                                        var marker = L.marker(s.coords).addTo(map)
+                                            .bindPopup('<div style="font-family: sans-serif;"><b>' + s.nombre + '</b><br><small>' + s.info + '</small></div>');
+                                        group.addLayer(marker);
+                                    });
+
+                                    // Ajustar vista para mostrar ambos marcadores
+                                    map.fitBounds(group.getBounds().pad(0.5));
+                                });
+                            </script>
                         </div>
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -24,7 +66,7 @@ get_header();
                                     <i class="fas fa-map-marker-alt text-primary mt-1 me-2"></i>
                                     <div>
                                         <h5 class="h6 fw-bold">Matriz Centro</h5>
-                                        <p class="small text-muted mb-0">República de Uruguay 123, Centro Histórico, CDMX</p>
+                                        <p class="small text-muted mb-0">República de Uruguay 37, Centro Histórico de la Cdad. de México, Centro, Cuauhtémoc, 06000 Ciudad de México, CDMX</p>
                                     </div>
                                 </div>
                             </div>
@@ -32,8 +74,8 @@ get_header();
                                 <div class="d-flex align-items-start">
                                     <i class="fas fa-map-marker-alt text-primary mt-1 me-2"></i>
                                     <div>
-                                        <h5 class="h6 fw-bold">Sucursal Norte</h5>
-                                        <p class="small text-muted mb-0">Av. Insurgentes Norte 456, Lindavista, CDMX</p>
+                                        <h5 class="h6 fw-bold">Sucursal León</h5>
+                                        <p class="small text-muted mb-0">5 de Febrero 515, Centro, 37000 León, Gto.</p>
                                     </div>
                                 </div>
                             </div>
