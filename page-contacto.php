@@ -15,50 +15,62 @@ get_header();
                     <div class="bg-white p-4 rounded-3 shadow-sm h-100">
                         <h3 class="mb-4">Nuestras Sucursales</h3>
                         <div class="ratio ratio-4x3 mb-4">
-                            <!-- Mapa Interactivo Multi-sucursal (Leaflet) -->
+                            <!-- Contenedor del Mapa oficial de Google -->
                             <div id="map-sucursales" class="rounded-3 shadow-sm border" style="background: #f8f9fa;"></div>
                             
-                            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-                            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-                            
                             <script>
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    // Inicializar mapa centrado entre CDMX y León
-                                    var map = L.map('map-sucursales', {
-                                        scrollWheelZoom: false
-                                    }).setView([20.268, -100.412], 6);
-
-                                    // Capa de mapa Estilo Boutique (Grisáceo/Limpio)
-                                    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                                        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-                                    }).addTo(map);
-
-                                    // Ubicaciones proporcionadas
-                                    var sucursales = [
-                                        {
-                                            coords: [19.4184973, -99.1474255],
-                                            nombre: "Matriz Centro",
-                                            info: "República de Uruguay 37, CDMX"
+                                function initMap() {
+                                    var locations = [
+                                        { 
+                                            lat: 19.4184973, 
+                                            lng: -99.1474255, 
+                                            title: "Matriz Centro",
+                                            address: "República de Uruguay 37, CDMX"
                                         },
-                                        {
-                                            coords: [21.1193878, -101.6775186],
-                                            nombre: "Sucursal León",
-                                            info: "5 de Febrero 515, León, Gto."
+                                        { 
+                                            lat: 21.1193878, 
+                                            lng: -101.6775186, 
+                                            title: "Sucursal León",
+                                            address: "5 de Febrero 515, León, Gto."
                                         }
                                     ];
 
-                                    var group = new L.featureGroup();
-
-                                    sucursales.forEach(function(s) {
-                                        var marker = L.marker(s.coords).addTo(map)
-                                            .bindPopup('<div style="font-family: sans-serif;"><b>' + s.nombre + '</b><br><small>' + s.info + '</small></div>');
-                                        group.addLayer(marker);
+                                    var map = new google.maps.Map(document.getElementById('map-sucursales'), {
+                                        zoom: 6,
+                                        center: { lat: 20.268, lng: -100.412 },
+                                        scrollwheel: false,
+                                        styles: [
+                                            { "featureType": "administrative", "elementType": "labels.text.fill", "stylers": [{ "color": "#444444" }] },
+                                            { "featureType": "landscape", "elementType": "all", "stylers": [{ "color": "#f2f2f2" }] },
+                                            { "featureType": "poi", "elementType": "all", "stylers": [{ "visibility": "off" }] }
+                                        ]
                                     });
 
-                                    // Ajustar vista para mostrar ambos marcadores
-                                    map.fitBounds(group.getBounds().pad(0.5));
-                                });
+                                    var bounds = new google.maps.LatLngBounds();
+                                    var infoWindow = new google.maps.InfoWindow();
+
+                                    locations.forEach(function(loc) {
+                                        var marker = new google.maps.Marker({
+                                            position: { lat: loc.lat, lng: loc.lng },
+                                            map: map,
+                                            title: loc.title,
+                                            animation: google.maps.Animation.DROP
+                                        });
+
+                                        marker.addListener('click', function() {
+                                            infoWindow.setContent('<strong>' + loc.title + '</strong><br>' + loc.address);
+                                            infoWindow.open(map, marker);
+                                        });
+
+                                        bounds.extend(marker.getPosition());
+                                    });
+
+                                    // Ajustar el mapa para que se vean todos los marcadores
+                                    map.fitBounds(bounds);
+                                }
                             </script>
+                            <!-- REEMPLAZAR 'TU_API_KEY_AQUI' con una clave válida de Google Maps API -->
+                            <script src="https://maps.googleapis.com/maps/api/js?key=TU_API_KEY_AQUI&callback=initMap" async defer></script>
                         </div>
                         <div class="row g-3">
                             <div class="col-md-6">
