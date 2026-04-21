@@ -9,7 +9,7 @@ get_header();
     <section class="py-5">
         <div class="container">
             <h1 class="text-center mb-5">Nuestras Categorías</h1>
-            <div class="row g-4 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
+            <div class="row g-4 row-cols-2 row-cols-md-3 row-cols-lg-4">
                 <?php
                 $terms = get_terms(array(
                     'taxonomy'   => 'product_cat',
@@ -28,9 +28,9 @@ get_header();
                 <div class="col">
                     <a href="<?php echo esc_url(get_term_link($term)); ?>" class="text-decoration-none">
                         <div class="card h-100 border-0 shadow-sm hover-shadow transition-all">
-                            <div class="card-img-top overflow-hidden" style="height: 250px;">
+                            <div class="card-img-top overflow-hidden" style="height: 200px;">
                                 <img src="<?php echo esc_url($image_url); ?>" 
-                                     class="w-100 h-100 object-fit-cover" 
+                                     class="w-100 h-100 object-fit-contain" 
                                      alt="<?php echo esc_attr($term->name); ?>">
                             </div>
                             <div class="card-body text-center">
