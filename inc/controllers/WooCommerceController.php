@@ -124,9 +124,10 @@ class WooCommerceController {
             'order'               => 'DESC'
         );
 
-        // Si estamos en la página 1, nos aseguramos de que estos IDs problemáticos no se pierdan
-        if ($paged == 1 && empty($category)) {
-            // $args['post__in'] = array(8670, 7745, 7744); // Descomentar solo si quieres forzar solo estos
+        // Si estamos en la página 1, forzamos estos IDs para ver si cargan
+        if ($paged == 1) {
+             $args['post__in'] = array(8670, 7745, 7744);
+             $args['orderby'] = 'post__in'; 
         }
 
         // Filtro por Categorías
