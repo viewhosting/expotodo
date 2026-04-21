@@ -80,48 +80,120 @@ class WooCommerceController {
     }
 
     public function ajax_filter_products() {
+        check_ajax_referer('expotodo_filter_nonce', 'nonce');
+        
         $category = isset($_POST['categories']) ? (array) $_POST['categories'] : array();
         $paged = isset($_POST['page']) ? intval($_POST['page']) : 1;
+        $price_range = isset($_POST['price_range']) ? sanitize_text_field($_POST['price_range']) : 'all';
         $min_price = isset($_POST['min_price']) ? floatval($_POST['min_price']) : 0;
         $max_price = isset($_POST['max_price']) ? floatval($_POST['max_price']) : 999999;
+        $flags = isset($_POST['flags']) ? (array) $_POST['flags'] : array();
+
+        // Lógica de rangos predefinidos (de archive-product.php)
+        if ($price_range !== 'all') {
+            if ($price_range === 'low') { $min_price = 0; $max_price = 300; }
+            elseif ($price_range === 'mid') { $min_price = 300; $max_price = 600; }
+            elseif ($price_range === 'high') { $min_price = 600; $max_price = 999999; }
+        }
 
         $args = array(
-            'post_type' => 'product',
+            'post_type'      => 'product', // Incluye simple y variable por defecto
             'posts_per_page' => 16,
-            'paged' => $paged,
-            'status' => 'publish',
-            'tax_query' => array('relation' => 'AND'),
-            'meta_query' => array('relation' => 'AND')
+            'paged'          => $paged,
+            'status'         => 'publish',
+            'tax_query'      => array('relation' => 'AND'),
+            'meta_query'     => array('relation' => 'AND'),
+            'orderby'        => 'date',
+            'order'          => 'DESC'
         );
 
+        // Filtro por Categorías
         if ( !empty($category) && $category[0] !== 'all' ) {
-            $args['tax_query'][] = array('taxonomy' => 'product_cat', 'field' => 'slug', 'terms' => $category);
+            $args['tax_query'][] = array(
+                'taxonomy' => 'product_cat',
+                'field'    => 'slug',
+                'terms'    => $category
+            );
+        }
+
+        // Filtro por Precio
+        if ($min_price > 0 || $max_price < 999999) {
+            $args['meta_query'][] = array(
+                'key'     => '_price',
+                'value'   => array($min_price, $max_price),
+                'compare' => 'BETWEEN',
+                'type'    => 'NUMERIC'
+            );
         }
 
         $loop = new WP_Query( $args );
+        
         ob_start();
         if ( $loop->have_posts() ) :
             while ( $loop->have_posts() ) : $loop->the_post();
                 global $product;
+                if ( !is_a($product, 'WC_Product') ) continue;
+                
+                $product_id = get_the_ID();
+                $terms = get_the_terms( $product_id, 'product_cat' );
+                $cat_name = !empty($terms) && !is_wp_error($terms) ? $terms[0]->name : '';
+                $wishlist = function_exists('expotodo_get_user_wishlist') ? expotodo_get_user_wishlist() : array();
                 ?>
-                <div class="col product-grid-item">
-                    <div class="card h-100 product-card border-0 shadow-sm">
+                <div class="col product-grid-item" 
+                     data-category="<?php echo esc_attr( implode(' ', wp_list_pluck( $terms, 'slug' ) ) ); ?>"
+                     data-price="<?php echo esc_attr( $product->get_price() ); ?>">
+                    <article class="product-card h-100">
                         <div class="product-image-container">
-                            <?php the_post_thumbnail('medium', array('class' => 'product-image')); ?>
+                            <?php if ($cat_name) : ?>
+                                <div class="product-category"><?php echo esc_html($cat_name); ?></div>
+                            <?php endif; ?>
+
+                            <?php if ( $product->is_on_sale() ) : ?>
+                                <div class="product-category sale" style="top: 40px; background-color: #dc3545;">Oferta</div>
+                            <?php endif; ?>
+                            
+                            <button type="button" class="btn-add-wishlist" data-id="<?php echo $product_id; ?>" title="Agregar a lista de deseos">
+                                <i class="<?php echo in_array($product_id, $wishlist) ? 'fas text-danger' : 'far'; ?> fa-heart"></i>
+                            </button>
+
+                            <a href="<?php the_permalink(); ?>">
+                                <?php 
+                                if (has_post_thumbnail()) {
+                                    the_post_thumbnail('large', array('class' => 'product-image'));
+                                } else {
+                                    echo '<img src="https://via.placeholder.com/300x300?text=No+Image" class="product-image" alt="' . get_the_title() . '">';
+                                }
+                                ?>
+                            </a>
                         </div>
                         <div class="product-content p-3">
-                            <h3 class="product-title"><?php the_title(); ?></h3>
-                            <div class="product-price"><?php echo $product->get_price_html(); ?></div>
-                            <a class="btn-card btn-primary" href="<?php the_permalink(); ?>">Ver detalles</a>
+                            <h3 class="product-title"><a href="<?php the_permalink(); ?>" class="text-decoration-none text-dark"><?php the_title(); ?></a></h3>
+                            <p class="product-description small text-muted">
+                                <?php echo wp_trim_words(get_the_excerpt(), 10, '...'); ?>
+                            </p>
+                            <div class="product-price mb-3">
+                                <?php echo $product->get_price_html(); ?>
+                            </div>
+                            <a href="<?php the_permalink(); ?>" class="btn-card btn-primary w-100 mb-2">
+                                <i class="fas fa-eye me-2"></i> Ver detalles
+                            </a>
+                            <a href="<?php echo esc_url( $product->add_to_cart_url() ); ?>" class="btn-card btn-outline-primary w-100 ajax_add_to_cart" data-quantity="1" data-product_id="<?php echo $product_id; ?>">
+                                <i class="fas fa-shopping-cart me-2"></i> Agregar
+                            </a>
                         </div>
-                    </div>
+                    </article>
                 </div>
                 <?php
             endwhile;
             wp_reset_postdata();
         endif;
+        
         $content = ob_get_clean();
-        wp_send_json_success( array('html' => $content, 'max_pages' => $loop->max_num_pages) );
+        wp_send_json_success( array(
+            'html' => $content, 
+            'max_pages' => $loop->max_num_pages,
+            'count' => $loop->found_posts
+        ));
     }
 
     public function cart_fragments( $fragments ) {
