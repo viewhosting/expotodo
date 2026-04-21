@@ -211,7 +211,11 @@ class WooCommerceController {
             wp_reset_postdata();
         endif;
         $content = ob_get_clean();
-        wp_send_json_success( array('html' => $content, 'max_pages' => $loop->max_num_pages) );
+        wp_send_json_success( array(
+            'html'      => $content, 
+            'max_pages' => $loop->max_num_pages,
+            'sql'       => $loop->request // DEBUG: Ver la consulta SQL en la consola Network
+        ));
     }
 
     public function cart_fragments( $fragments ) {
