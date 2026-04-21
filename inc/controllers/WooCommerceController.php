@@ -114,11 +114,20 @@ class WooCommerceController {
         $args = array(
             'post_type'           => 'product',
             'post_status'         => 'publish',
-            'posts_per_page'      => 16,
+            'posts_per_page'      => 50, // Aumentamos para verlos todos de golpe
             'paged'               => $paged,
             'suppress_filters'    => true,
             'ignore_sticky_posts' => true,
-            'tax_query'           => array('relation' => 'AND'),
+            'tax_query'           => array(
+                'relation' => 'AND',
+                // Forzamos que NO se excluyan del catálogo
+                array(
+                    'taxonomy' => 'product_visibility',
+                    'field'    => 'name',
+                    'terms'    => 'exclude-from-catalog',
+                    'operator' => 'NOT IN',
+                ),
+            ),
             'meta_query'          => array('relation' => 'AND'),
             'orderby'             => 'date',
             'order'               => 'DESC'
