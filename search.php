@@ -1,7 +1,6 @@
 <?php
-/**
- * The template for displaying search results pages
- */
+/* Template Name: Buscar */
+
 get_header();
 
 $search_query = get_search_query();

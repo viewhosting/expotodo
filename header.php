@@ -75,26 +75,38 @@
 
     <div class="right-sidebar" id="buscarPanel">
         <div class="right-sidebar-header">
-            <h5 class="right-sidebar-title">Tú búsqueda</h5>
+            <h5 class="right-sidebar-title">Búsqueda de Productos</h5>
             <button type="button" class="close-sidebar-btn" aria-label="Cerrar">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <div class="d-flex flex-column flex-grow-1 overflow-hidden">
-            <div class="mb-12">
-                    <label for="productoBusqueda" class="form-label mb-1">Puedes buscar por modelo</label>
-                    <div class="input-group input-group-sm">
-                        <input type="text" class="form-control" id="productoBusqueda" placeholder="Ej. A-13">
+        <form action="<?php echo esc_url( home_url( '/' ) ); ?>" method="get" class="d-flex flex-column flex-grow-1 overflow-hidden">
+        
+            <div class="d-flex flex-column flex-grow-1 overflow-hidden">
+                <div class="mb-12">
+                        <label for="productoBusqueda" class="form-label mb-1">Puedes buscar por modelo</label>
+                        <div class="input-group input-group-sm">
+
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            <input type="hidden" name="post_type" value="product">
+
+
+                            <input type="text" class="form-control" id="productoBusqueda" placeholder="Ej. A-13">
+                        </div>
+                        <div class="mt-1 small text-muted cart-shipping-message"></div>
                     </div>
-                    <div class="mt-1 small text-muted cart-shipping-message"></div>
-                </div>
-            <div id="search-results-list" class="search-results-list flex-grow-1 overflow-auto"></div>
-            <div class="cart-summary mt-4">
-                <div class="mt-3 d-grid gap-2">
-                    <a href="<?php echo home_url('/buscar'); ?>" class="btn btn-primary">Buscar</a>
+                <div id="search-results-list" class="search-results-list flex-grow-1 overflow-auto"></div>
+                <div class="cart-summary mt-4">
+                    <div class="mt-3 d-grid gap-2">
+                        <button type="submit" class="btn btn-primary shadow-sm">
+                        Buscar
+                    </button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </form>
     </div>
 
 

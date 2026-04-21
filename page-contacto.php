@@ -22,16 +22,16 @@ get_header();
                                 function initMap() {
                                     var locations = [
                                         { 
-                                            lat: 19.4184973, 
-                                            lng: -99.1474255, 
+                                            lat: 19.4306729, 
+                                            lng: -99.1383525, 
                                             title: "Matriz Centro",
-                                            address: "República de Uruguay 37, CDMX"
+                                            address: "República de Uruguay 37, Centro Histórico de la Cdad. de México, Centro, Cuauhtémoc, 06000 Ciudad de México, CDMX"
                                         },
                                         { 
-                                            lat: 21.1193878, 
-                                            lng: -101.6775186, 
+                                            lat: 21.1194371, 
+                                            lng: -101.6775147, 
                                             title: "Sucursal León",
-                                            address: "5 de Febrero 515, León, Gto."
+                                            address: "5 de Febrero 515, Centro, 37000 León, Gto."
                                         }
                                     ];
 
@@ -70,7 +70,7 @@ get_header();
                                 }
                             </script>
                             <!-- REEMPLAZAR 'TU_API_KEY_AQUI' con una clave válida de Google Maps API -->
-                            <script src="https://maps.googleapis.com/maps/api/js?key=TU_API_KEY_AQUI&callback=initMap" async defer></script>
+                            <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDD0onsVecR7aXcELdaTPrPzSvOgm6Ei9I&callback=initMap" async defer></script>
                         </div>
                         <div class="row g-3">
                             <div class="col-md-6">
