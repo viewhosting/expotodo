@@ -41,6 +41,9 @@ class WooCommerceController {
         // Account Address Form
         add_action( 'wp_ajax_expotodo_get_address_form', array( $this, 'ajax_get_address_form' ) );
         add_action( 'wp_ajax_expotodo_save_address_ajax', array( $this, 'ajax_save_address' ) );
+
+        // Global Query Fixes (para que afecte a la carga normal y no solo AJAX)
+        add_action( 'pre_get_posts', array( $this, 'modify_main_query_visibility' ) );
     }
 
     public function custom_checkout_fields( $fields ) {
@@ -218,8 +221,34 @@ class WooCommerceController {
 
         wp_send_json_success( array(
             'html'      => $content, 
+            'sql' => $args,
             'max_pages' => $loop->max_num_pages
         ));
+    }
+
+    /**
+     * Fuerza la visibilidad de productos que podrían estar ocultos por WooCommerce
+     */
+    public function modify_main_query_visibility( $query ) {
+        if ( is_admin() || !$query->is_main_query() ) {
+            return;
+        }
+
+        if ( is_shop() || is_product_category() || is_product_tag() ) {
+            $tax_query = (array) $query->get( 'tax_query' );
+
+            $tax_query[] = array(
+                'taxonomy' => 'product_visibility',
+                'field'    => 'name',
+                'terms'    => array( 'exclude-from-catalog', 'exclude-from-search' ),
+                'operator' => 'NOT IN',
+            );
+
+            $query->set( 'tax_query', $tax_query );
+            
+            // También nos aseguramos de que traiga suficientes productos por página
+            $query->set( 'posts_per_page', 50 );
+        }
     }
 
     public function cart_fragments( $fragments ) {
