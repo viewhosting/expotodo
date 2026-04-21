@@ -159,6 +159,7 @@ class WooCommerceController {
                 global $product;
                 ?>
                 <div class="col product-grid-item">
+                    <span style="color:red; font-weight:bold;">DEBUG-TEST-V1</span>
                     <article class="product-card h-100">
                         <div class="product-image-container">
                             <?php 
