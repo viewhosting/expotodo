@@ -42,8 +42,8 @@ class WooCommerceController {
         add_action( 'wp_ajax_expotodo_get_address_form', array( $this, 'ajax_get_address_form' ) );
         add_action( 'wp_ajax_expotodo_save_address_ajax', array( $this, 'ajax_save_address' ) );
 
-        // Global Query Fixes (para que afecte a la carga normal y no solo AJAX)
-        add_action( 'pre_get_posts', array( $this, 'modify_main_query_visibility' ) );
+        // Fix Visibilidad Global (Carga Inicial)
+        add_action( 'woocommerce_product_query', array( $this, 'modify_wc_product_query' ) );
     }
 
     public function custom_checkout_fields( $fields ) {
@@ -162,7 +162,6 @@ class WooCommerceController {
                 global $product;
                 ?>
                 <div class="col product-grid-item">
-                    <span style="color:red; font-weight:bold;">DEBUG-TEST-V1</span>
                     <article class="product-card h-100">
                         <div class="product-image-container">
                             <?php 
@@ -221,34 +220,26 @@ class WooCommerceController {
 
         wp_send_json_success( array(
             'html'      => $content, 
-            'sql' => $args,
+            'sql'       => $args,
             'max_pages' => $loop->max_num_pages
         ));
     }
 
     /**
-     * Fuerza la visibilidad de productos que podrían estar ocultos por WooCommerce
+     * Ajusta la consulta inicial de WooCommerce para mostrar productos ocultos
      */
-    public function modify_main_query_visibility( $query ) {
-        if ( is_admin() || !$query->is_main_query() ) {
-            return;
-        }
+    public function modify_wc_product_query( $q ) {
+        $tax_query = (array) $q->get( 'tax_query' );
 
-        if ( is_shop() || is_product_category() || is_product_tag() ) {
-            $tax_query = (array) $query->get( 'tax_query' );
+        $tax_query[] = array(
+            'taxonomy' => 'product_visibility',
+            'field'    => 'name',
+            'terms'    => array( 'exclude-from-catalog', 'exclude-from-search' ),
+            'operator' => 'NOT IN',
+        );
 
-            $tax_query[] = array(
-                'taxonomy' => 'product_visibility',
-                'field'    => 'name',
-                'terms'    => array( 'exclude-from-catalog', 'exclude-from-search' ),
-                'operator' => 'NOT IN',
-            );
-
-            $query->set( 'tax_query', $tax_query );
-            
-            // También nos aseguramos de que traiga suficientes productos por página
-            $query->set( 'posts_per_page', 50 );
-        }
+        $q->set( 'tax_query', $tax_query );
+        $q->set( 'posts_per_page', 50 ); // Forzamos 50 para ver todos los ganchos
     }
 
     public function cart_fragments( $fragments ) {
