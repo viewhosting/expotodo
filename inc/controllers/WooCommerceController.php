@@ -206,14 +206,17 @@ class WooCommerceController {
                         </div>
                     </article>
                 </div>
-<?php
-            endwhile;
-            wp_reset_postdata();
-        endif;
         $content = ob_get_clean();
+
+        // AUDITORÍA DIRECTA DE BASE DE DATOS PARA ESTOS IDS
+        global $wpdb;
+        $debug_results = $wpdb->get_results("SELECT ID, post_title, post_type, post_status FROM {$wpdb->posts} WHERE ID IN (8670, 7745, 7744)");
+
         wp_send_json_success( array(
             'html'      => $content, 
-            'max_pages' => $loop->max_num_pages
+            'max_pages' => $loop->max_num_pages,
+            'debug_ids' => $debug_results,
+            'args_used' => $args // También vemos qué args se usaron al final
         ));
     }
 
