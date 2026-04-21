@@ -113,13 +113,21 @@ class WooCommerceController {
 
         $args = array(
             'post_type'      => 'product',
+            'post_status'    => 'publish',
             'posts_per_page' => 16,
             'paged'          => $paged,
-            'status'         => 'publish',
             'tax_query'      => array('relation' => 'AND'),
             'meta_query'     => array('relation' => 'AND'),
             'orderby'        => 'date',
             'order'          => 'DESC'
+        );
+
+        // Asegurar visibilidad en el catálogo
+        $args['tax_query'][] = array(
+            'taxonomy' => 'product_visibility',
+            'field'    => 'name',
+            'terms'    => 'exclude-from-catalog',
+            'operator' => 'NOT IN',
         );
 
         // Filtro por Categorías
