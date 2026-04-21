@@ -112,14 +112,16 @@ class WooCommerceController {
         $max_price = isset($_POST['max_price']) ? floatval($_POST['max_price']) : 999999;
 
         $args = array(
-            'post_type'      => 'product',
-            'post_status'    => 'publish',
-            'posts_per_page' => 16,
-            'paged'          => $paged,
-            'tax_query'      => array('relation' => 'AND'),
-            'meta_query'     => array('relation' => 'AND'),
-            'orderby'        => 'date',
-            'order'          => 'DESC'
+            'post_type'           => 'product',
+            'post_status'         => 'publish',
+            'posts_per_page'      => 16,
+            'paged'               => $paged,
+            'suppress_filters'    => true, // Ignorar otros filtros externos
+            'ignore_sticky_posts' => true,
+            'tax_query'           => array('relation' => 'AND'),
+            'meta_query'          => array('relation' => 'AND'),
+            'orderby'             => 'date',
+            'order'               => 'DESC'
         );
 
         // Asegurar visibilidad en el catálogo
