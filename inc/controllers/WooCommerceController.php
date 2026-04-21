@@ -124,11 +124,9 @@ class WooCommerceController {
             'order'               => 'DESC'
         );
 
-        // Si estamos en la página 1, forzamos estos IDs para ver si cargan
-        if ($paged == 1) {
-             $args['post__in'] = array(8670, 7745, 7744);
-             $args['orderby'] = 'post__in'; 
-        }
+        // FORZADO DE IDS PARA DIAGNÓSTICO (En todas las páginas para asegurar que los vemos)
+        $args['post__in'] = array(8670, 7745, 7744);
+        $args['orderby'] = 'post__in'; 
 
         // Filtro por Categorías
         if ( !empty($category) && $category[0] !== 'all' ) {
@@ -206,6 +204,10 @@ class WooCommerceController {
                         </div>
                     </article>
                 </div>
+                <?php
+            endwhile;
+            wp_reset_postdata();
+        endif;
         $content = ob_get_clean();
 
         // AUDITORÍA DIRECTA DE BASE DE DATOS PARA ESTOS IDS
