@@ -24,28 +24,18 @@
                 
                 <!-- Contenido del menú -->
                 <div class="collapse navbar-collapse" id="navbarMain">
-                    <!-- Menú de navegación -->
-                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
-                        <li class="nav-item pt-3">
-                            <a class="nav-link" href="<?php echo home_url(); ?>">Principal</a>
-                        </li>
-                        <li class="nav-item pt-3">
-                            <a class="nav-link" href="<?php echo home_url('/productos'); ?>">Productos</a>
-                        </li>
-                        <li class="nav-item pt-3">
-                            <a class="nav-link" href="<?php echo home_url('/catalogo'); ?>">Catálogo</a>
-                        </li>
-                        <li class="nav-item pt-3">
-                            <a class="nav-link" href="<?php echo home_url('/#mercado-libre'); ?>">Mercado Libre</a>
-                        </li>
-                        <li class="nav-item pt-3">
-                            <a class="nav-link" href="<?php echo home_url('/#amazon'); ?>">Amazon</a>
-                        </li>
-                        <li class="nav-item pt-3">
-                            <a class="nav-link" href="<?php echo home_url('/contacto'); ?>">Contacto</a>
-                        </li>
-                        
-                        <!-- Teléfono -->
+                    <!-- Menú de navegación dinámico desde WordPress -->
+                    <?php
+                    wp_nav_menu( array(
+                        'theme_location' => 'primary',
+                        'container'      => false,
+                        'menu_class'     => 'navbar-nav ms-auto mb-2 mb-lg-0 align-items-center',
+                        'fallback_cb'    => '__return_false',
+                        'items_wrap'     => '<ul id="%1$s" class="%2$s">%3$s</ul>',
+                    ) );
+                    ?>
+                    
+                    <ul class="navbar-nav align-items-center">
                         <li class="nav-item menu-item-hotline">
                             <div class="d-flex align-items-center h-100">
                                 <i class="fas fa-phone icon-telephone"></i>

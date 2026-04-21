@@ -16,6 +16,10 @@ class ThemeController {
         // Live Search
         add_action( 'wp_ajax_expotodo_live_search', array( $this, 'ajax_live_search' ) );
         add_action( 'wp_ajax_nopriv_expotodo_live_search', array( $this, 'ajax_live_search' ) );
+
+        // Filtros para clases de menú Bootstrap 5
+        add_filter( 'nav_menu_css_class', array( $this, 'add_li_class' ), 10, 3 );
+        add_filter( 'nav_menu_link_attributes', array( $this, 'add_a_class' ), 10, 3 );
     }
 
     public function theme_setup() {
@@ -25,6 +29,10 @@ class ThemeController {
         add_theme_support( 'wc-product-gallery-zoom' );
         add_theme_support( 'wc-product-gallery-lightbox' );
         add_theme_support( 'wc-product-gallery-slider' );
+        
+        register_nav_menus( array(
+            'primary' => __( 'Menú Principal', 'expotodo' ),
+        ) );
     }
 
     public function enqueue_assets() {
@@ -158,5 +166,25 @@ class ThemeController {
         $content = ob_get_clean();
         wp_send_json_success( array( 'html' => $content ) );
         wp_die();
+    }
+
+    /**
+     * Añade la clase 'nav-item' a los elementos <li> del menú
+     */
+    public function add_li_class( $classes, $item, $args ) {
+        if ( isset( $args->theme_location ) && $args->theme_location == 'primary' ) {
+            $classes[] = 'nav-item pt-3';
+        }
+        return $classes;
+    }
+
+    /**
+     * Añade la clase 'nav-link' a los elementos <a> del menú
+     */
+    public function add_a_class( $atts, $item, $args ) {
+        if ( isset( $args->theme_location ) && $args->theme_location == 'primary' ) {
+            $atts['class'] = 'nav-link';
+        }
+        return $atts;
     }
 }
