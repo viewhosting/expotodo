@@ -2158,3 +2158,97 @@ a.added_to_cart {
         border-radius: 10px !important;
     }
 }
+/* ==========================================
+   PÁGINA DE BÚSQUEDA Y PANEL LATERAL
+   ========================================== */
+.search-result-item {
+    transition: background-color 0.2s ease;
+}
+
+.search-result-item:hover {
+    background-color: #f8f9fa;
+}
+
+.search-result-image img {
+    object-fit: cover;
+}
+
+.search-result-info h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+}
+
+.search-form-page .input-group {
+    background: #fff;
+}
+
+.search-form-page input:focus {
+    box-shadow: none;
+    outline: none;
+}
+
+.hover-shadow:hover {
+    box-shadow: 0 1rem 3rem rgba(0,0,0,.1) !important;
+}
+
+.transition-all {
+    transition: all 0.3s ease-in-out;
+}
+
+.pagination-boutique .page-numbers {
+    display: flex;
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+    margin-top: 30px;
+}
+
+.pagination-boutique .page-numbers a, 
+.pagination-boutique .page-numbers span {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--primary-dark);
+    border: 1px solid #dee2e6;
+    border-radius: 50%;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.pagination-boutique .page-numbers .current {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--primary-dark);
+}
+
+.pagination-boutique .page-numbers a:hover {
+    background-color: var(--primary-dark);
+    color: white;
+    border-color: var(--primary-dark);
+}
+
+#buscarPanel .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(176, 212, 67, 0.25);
+}
+
+.search-results-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.search-results-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.search-results-list::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 10px;
+}
+
+.search-results-list::-webkit-scrollbar-thumb:hover {
+    background: #ccc;
+}
