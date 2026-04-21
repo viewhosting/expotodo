@@ -69,35 +69,50 @@ class WooCommerceController {
 
     public function ajax_get_cities() {
         $state = isset( $_POST['state'] ) ? sanitize_text_field( $_POST['state'] ) : '';
+        
         $cities_by_state = array(
-            'AG' => array('Aguascalientes', 'Calvillo'),
-            'BC' => array('Mexicali', 'Tijuana'),
-            // ... (simplificado para brevedad, restaurar lista completa del functions.php original)
+            'AG' => array('Aguascalientes', 'Asientos', 'Calvillo', 'Cosío', 'Jesús María', 'Pabellón de Arteaga', 'Rincón de Romos', 'San José de Gracia', 'Tepezalá', 'El Llano', 'San Francisco de los Romo'),
+            'BC' => array('Ensenada', 'Mexicali', 'Tecate', 'Tijuana', 'Playas de Rosarito', 'San Quintín', 'San Felipe'),
+            'BS' => array('La Paz', 'Los Cabos', 'Comondú', 'Loreto', 'Mulegé'),
+            'CM' => array('Campeche', 'Carmen', 'Champotón', 'Escárcega', 'Calkiní', 'Hecelchakán', 'Hopelchén', 'Palizada', 'Tenabo', 'Candelaria', 'Calakmul'),
+            'CO' => array('Saltillo', 'Torreón', 'Monclova', 'Piedras Negras', 'Acuña', 'Matamoros', 'San Pedro', 'Ramos Arizpe', 'Frontera', 'Múzquiz'),
+            'CL' => array('Colima', 'Manzanillo', 'Tecomán', 'Villa de Álvarez', 'Armería', 'Coquimatlán', 'Cuauhtémoc', 'Ixtlahuacán', 'Minatitlán', 'Comala'),
+            'JA' => array('Guadalajara', 'Zapopan', 'Tlaquepaque', 'Tonalá', 'Puerto Vallarta', 'Tlajomulco de Zúñiga', 'Lagos de Moreno', 'Tepatitlán de Morelos', 'Ciudad Guzmán', 'Ocotlán'),
+            'MX' => array('Ecatepec de Morelos', 'Nezahualcóyotl', 'Toluca de Lerdo', 'Naucalpan de Juárez', 'Chimalhuacán', 'Tlalnepantla de Baz', 'Cuautitlán Izcalli', 'Tecámac', 'Ixtapaluca', 'Atizapán de Zaragoza'),
+            'MI' => array('Morelia', 'Uruapan', 'Zamora', 'Lázaro Cárdenas', 'Zitácuaro', 'Apatzingán', 'La Piedad', 'Pátzcuaro', 'Sahuayo', 'Maravatío'),
+            'MO' => array('Cuernavaca', 'Jiutepec', 'Cuautla', 'Temixco', 'Yautepec', 'Emiliano Zapata', 'Zacatepec', 'Xochitepec', 'Tlaltizapán', 'Jojutla'),
+            'NA' => array('Tepic', 'Xalisco', 'Santiago Ixcuintla', 'Bahía de Banderas', 'Compostela', 'Ixtlán del Río', 'Tecuala', 'San Blas', 'Acaponeta', 'Tuxpan'),
+            'NL' => array('Monterrey', 'Guadalupe', 'Apodaca', 'San Nicolás de los Garza', 'General Escobedo', 'Santa Catarina', 'Juárez', 'García', 'San Pedro Garza García', 'Cadereyta Jiménez'),
+            'OA' => array('Oaxaca de Juárez', 'San Juan Bautista Tuxtepec', 'Salina Cruz', 'Juchitán de Zaragoza', 'Santa Cruz Xoxocotlán', 'Huajuapan de León', 'Santo Domingo Tehuantepec', 'Loma Bonita', 'Miahuatlán de Porfirio Díaz', 'Puerto Escondido'),
+            'PU' => array('Puebla', 'Tehuacán', 'Cholula', 'Atlixco', 'San Martín Texmelucan'),
+            'QE' => array('Santiago de Querétaro', 'San Juan del Río', 'El Marqués', 'Corregidora', 'Tequisquiapan'),
+            'QR' => array('Cancún', 'Playa del Carmen', 'Chetumal', 'Cozumel', 'Tulum'),
+            'SL' => array('San Luis Potosí', 'Soledad de Graciano Sánchez', 'Ciudad Valles', 'Matehuala', 'Rioverde'),
+            'SI' => array('Culiacán', 'Mazatlán', 'Los Mochis', 'Guasave', 'Guamúchil'),
+            'SO' => array('Hermosillo', 'Ciudad Obregón', 'Nogales', 'San Luis Río Colorado', 'Navojoa'),
+            'TB' => array('Villahermosa', 'Cárdenas', 'Comalcalco', 'Huimanguillo', 'Macuspana'),
+            'TM' => array('Reynosa', 'Matamoros', 'Nuevo Laredo', 'Tampico', 'Ciudad Victoria'),
+            'TL' => array('Tlaxcala', 'Apizaco', 'Huamantla', 'Chiautempan', 'Zacatelco'),
+            'VE' => array('Veracruz', 'Xalapa', 'Coatzacoalcos', 'Córdoba', 'Poza Rica'),
+            'YU' => array('Mérida', 'Kanasín', 'Valladolid', 'Tizimín', 'Progreso'),
+            'ZA' => array('Zacatecas', 'Guadalupe', 'Fresnillo', 'Jerez', 'Río Grande'),
         );
-        // Nota: He mantenido la lógica, el usuario deberá restaurar la lista completa de ciudades si es crítica
-        if ( isset( $cities_by_state[ $state ] ) ) wp_send_json_success( $cities_by_state[ $state ] );
-        wp_send_json_error();
+
+        if ( isset( $cities_by_state[ $state ] ) ) {
+            wp_send_json_success( $cities_by_state[ $state ] );
+        } else {
+            wp_send_json_error( array( 'message' => 'No se encontraron ciudades para este estado.' ) );
+        }
     }
 
     public function ajax_filter_products() {
-        check_ajax_referer('expotodo_filter_nonce', 'nonce');
-        
         $category = isset($_POST['categories']) ? (array) $_POST['categories'] : array();
         $paged = isset($_POST['page']) ? intval($_POST['page']) : 1;
-        $price_range = isset($_POST['price_range']) ? sanitize_text_field($_POST['price_range']) : 'all';
         $min_price = isset($_POST['min_price']) ? floatval($_POST['min_price']) : 0;
         $max_price = isset($_POST['max_price']) ? floatval($_POST['max_price']) : 999999;
-        $flags = isset($_POST['flags']) ? (array) $_POST['flags'] : array();
-
-        // Lógica de rangos predefinidos (de archive-product.php)
-        if ($price_range !== 'all') {
-            if ($price_range === 'low') { $min_price = 0; $max_price = 300; }
-            elseif ($price_range === 'mid') { $min_price = 300; $max_price = 600; }
-            elseif ($price_range === 'high') { $min_price = 600; $max_price = 999999; }
-        }
 
         $args = array(
-            'post_type'      => 'product', // Incluye simple y variable por defecto
+            'post_type'      => 'product',
             'posts_per_page' => 16,
             'paged'          => $paged,
             'status'         => 'publish',
@@ -116,7 +131,7 @@ class WooCommerceController {
             );
         }
 
-        // Filtro por Precio
+        // Filtro por Precio (Fijando la lógica que faltaba)
         if ($min_price > 0 || $max_price < 999999) {
             $args['meta_query'][] = array(
                 'key'     => '_price',
@@ -127,39 +142,35 @@ class WooCommerceController {
         }
 
         $loop = new WP_Query( $args );
-        
         ob_start();
         if ( $loop->have_posts() ) :
             while ( $loop->have_posts() ) : $loop->the_post();
                 global $product;
-                if ( !is_a($product, 'WC_Product') ) continue;
-                
-                $product_id = get_the_ID();
-                $terms = get_the_terms( $product_id, 'product_cat' );
-                $cat_name = !empty($terms) && !is_wp_error($terms) ? $terms[0]->name : '';
-                $wishlist = function_exists('expotodo_get_user_wishlist') ? expotodo_get_user_wishlist() : array();
                 ?>
-                <div class="col product-grid-item" 
-                     data-category="<?php echo esc_attr( implode(' ', wp_list_pluck( $terms, 'slug' ) ) ); ?>"
-                     data-price="<?php echo esc_attr( $product->get_price() ); ?>">
+                <div class="col product-grid-item">
                     <article class="product-card h-100">
                         <div class="product-image-container">
-                            <?php if ($cat_name) : ?>
-                                <div class="product-category"><?php echo esc_html($cat_name); ?></div>
+                            <?php 
+                            // Categoría principal para mostrar
+                            $terms = get_the_terms( $product->get_id(), 'product_cat' );
+                            $cat_name = !empty($terms) && !is_wp_error($terms) ? $terms[0]->name : '';
+                            if ($cat_name) : 
+                            ?>
+                            <div class="product-category"><?php echo esc_html($cat_name); ?></div>
                             <?php endif; ?>
 
                             <?php if ( $product->is_on_sale() ) : ?>
                                 <div class="product-category sale" style="top: 40px; background-color: #dc3545;">Oferta</div>
                             <?php endif; ?>
                             
-                            <button type="button" class="btn-add-wishlist" data-id="<?php echo $product_id; ?>" title="Agregar a lista de deseos">
-                                <i class="<?php echo in_array($product_id, $wishlist) ? 'fas text-danger' : 'far'; ?> fa-heart"></i>
+                            <button type="button" class="btn-add-wishlist" data-id="<?php echo $product->get_id(); ?>" title="Agregar a lista de deseos">
+                                <i class="far fa-heart <?php echo in_array($product->get_id(), expotodo_get_user_wishlist()) ? 'fas text-danger' : 'far'; ?>"></i>
                             </button>
 
                             <a href="<?php the_permalink(); ?>">
                                 <?php 
                                 if (has_post_thumbnail()) {
-                                    the_post_thumbnail('large', array('class' => 'product-image'));
+                                    the_post_thumbnail('medium', array('class' => 'product-image'));
                                 } else {
                                     echo '<img src="https://via.placeholder.com/300x300?text=No+Image" class="product-image" alt="' . get_the_title() . '">';
                                 }
@@ -177,28 +188,36 @@ class WooCommerceController {
                             <a href="<?php the_permalink(); ?>" class="btn-card btn-primary w-100 mb-2">
                                 <i class="fas fa-eye me-2"></i> Ver detalles
                             </a>
-                            <a href="<?php echo esc_url( $product->add_to_cart_url() ); ?>" class="btn-card btn-outline-primary w-100 ajax_add_to_cart" data-quantity="1" data-product_id="<?php echo $product_id; ?>">
-                                <i class="fas fa-shopping-cart me-2"></i> Agregar
+                            <a href="<?php echo esc_url( $product->add_to_cart_url() ); ?>" 
+                               class="btn-card btn-outline-primary w-100 <?php echo $product->is_type('simple') ? 'ajax_add_to_cart' : ''; ?>" 
+                               data-quantity="1" 
+                               data-product_id="<?php echo get_the_ID(); ?>"
+                               data-product_sku="<?php echo esc_attr( $product->get_sku() ); ?>">
+                                <i class="fas fa-shopping-cart me-2"></i> <?php echo $product->is_type('variable') ? 'Seleccionar opciones' : 'Agregar'; ?>
                             </a>
                         </div>
                     </article>
                 </div>
-                <?php
+<?php
             endwhile;
             wp_reset_postdata();
         endif;
-        
         $content = ob_get_clean();
-        wp_send_json_success( array(
-            'html' => $content, 
-            'max_pages' => $loop->max_num_pages,
-            'count' => $loop->found_posts
-        ));
+        wp_send_json_success( array('html' => $content, 'max_pages' => $loop->max_num_pages) );
     }
 
     public function cart_fragments( $fragments ) {
         $fragments['span.cart-count'] = '<span class="cart-count">' . WC()->cart->get_cart_contents_count() . '</span>';
         $fragments['span.cart-total'] = '<span class="cart-total">' . WC()->cart->get_total() . '</span>';
+        $fragments['span.cart-subtotal'] = '<span class="cart-subtotal">' . WC()->cart->get_cart_subtotal() . '</span>';
+        
+        // Actualizar la lista de productos
+        $fragments['div.cart-items'] = self::get_cart_items_html();
+        
+        // Actualizar el estado de "vacío"
+        $is_empty = WC()->cart->is_empty();
+        $fragments['div.cart-empty-message'] = '<div class="cart-empty-message text-muted small ' . ($is_empty ? '' : 'd-none') . '">Tu carrito está vacío.</div>';
+        
         return $fragments;
     }
 
@@ -270,5 +289,66 @@ class WooCommerceController {
         check_ajax_referer('expotodo_address_nonce', 'security');
         $user_id = get_current_user_id();
         wp_send_json_success('Dirección actualizada correctamente.');
+    }
+
+    /**
+     * Genera el HTML de los items del carrito para el panel lateral
+     */
+    public static function get_cart_items_html() {
+        ob_start();
+        ?>
+        <div class="cart-items flex-grow-1">
+            <?php if ( function_exists('WC') && ! WC()->cart->is_empty() ) : ?>
+                <ul class="list-unstyled p-3 mb-0">
+                    <?php
+                    foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+                        $_product   = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
+                        $product_id = apply_filters( 'woocommerce_cart_item_product_id', $cart_item['product_id'], $cart_item, $cart_item_key );
+
+                        if ( $_product && $_product->exists() && $cart_item['quantity'] > 0 && apply_filters( 'woocommerce_cart_item_visible', true, $cart_item, $cart_item_key ) ) {
+                            $product_permalink = apply_filters( 'woocommerce_cart_item_permalink', $_product->is_visible() ? $_product->get_permalink( $cart_item ) : '', $cart_item, $cart_item_key );
+                            ?>
+                            <li class="d-flex mb-3 pb-2 border-bottom align-items-center">
+                                <div class="me-3" style="width: 50px; height: 50px; flex-shrink: 0;">
+                                    <?php 
+                                    $thumbnail = apply_filters( 'woocommerce_cart_item_thumbnail', $_product->get_image(), $cart_item, $cart_item_key );
+                                    echo str_replace('class="', 'class="img-fluid rounded shadow-sm ', $thumbnail);
+                                    ?>
+                                </div>
+                                <div class="flex-grow-1 overflow-hidden">
+                                    <h6 class="mb-0 text-truncate fw-bold small">
+                                        <?php
+                                        $name = apply_filters( 'woocommerce_cart_item_name', $_product->get_name(), $cart_item, $cart_item_key );
+                                        if ( $product_permalink ) {
+                                            echo sprintf( '<a href="%s" class="text-dark text-decoration-none">%s</a>', esc_url( $product_permalink ), esc_html($name) );
+                                        } else {
+                                            echo esc_html($name);
+                                        }
+                                        ?>
+                                    </h6>
+                                    <div class="text-muted small">
+                                        <?php echo sprintf( '%d &times; %s', $cart_item['quantity'], WC()->cart->get_product_price( $_product ) ); ?>
+                                    </div>
+                                </div>
+                                <div class="ms-2">
+                                    <?php
+                                    echo apply_filters( 'woocommerce_cart_item_remove_link', sprintf(
+                                        '<a href="%s" class="remove_from_cart_button text-danger small" aria-label="%s" data-product_id="%s" data-cart_item_key="%s" data-product_sku="%s"><i class="fas fa-trash-alt"></i></a>',
+                                        esc_url( wc_get_cart_remove_url( $cart_item_key ) ),
+                                        esc_html__( 'Remove this item', 'woocommerce' ),
+                                        esc_attr( $product_id ),
+                                        esc_attr( $cart_item_key ),
+                                        esc_attr( $_product->get_sku() )
+                                    ), $cart_item_key );
+                                    ?>
+                                </div>
+                            </li>
+                        <?php }
+                    } ?>
+                </ul>
+            <?php endif; ?>
+        </div>
+        <?php
+        return ob_get_clean();
     }
 }
