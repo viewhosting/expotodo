@@ -5,7 +5,7 @@
  * Contains the markup for the mini-cart, used by the cart widget.
  *
  * @package WooCommerce\Templates
- * @version 7.9.0
+ * @version 10.0.0
  */
 
 defined( 'ABSPATH' ) || exit;

@@ -4,9 +4,9 @@
  *
  * This template can be overridden by copying it to yourtheme/woocommerce/cart/cart-totals.php.
  *
- * @see     https://docs.woocommerce.com/document/template-structure/
+ * @see     https://woocommerce.com/document/template-structure/
  * @package WooCommerce\Templates
- * @version 2.3.6
+ * @version 10.1.0
  */
 
 defined( 'ABSPATH' ) || exit;

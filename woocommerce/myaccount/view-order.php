@@ -4,9 +4,9 @@
  *
  * Shows the details of a particular order on the account page.
  *
- * @see https://docs.woocommerce.com/document/template-structure/
+ * @see https://woocommerce.com/document/template-structure/
  * @package WooCommerce\Templates
- * @version 3.0.0
+ * @version 10.6.0
  */
 
 defined( 'ABSPATH' ) || exit;
