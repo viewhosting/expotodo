@@ -116,13 +116,18 @@ class WooCommerceController {
             'post_status'         => 'publish',
             'posts_per_page'      => 16,
             'paged'               => $paged,
-            'suppress_filters'    => true, // Ignorar otros filtros externos
+            'suppress_filters'    => true,
             'ignore_sticky_posts' => true,
             'tax_query'           => array('relation' => 'AND'),
             'meta_query'          => array('relation' => 'AND'),
             'orderby'             => 'date',
             'order'               => 'DESC'
         );
+
+        // Si estamos en la página 1, nos aseguramos de que estos IDs problemáticos no se pierdan
+        if ($paged == 1 && empty($category)) {
+            // $args['post__in'] = array(8670, 7745, 7744); // Descomentar solo si quieres forzar solo estos
+        }
 
         // Asegurar visibilidad en el catálogo
         $args['tax_query'][] = array(
