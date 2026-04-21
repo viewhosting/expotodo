@@ -129,14 +129,6 @@ class WooCommerceController {
             // $args['post__in'] = array(8670, 7745, 7744); // Descomentar solo si quieres forzar solo estos
         }
 
-        // Asegurar visibilidad en el catálogo
-        $args['tax_query'][] = array(
-            'taxonomy' => 'product_visibility',
-            'field'    => 'name',
-            'terms'    => 'exclude-from-catalog',
-            'operator' => 'NOT IN',
-        );
-
         // Filtro por Categorías
         if ( !empty($category) && $category[0] !== 'all' ) {
             $args['tax_query'][] = array(
