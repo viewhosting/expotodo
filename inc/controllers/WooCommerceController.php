@@ -124,12 +124,8 @@ class WooCommerceController {
             'order'               => 'DESC'
         );
 
-        // FORZADO DE IDS PARA DIAGNÓSTICO (En todas las páginas para asegurar que los vemos)
-        $args['post__in'] = array(8670, 7745, 7744);
-        $args['orderby'] = 'post__in'; 
-
-        // Filtro por Categorías (Solo si NO estamos forzando IDs, o los IDs no saldrán si no tienen la categoría)
-        if ( empty($args['post__in']) && !empty($category) && $category[0] !== 'all' ) {
+        // Filtro por Categorías
+        if ( !empty($category) && $category[0] !== 'all' ) {
             $args['tax_query'][] = array(
                 'taxonomy' => 'product_cat',
                 'field'    => 'slug',
@@ -137,8 +133,8 @@ class WooCommerceController {
             );
         }
 
-        // Filtro por Precio (Solo si NO estamos forzando IDs)
-        if ( empty($args['post__in']) && ($min_price > 0 || $max_price < 999999) ) {
+        // Filtro por Precio
+        if ($min_price > 0 || $max_price < 999999) {
             $args['meta_query'][] = array(
                 'key'     => '_price',
                 'value'   => array($min_price, $max_price),
@@ -210,15 +206,9 @@ class WooCommerceController {
         endif;
         $content = ob_get_clean();
 
-        // AUDITORÍA DIRECTA DE BASE DE DATOS PARA ESTOS IDS
-        global $wpdb;
-        $debug_results = $wpdb->get_results("SELECT ID, post_title, post_type, post_status FROM {$wpdb->posts} WHERE ID IN (8670, 7745, 7744)");
-
         wp_send_json_success( array(
             'html'      => $content, 
-            'max_pages' => $loop->max_num_pages,
-            'debug_ids' => $debug_results,
-            'args_used' => $args // También vemos qué args se usaron al final
+            'max_pages' => $loop->max_num_pages
         ));
     }
 
