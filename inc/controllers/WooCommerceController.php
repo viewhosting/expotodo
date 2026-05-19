@@ -64,6 +64,10 @@ class WooCommerceController {
 
         // Fragmentos para actualizar totales personalizados
         add_filter( 'woocommerce_update_order_review_fragments', array( $this, 'checkout_review_fragments' ) );
+
+        // Forzar Recogida Local por defecto
+        add_filter( 'woocommerce_package_rates', array( $this, 'sort_shipping_methods_local_pickup_first' ), 9999, 2 );
+        add_filter( 'woocommerce_shipping_chosen_method', array( $this, 'default_shipping_to_local_pickup' ), 9999, 3 );
     }
 
     public function checkout_review_fragments( $fragments ) {
@@ -102,6 +106,52 @@ class WooCommerceController {
             return $method->get_label();
         }
         return $label;
+    }
+
+    /**
+     * Reordenar métodos de envío para que 'local_pickup' esté en primer lugar
+     */
+    public function sort_shipping_methods_local_pickup_first( $rates, $package ) {
+        if ( empty( $rates ) ) {
+            return $rates;
+        }
+
+        $local_pickup_rates = array();
+        $other_rates = array();
+
+        foreach ( $rates as $rate_id => $rate ) {
+            if ( strpos( $rate_id, 'local_pickup' ) !== false ) {
+                $local_pickup_rates[ $rate_id ] = $rate;
+            } else {
+                $other_rates[ $rate_id ] = $rate;
+            }
+        }
+
+        // Si hay métodos de recogida local, ponerlos primero
+        if ( ! empty( $local_pickup_rates ) ) {
+            return array_merge( $local_pickup_rates, $other_rates );
+        }
+
+        return $rates;
+    }
+
+    /**
+     * Forzar a que la opción por defecto elegida sea Recogida Local (local_pickup) si no hay una elección explícita previa
+     */
+    public function default_shipping_to_local_pickup( $default, $available_methods, $chosen_method = false ) {
+        // Si el usuario ya tiene un método elegido en la sesión, respetarlo
+        if ( ! empty( $chosen_method ) ) {
+            return $chosen_method;
+        }
+
+        // Buscar si existe algún método de tipo 'local_pickup' disponible
+        foreach ( $available_methods as $method_id => $method ) {
+            if ( strpos( $method_id, 'local_pickup' ) !== false ) {
+                return $method_id;
+            }
+        }
+
+        return $default;
     }
 
     public function custom_checkout_fields( $fields ) {
