@@ -27,7 +27,7 @@ jQuery(document).ready(function ($) {
     });
 
     // 3. Lógica para ocultar Envío si es Recogida Local
-    $(document.body).on('updated_checkout', function () {
+    function handleShippingMethodChange() {
         var selectedMethod = $('input[name^="shipping_method"]:checked').val();
         var isLocalPickup = selectedMethod && selectedMethod.indexOf('local_pickup') !== -1;
 
@@ -35,12 +35,17 @@ jQuery(document).ready(function ($) {
             // MOSTRAR campos de ubicación para Mercado Pago (S1)
             $('#pickup_location_fields').slideDown();
 
+            // Ocultar botón y sección de envío
+            $('#toggle_address_fields').removeClass('active').parent().hide();
+            $('#shipping_details_section').slideUp();
+
             // Sincronizar ship_to_different_address (0 para recogida local)
             if ($('#ship-to-different-address-checkbox').is(':checked')) {
                 $('#ship-to-different-address-checkbox').prop('checked', false).trigger('change');
             }
         } else {
             // No es recogida local: Mostrar botón de envío delivery
+            $('#toggle_address_fields').parent().show();
             if ($('#toggle_address_fields').is(':hidden')) {
                 $('#toggle_address_fields').fadeIn();
             }
@@ -48,16 +53,31 @@ jQuery(document).ready(function ($) {
             // Ocultar campos de ubicación de S1 (se usarán los de delivery)
             $('#pickup_location_fields').slideUp();
 
-            // Forzar apertura automática de delivery si no está activo
-            if (!$('#toggle_address_fields').hasClass('active')) {
-                $('#toggle_address_fields').addClass('active');
-                $('#shipping_details_section').slideDown();
+            // Forzar apertura automática de delivery siempre
+            $('#toggle_address_fields').addClass('active');
+            $('#shipping_details_section').slideDown();
+
+            // Sincronizar ship_to_different_address (1 para delivery) para que WooCommerce active la validación y muestre los campos
+            if (!$('#ship-to-different-address-checkbox').is(':checked')) {
+                $('#ship-to-different-address-checkbox').prop('checked', true).trigger('change');
             }
+            $('.shipping_address').show(); // Forzar visibilidad inmediata de los campos
         }
+    }
+
+    // Escuchar cambio inmediato al hacer clic en un método de envío
+    $('body').on('change', 'input[name^="shipping_method"]', function () {
+        handleShippingMethodChange();
+    });
+
+    // Escuchar actualización de checkout de WooCommerce
+    $(document.body).on('updated_checkout', function () {
+        handleShippingMethodChange();
     });
 
     // Inicialización
     $('#billing_rfc_field, #billing_cfdi_usage_field, #billing_company_name_field').hide();
+    handleShippingMethodChange();
 
     // 2. Lógica para Ciudad dependiente del Estado (AJAX)
 
@@ -235,18 +255,16 @@ jQuery(document).ready(function ($) {
             $('body').append('<div class="boutique-toast-container"></div>');
         }
 
-        const toastHtml = `
-            <div class="boutique-toast">
-                <div class="toast-content">${message}</div>
-                <div class="toast-close" style="margin-left: 15px; opacity: 0.5; font-size: 0.8rem;"><i class="fas fa-times"></i></div>
-            </div>
-        `;
+        var toastHtml = '<div class="boutique-toast">' +
+            '<div class="toast-content">' + message + '</div>' +
+            '<div class="toast-close" style="margin-left: 15px; opacity: 0.5; font-size: 0.8rem;"><i class="fas fa-times"></i></div>' +
+            '</div>';
 
-        const $toast = $(toastHtml);
+        var $toast = $(toastHtml);
         $('.boutique-toast-container').append($toast);
 
         // Auto-eliminar después de 5 segundos
-        const timer = setTimeout(function () {
+        var timer = setTimeout(function () {
             hideToast($toast);
         }, 5000);
 
@@ -274,21 +292,21 @@ jQuery(document).ready(function ($) {
     $(document.body).on('checkout_error', function (e, error_message) {
         // WooCommerce envía un string HTML con un <ul> y varios <li>
         // Lo convertimos temporalmente en objeto jQuery para parsear
-        const $tempDiv = $('<div>' + error_message + '</div>');
-        const $errors = $tempDiv.find('li');
+        var $tempDiv = $('<div>' + error_message + '</div>');
+        var $errors = $tempDiv.find('li');
 
         if ($errors.length > 0) {
             $errors.each(function () {
-                const msg = $(this).text().trim();
+                var msg = $(this).text().trim();
                 // Limpiar el mensaje de errores comunes de Woo (ej: "Facturación Nombre es un campo requerido" -> "Nombre es un campo requerido")
-                let cleanMsg = msg.replace('Facturación ', '').replace('Envío ', '');
+                var cleanMsg = msg.replace('Facturación ', '').replace('Envío ', '');
                 if (cleanMsg) {
                     showBoutiqueToast(cleanMsg);
                 }
             });
         } else {
             // Fallback si no es una lista
-            const plainMsg = $tempDiv.text().trim();
+            var plainMsg = $tempDiv.text().trim();
             if (plainMsg) {
                 showBoutiqueToast(plainMsg);
             } else {

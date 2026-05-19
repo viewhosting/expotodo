@@ -1,6 +1,7 @@
+//alert("Compatibilidad universal activada.");
 jQuery(document).ready(function ($) {
     // Header Scroll Effect
-    const header = document.querySelector('.main-header');
+    var header = document.querySelector('.main-header');
     if (header) {
         window.addEventListener('scroll', function () {
             if (window.scrollY > 50) {
@@ -18,30 +19,30 @@ jQuery(document).ready(function ($) {
     // SISTEMA DE TOASTS SIMPLE Y APILABLE
     // ==========================================
     function autoHideWoocommerceMessages() {
-        const toastSelectors = '.woocommerce-message, .woocommerce-info, .woocommerce-error, .coupon-error-notice';
-        const $foundMessages = $(toastSelectors).not('#expotodo-toast-container *');
+        var toastSelectors = '.woocommerce-message, .woocommerce-info, .woocommerce-error, .coupon-error-notice';
+        var $foundMessages = $(toastSelectors).not('#expotodo-toast-container *');
 
         if ($foundMessages.length > 0) {
             if ($('#expotodo-toast-container').length === 0) {
                 $('body').append('<div id="expotodo-toast-container"></div>');
             }
-            const $container = $('#expotodo-toast-container');
+            var $container = $('#expotodo-toast-container');
 
             $foundMessages.each(function () {
-                const $msg = $(this);
-                const msgText = $msg.text().replace(/\s+/g, ' ').trim();
+                var $msg = $(this);
+                var msgText = $msg.text().replace(/\s+/g, ' ').trim();
 
                 if (!msgText) return;
 
                 // CENTINELA 360: Bloqueo de Zona/México (Fail-safe en JS)
-                const lowText = msgText.toLowerCase();
+                var lowText = msgText.toLowerCase();
                 if (lowText.includes('zona') || lowText.includes('méxico')) {
                     $msg.remove();
                     return;
                 }
 
                 // Evitar duplicados físicos idénticos que ya estén visibles
-                let isAlreadyVisible = false;
+                var isAlreadyVisible = false;
                 $container.children().each(function () {
                     if ($(this).text().replace(/\s+/g, ' ').trim() === msgText) isAlreadyVisible = true;
                 });
@@ -55,14 +56,14 @@ jQuery(document).ready(function ($) {
                 $msg.prependTo($container).show();
 
                 // Auto-ocultar después de 8 segundos
-                setTimeout(() => {
+                setTimeout(function () {
                     $msg.fadeOut(600, function () {
                         $(this).remove();
                         if ($container.children().length === 0) $container.hide();
                     });
                 }, 8000);
             });
-            $container.show(); // Moved outside the each loop to ensure it shows if any messages are added
+            $container.show();
         }
     }
 
@@ -70,7 +71,6 @@ jQuery(document).ready(function ($) {
     autoHideWoocommerceMessages();
 
     // Escuchar eventos de actualización de WooCommerce (AJAX)
-    // Estos eventos se disparan cuando cambia el carrito, checkout, o métodos de envío.
     $(document.body).on('updated_wc_div updated_cart_totals updated_checkout updated_shipping_method', function () {
         autoHideWoocommerceMessages();
     });
@@ -78,22 +78,18 @@ jQuery(document).ready(function ($) {
     // LISTENER VIP: Detectar cuando se agrega un producto vía AJAX y mostrar el Toast
     $(document.body).on('added_to_cart', function (event, fragments, cart_hash, $button) {
         // Obtenemos el nombre del producto si está disponible en el botón
-        const productName = $button.closest('.product-card').find('.product-title').text() || 'el producto';
-        const successHtml = `
-            <div class="woocommerce-message">
-                <span>¡Hecho! Se ha agregado "${productName}" al carrito con éxito.</span>
-                <button type="button" class="close-sidebar-btn" aria-label="Cerrar">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        `;
+        var productName = $button.closest('.product-card').find('.product-title').text() || 'el producto';
+        var successHtml = '<div class="woocommerce-message">' +
+            '<span>¡Hecho! Se ha agregado "' + productName + '" al carrito con éxito.</span>' +
+            '<button type="button" class="close-sidebar-btn" aria-label="Cerrar">' +
+            '<i class="fas fa-times"></i>' +
+            '</button>' +
+            '</div>';
 
         // Inyectamos el mensaje en el body temporalmente para que autoHideWoocommerceMessages lo capture
         $('body').append(successHtml);
         autoHideWoocommerceMessages();
 
-        // Al ocurrir una acción AJAX, limpiamos la memoria de mensajes vistos.
-        // Esto permite que si el usuario vuelve a forzar un error, el Toast aparezca de nuevo.
         sessionStorage.removeItem('expotodo_toasts_seen');
         setTimeout(autoHideWoocommerceMessages, 400);
     });
@@ -111,15 +107,15 @@ jQuery(document).ready(function ($) {
     });
 
     // Observador de cambios
-    const observer = new MutationObserver((mutations) => {
+    var observer = new MutationObserver(function (mutations) {
         autoHideWoocommerceMessages();
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
     // Mobile Navigation
-    const navbarToggler = document.querySelector('.navbar-toggler');
-    const navbarCollapse = document.querySelector('.navbar-collapse');
-    const sidebarOverlay = document.querySelector('.sidebar-overlay');
+    var navbarToggler = document.querySelector('.navbar-toggler');
+    var navbarCollapse = document.querySelector('.navbar-collapse');
+    var sidebarOverlay = document.querySelector('.sidebar-overlay');
 
     if (navbarToggler && navbarCollapse) {
         navbarToggler.addEventListener('click', function (e) {
@@ -130,29 +126,31 @@ jQuery(document).ready(function ($) {
         });
 
         // Close nav on link click (mobile)
-        const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
-        navLinks.forEach(link => {
-            link.addEventListener('click', function () {
+        var navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+        for (var i = 0; i < navLinks.length; i++) {
+            navLinks[i].addEventListener('click', function () {
                 if (window.innerWidth <= 992) {
                     navbarCollapse.classList.remove('sidebar-open');
                     if (sidebarOverlay) sidebarOverlay.classList.remove('active');
                     document.body.style.overflow = '';
                 }
             });
-        });
+        }
     }
 
     // Sidebar Management
-    const rightSidebars = document.querySelectorAll('.right-sidebar');
-    const closeSidebarButtons = document.querySelectorAll('.close-sidebar-btn');
+    var rightSidebars = document.querySelectorAll('.right-sidebar');
+    var closeSidebarButtons = document.querySelectorAll('.close-sidebar-btn');
 
     function openRightSidebar(panelId) {
-        rightSidebars.forEach(sidebar => sidebar.classList.remove('open'));
+        for (var j = 0; j < rightSidebars.length; j++) {
+            rightSidebars[j].classList.remove('open');
+        }
         if (navbarCollapse && navbarCollapse.classList.contains('sidebar-open')) {
             navbarCollapse.classList.remove('sidebar-open');
         }
 
-        const panel = document.getElementById(panelId);
+        var panel = document.getElementById(panelId);
         if (panel) {
             panel.classList.add('open');
             if (sidebarOverlay) sidebarOverlay.classList.add('active');
@@ -164,8 +162,10 @@ jQuery(document).ready(function ($) {
     }
 
     function closeRightSidebars() {
-        rightSidebars.forEach(sidebar => sidebar.classList.remove('open'));
-        const isNavbarOpen = navbarCollapse && navbarCollapse.classList.contains('sidebar-open');
+        for (var k = 0; k < rightSidebars.length; k++) {
+            rightSidebars[k].classList.remove('open');
+        }
+        var isNavbarOpen = navbarCollapse && navbarCollapse.classList.contains('sidebar-open');
         if (sidebarOverlay && !isNavbarOpen) {
             sidebarOverlay.classList.remove('active');
             document.body.style.overflow = '';
@@ -200,20 +200,23 @@ jQuery(document).ready(function ($) {
 
     if (sidebarOverlay) {
         sidebarOverlay.addEventListener('click', function () {
-            closeRightSidebars();
             if (navbarCollapse) navbarCollapse.classList.remove('sidebar-open');
+            closeRightSidebars();
         });
     }
 
     $(document).on('keydown', function (e) {
-        if (e.key === 'Escape') closeRightSidebars();
+        if (e.key === 'Escape') {
+            if (navbarCollapse) navbarCollapse.classList.remove('sidebar-open');
+            closeRightSidebars();
+        }
     });
 
     // ==========================================
     // CHECKOUT SIDEBAR LOGIC
     // ==========================================
 
-    let checkoutModal = null;
+    var checkoutModal = null;
 
     // Abrir modal de checkout desde cualquier botón de "Finalizar Compra"
     $(document).on('click', '.btn-checkout-modal, .checkout-button', function (e) {
@@ -221,7 +224,7 @@ jQuery(document).ready(function ($) {
 
         // Inicialización perezosa del modal
         if (!checkoutModal) {
-            const checkoutModalEl = document.getElementById('checkoutPanel');
+            var checkoutModalEl = document.getElementById('checkoutPanel');
             if (checkoutModalEl && typeof bootstrap !== 'undefined') {
                 checkoutModal = new bootstrap.Modal(checkoutModalEl);
             }
@@ -231,9 +234,9 @@ jQuery(document).ready(function ($) {
             checkoutModal.show();
         }
 
-        const $container = $('#payment-gateways-container');
-        const $btnPlaceOrder = $('#btn-place-order');
-        const $errorContainer = $('#checkout-errors');
+        var $container = $('#payment-gateways-container');
+        var $btnPlaceOrder = $('#btn-place-order');
+        var $errorContainer = $('#checkout-errors');
 
         // Reset state
         $errorContainer.empty();
@@ -254,7 +257,7 @@ jQuery(document).ready(function ($) {
                     $('#checkoutPanel .cart-total').html(response.data.total);
 
                     // Inicializar visibilidad de campos de pago y habilitar botón
-                    const $initialChecked = $container.find('input[name="payment_method"]:checked');
+                    var $initialChecked = $container.find('input[name="payment_method"]:checked');
                     if ($initialChecked.length > 0) {
                         $initialChecked.closest('.wc_payment_method').find('.payment_box').show();
                         $btnPlaceOrder.prop('disabled', false);
@@ -265,7 +268,7 @@ jQuery(document).ready(function ($) {
 
                     // Listener para selección de método
                     $container.find('input[name="payment_method"]').on('change', function () {
-                        const $parent = $(this).closest('.wc_payment_method');
+                        var $parent = $(this).closest('.wc_payment_method');
                         $('.payment_box').slideUp(200);
                         if ($(this).is(':checked')) {
                             $parent.find('.payment_box').slideDown(200);
@@ -284,7 +287,7 @@ jQuery(document).ready(function ($) {
 
         // Alternar campos de facturación diferentes (Logic nueva para el modal)
         $(document).on('change', '#use-shipping-for-billing', function () {
-            const $extraFields = $('#billing-different-fields');
+            var $extraFields = $('#billing-different-fields');
             if (!$(this).is(':checked')) {
                 $extraFields.slideDown();
             } else {
@@ -305,24 +308,24 @@ jQuery(document).ready(function ($) {
     // Acción del botón de Pagar Ahora (Sumisión AJAX real con serialización completa)
     $('#btn-place-order').on('click', function (e) {
         e.preventDefault();
-        const selectedMethod = $('input[name="payment_method"]:checked').val();
+        var selectedMethod = $('input[name="payment_method"]:checked').val();
 
         if (!selectedMethod) {
             alert('Por favor, selecciona un método de pago.');
             return;
         }
 
-        const $btn = $(this);
-        const originalHtml = $btn.html();
-        const $errorContainer = $('#checkout-errors');
-        const $form = $('form.woocommerce-checkout');
+        var $btn = $(this);
+        var originalHtml = $btn.html();
+        var $errorContainer = $('#checkout-errors');
+        var $form = $('form.woocommerce-checkout');
 
         // Limpiar errores previos
         $errorContainer.empty();
         $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1" role="status"></span> Procesando...');
 
         // Recopilar TODOS los datos del formulario (incluyendo campos de pasarela y tokens ocultos)
-        let checkoutData = $form.serializeArray();
+        var checkoutData = $form.serializeArray();
 
         // Asegurar campos críticos
         checkoutData.push({ name: '_wpnonce', value: expotodo_globals.checkout_nonce });
@@ -337,9 +340,9 @@ jQuery(document).ready(function ($) {
             data: checkoutData,
             success: function (response) {
                 try {
-                    let data = response;
+                    var data = response;
                     if (typeof response === 'string') {
-                        const jsonPos = response.indexOf('{"result"');
+                        var jsonPos = response.indexOf('{"result"');
                         if (jsonPos > -1) {
                             data = JSON.parse(response.substring(jsonPos));
                         }
@@ -558,13 +561,16 @@ jQuery(document).ready(function ($) {
     // ==========================================
     // REAL-TIME SEARCH (JQUERY)
     // ==========================================
-    let searchTimeout = null;
-    const $searchInput = $('#productoBusqueda');
-    const $searchResults = $('#search-results-list');
+    // ==========================================
+    // REAL-TIME SEARCH (JQUERY)
+    // ==========================================
+    var searchTimeout = null;
+    var $searchInput = $('#productoBusqueda');
+    var $searchResults = $('#search-results-list');
 
     if ($searchInput.length && $searchResults.length) {
         $searchInput.on('input', function () {
-            const query = $(this).val().trim();
+            var query = $(this).val().trim();
 
             if (searchTimeout) clearTimeout(searchTimeout);
 
@@ -633,7 +639,7 @@ jQuery(document).ready(function ($) {
      * --- LÓGICA DE FACTURACIÓN EN CARRITO (jQuery Version Refinada) ---
      */
     $(document).on('change', '#request_invoice', function () {
-        const $extraFields = $('#extra_billing_fields');
+        var $extraFields = $('#extra_billing_fields');
         if ($(this).is(':checked')) {
             // Detenemos animaciones, activamos grid y deslizamos
             $extraFields.stop(true, true).addClass('is-active').hide().slideDown(400);
@@ -647,8 +653,8 @@ jQuery(document).ready(function ($) {
 
     // Función para verificar el estado inicial
     function initBillingToggle() {
-        const $checkbox = $('#request_invoice');
-        const $extraFields = $('#extra_billing_fields');
+        var $checkbox = $('#request_invoice');
+        var $extraFields = $('#extra_billing_fields');
 
         if ($checkbox.length && $extraFields.length) {
             if ($checkbox.is(':checked')) {
@@ -665,5 +671,145 @@ jQuery(document).ready(function ($) {
     // Ejecutar cuando WooCommerce actualice los fragmentos del carrito
     $(document.body).on('updated_cart_totals', function () {
         initBillingToggle();
+    });
+
+    // ==========================================
+    // PRODUCT COLLECTION CAROUSEL (SWIPER)
+    // ==========================================
+    if (typeof Swiper !== 'undefined' && $('.products-swiper').length > 0) {
+        new Swiper('.products-swiper', {
+            slidesPerView: 1,
+            spaceBetween: 20,
+            loop: true,
+            autoplay: {
+                delay: 3000,
+                disableOnInteraction: false,
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            navigation: {
+                nextEl: '.swiper-button-next-custom',
+                prevEl: '.swiper-button-prev-custom',
+            },
+            breakpoints: {
+                640: {
+                    slidesPerView: 2,
+                },
+                992: {
+                    slidesPerView: 3,
+                },
+                1200: {
+                    slidesPerView: 4,
+                }
+            }
+        });
+    }
+
+    // ==========================================
+    // INTERACTIVIDAD CHECKOUT BOUTIQUE
+    // ==========================================
+
+    // 1. Mostrar/Ocultar Dirección de Entrega
+    $(document).on('click', '#toggle_address_fields', function (e) {
+        e.preventDefault();
+        $('#shipping_details_section').slideToggle(400);
+        $(this).toggleClass('active');
+    });
+
+    // 2. Mostrar/Ocultar Campos de Facturación
+    $(document).on('change', '#request_invoice_checkout', function () {
+        if ($(this).is(':checked')) {
+            $('#billing_details_section').slideDown(400);
+            $('.invoice-field').show(); // Volvemos a la clase original
+        } else {
+            $('#billing_details_section').slideUp(400);
+        }
+    });
+
+    // 3. Auto-marcar dirección si es recogida local (Mejora de UX)
+    $(document.body).on('updated_checkout', function () {
+        var isPickup = $('input[name^="shipping_method"]:checked').val() && $('input[name^="shipping_method"]:checked').val().indexOf('local_pickup') !== -1;
+        if (isPickup) {
+            // Si es recogida local, ocultamos el botón de cambiar dirección para no confundir
+            $('#toggle_address_fields').parent().hide();
+            $('#shipping_details_section').hide();
+        } else {
+            $('#toggle_address_fields').parent().show();
+        }
+    });
+
+    // ==========================================
+    // WOOCOMMERCE CHECKOUT AUTO-UPDATE
+    // ==========================================
+    // 1. Detectar cambios directos en los radios
+    $(document.body).on('change', 'input[name^="shipping_method"]', function () {
+        $(document.body).trigger('update_checkout');
+    });
+
+    // 2. Forzar marcado de radio y actualización al hacer clic en las tarjetas visuales
+    $(document).on('click', '.shipping-options-section li, .shipping__list_item, .shipping-method-option', function (e) {
+        var $radio = $(this).find('input[type="radio"]');
+
+        if ($radio.length) {
+            // Marcamos el radio
+            $radio.prop('checked', true).trigger('change');
+
+            // Forzar actualización visual de las tarjetas (clase activa)
+            $('.shipping-options-section li, .shipping__list_item').removeClass('selected active');
+            $(this).addClass('selected active');
+
+            // Disparar actualización de WooCommerce explícitamente
+            $(document.body).trigger('update_checkout');
+        }
+    });
+
+    // ==========================================
+    // PORTAL DE ENVÍO - MODAL CARRITO
+    // ==========================================
+    $(document).on('click', '#cartCalculateShipping', function (e) {
+        e.preventDefault();
+        var $btn = $(this);
+        var $input = $('#cartPostalCode');
+        var postcode = $input.val().trim();
+        var $message = $('.cart-shipping-message');
+
+        if (!postcode) {
+            $message.html('<span class="text-danger">Por favor, ingresa un código postal.</span>');
+            return;
+        }
+
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span>');
+        $message.html('<span class="text-muted">Calculando envío...</span>');
+
+        $.ajax({
+            url: expotodo_globals.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'expotodo_calculate_shipping_ajax',
+                postcode: postcode
+            },
+            success: function (response) {
+                if (response.success) {
+                    $message.html('<span class="text-success">' + (response.data.message || 'Calculado con éxito.') + '</span>');
+                    // Actualizar valores de la barra lateral
+                    if (response.data.subtotal) $('.cart-subtotal').html(response.data.subtotal);
+                    if (response.data.shipping) $('.cart-shipping').html(response.data.shipping);
+                    if (response.data.total) $('.cart-total').html(response.data.total);
+
+                    // Disparar la actualización de fragmentos de WooCommerce para que todo se sincronice
+                    $(document.body).trigger('wc_fragment_refresh');
+                } else {
+                    $message.html('<span class="text-danger">' + (response.data.message || 'Error al calcular.') + '</span>');
+                }
+            },
+            error: function () {
+                $message.html('<span class="text-danger">Error de red. Intenta nuevamente.</span>');
+            },
+            complete: function () {
+                $btn.prop('disabled', false).html('Calcular');
+            }
+        });
     });
 });

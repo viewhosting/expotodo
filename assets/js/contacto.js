@@ -1,8 +1,8 @@
 jQuery(document).ready(function ($) {
     'use strict';
 
-    const $form = $('#expotodo-contact-form');
-    const $submitBtn = $form.find('button[type="submit"]');
+    var $form = $('#expotodo-contact-form');
+    var $submitBtn = $form.find('button[type="submit"]');
 
     $form.on('submit', function (e) {
         e.preventDefault();
@@ -14,7 +14,7 @@ jQuery(document).ready(function ($) {
             return;
         }
 
-        const formData = new FormData(this);
+        var formData = new FormData(this);
         formData.append('action', 'expotodo_send_contact');
         formData.append('nonce', expotodo_contact_params.nonce);
 

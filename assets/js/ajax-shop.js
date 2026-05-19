@@ -1,11 +1,13 @@
 jQuery(document).ready(function ($) {
-    let currentPage = 1;
-    let isLoading = false;
-    let maxPages = $('#page-end').data('max-pages') || 999;
-    const productContainer = $('#product-grid-container');
-    const spinner = $('#loading-spinner');
+    var currentPage = 1;
+    var isLoading = false;
+    var maxPages = $('#page-end').data('max-pages') || 999;
+    var productContainer = $('#product-grid-container');
+    var spinner = $('#loading-spinner');
 
-    function fetchProducts(page, append = false) {
+    function fetchProducts(page, append) {
+        append = typeof append !== 'undefined' ? append : false;
+
         if (isLoading) return;
         if (page > maxPages && maxPages !== 999) return;
 
@@ -13,7 +15,7 @@ jQuery(document).ready(function ($) {
         spinner.removeClass('d-none');
 
         // Collect Filters
-        let categories = [];
+        var categories = [];
 
         // Mode 1: Checkboxes (archive-product.php)
         if ($('.filter-category').length > 0) {
@@ -30,9 +32,9 @@ jQuery(document).ready(function ($) {
         }
 
         // Price Logic
-        let minPrice = 0;
-        let maxPrice = 9999999;
-        let priceRange = '';
+        var minPrice = 0;
+        var maxPrice = 9999999;
+        var priceRange = '';
 
         if ($('#price-filter').length > 0) {
             priceRange = $('#price-filter').val();
@@ -42,7 +44,7 @@ jQuery(document).ready(function ($) {
         }
 
         // Flags Logic
-        let flags = [];
+        var flags = [];
         $('.filter-flag:checked').each(function () {
             flags.push($(this).val());
         });
@@ -86,7 +88,7 @@ jQuery(document).ready(function ($) {
     $(document).on('change', '.filter-category, .filter-category-radio', function () {
         // UI Sync for checkboxes
         if ($(this).hasClass('filter-category')) {
-            const val = $(this).val();
+            var val = $(this).val();
             if (val === 'all') {
                 if ($(this).is(':checked')) $('.filter-category').not(this).prop('checked', false);
             } else {
@@ -122,19 +124,31 @@ jQuery(document).ready(function ($) {
     });
 
     // Infinite Scroll (Intersection Observer)
-    const observer = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && !isLoading) {
-            if (currentPage < maxPages) {
-                currentPage++;
-                fetchProducts(currentPage, true);
+    if (typeof IntersectionObserver !== 'undefined') {
+        var observer = new IntersectionObserver(function (entries) {
+            if (entries[0].isIntersecting && !isLoading) {
+                if (currentPage < maxPages) {
+                    currentPage++;
+                    fetchProducts(currentPage, true);
+                }
             }
-        }
-    }, {
-        rootMargin: '400px' // Increased for smoother UX
-    });
+        }, {
+            rootMargin: '400px'
+        });
 
-    const pageEnd = document.getElementById('page-end');
-    if (pageEnd) {
-        observer.observe(pageEnd);
+        var pageEnd = document.getElementById('page-end');
+        if (pageEnd) {
+            observer.observe(pageEnd);
+        }
+    } else {
+        // Fallback for very old browsers: window scroll
+        $(window).on('scroll', function () {
+            if ($(window).scrollTop() + $(window).height() > $(document).height() - 400) {
+                if (!isLoading && currentPage < maxPages) {
+                    currentPage++;
+                    fetchProducts(currentPage, true);
+                }
+            }
+        });
     }
 });

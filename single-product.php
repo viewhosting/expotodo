@@ -76,6 +76,9 @@ get_header();
                                         <span class="price-label">Precio</span>
                                         <span class="price"><?php echo $product->get_price_html(); ?></span>
                                     </div>
+                                    <div class="producto-description-short">
+                                        <?php echo $product->get_short_description(); ?>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="product-description mb-3">
@@ -162,44 +165,7 @@ get_header();
                                 global $product;
                                 ?>
                                 <div class="col product-grid-item">
-                                    <article class="product-card h-100">
-                                        <div class="product-image-container">
-                                            <?php 
-                                            $terms = get_the_terms( $product->get_id(), 'product_cat' );
-                                            $cat_name = !empty($terms) && !is_wp_error($terms) ? $terms[0]->name : '';
-                                            if ($cat_name) : 
-                                            ?>
-                                            <div class="product-category"><?php echo esc_html($cat_name); ?></div>
-                                            <?php endif; ?>
-                                            
-                                            <button type="button" class="btn-add-wishlist" data-id="<?php echo $product->get_id(); ?>" title="Agregar a lista de deseos">
-                                                <i class="far fa-heart <?php echo in_array($product->get_id(), expotodo_get_user_wishlist()) ? 'fas text-danger' : 'far'; ?>"></i>
-                                            </button>
-
-                                            <?php 
-                                            if (has_post_thumbnail()) {
-                                                the_post_thumbnail('medium', array('class' => 'product-image'));
-                                            } else {
-                                                echo '<img src="https://via.placeholder.com/300x300?text=No+Image" class="product-image" alt="' . get_the_title() . '">';
-                                            }
-                                            ?>
-                                        </div>
-                                        <div class="product-content p-3">
-                                            <h3 class="product-title"><?php the_title(); ?></h3>
-                                            <p class="product-description">
-                                                <?php echo wp_trim_words(get_the_excerpt(), 8, '...'); ?>
-                                            </p>
-                                            <div class="product-price mb-3">
-                                                <span class="price new-price"><?php echo $product->get_price_html(); ?></span>
-                                            </div>
-                                            <a href="<?php the_permalink(); ?>" class="btn-card btn-primary">
-                                                <i class="fas fa-eye me-2"></i> Ver detalles
-                                            </a>
-                                            <a href="<?php echo esc_url( $product->add_to_cart_url() ); ?>" class="btn-card btn-primary mt-2 ajax_add_to_cart" data-quantity="1" data-product_id="<?php echo get_the_ID(); ?>">
-                                                <i class="fas fa-shopping-cart me-2"></i> Agregar al carrito
-                                            </a>
-                                        </div>
-                                    </article>
+                                    <?php get_template_part('template-parts/content-product'); ?>
                                 </div>
                                 <?php
                             endwhile;

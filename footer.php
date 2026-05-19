@@ -17,14 +17,16 @@
                         </div>
                     </div>
                     
-                    <nav class="footer-menu">
-                        <a href="<?php echo home_url(); ?>">Principal</a>
-                        <a href="<?php echo home_url('/productos'); ?>">Productos</a>
-                        <a href="<?php echo home_url('/catalogo'); ?>">Catálogo</a>
-                        <a href="<?php echo home_url('/#mercado-libre'); ?>">Mercado Libre</a>
-                        <a href="<?php echo home_url('/#amazon'); ?>">Amazon</a>
-                        <a href="<?php echo home_url('/contacto'); ?>">Contacto</a>
-                    </nav>
+                    <?php
+                    wp_nav_menu( array(
+                        'theme_location' => 'primary',
+                        'container'      => 'nav',
+                        'container_class' => 'footer-menu',
+                        'fallback_cb'    => '__return_false',
+                        'items_wrap'     => '%3$s',
+                        'depth'          => 1,
+                    ) );
+                    ?>
                 </div>
             </div>
         </div>

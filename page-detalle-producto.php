@@ -63,6 +63,7 @@ $loop = new WP_Query( $args );
                             <span class="price-label">Precio</span>
                             <span class="price"><?php echo $product->get_price_html(); ?></span>
                         </div>
+                        
                         <div class="d-flex flex-wrap gap-3">
                             <?php if ( $product->is_type('variable') ) : ?>
                                 <a href="<?php echo get_permalink( $product->get_id() ); ?>" class="btn-card btn btn-primary">
@@ -114,37 +115,7 @@ $loop = new WP_Query( $args );
                         global $product;
                 ?>
                 <div class="col product-grid-item">
-                    <article class="product-card h-100">
-                        <div class="product-image-container">
-                             <?php 
-                             $terms = get_the_terms( $product->get_id(), 'product_cat' );
-                             if ( !empty($terms) && !is_wp_error($terms) ) {
-                                 echo '<div class="product-category">' . esc_html( $terms[0]->name ) . '</div>';
-                             }
-                             ?>
-                            <button class="btn-add-wishlist" title="Agregar a lista de deseos" type="button"><i class="far fa-heart"></i></button>
-                            <?php 
-                            if ( has_post_thumbnail() ) {
-                                echo '<img src="' . get_the_post_thumbnail_url() . '" alt="' . get_the_title() . '" class="product-image">';
-                            } else {
-                                echo '<img src="' . wc_placeholder_img_src() . '" class="product-image" alt="Placeholder">';
-                            }
-                            ?>
-                        </div>
-                        <div class="product-content p-3">
-                            <h3 class="product-title"><?php the_title(); ?></h3>
-                            <p class="product-description"><?php echo wp_trim_words( get_the_excerpt(), 10 ); ?></p>
-                            <div class="product-price mb-3"><span class="price new-price"><?php echo $product->get_price_html(); ?></span></div>
-                            <a class="btn-card btn-primary" href="<?php the_permalink(); ?>"><i class="fas fa-eye me-2"></i> Ver detalles</a>
-                            <a href="<?php echo esc_url( $product->add_to_cart_url() ); ?>" 
-                               class="btn-card btn-primary mt-2 ajax_add_to_cart" 
-                               data-quantity="1" 
-                               data-product_id="<?php echo get_the_ID(); ?>"
-                               rel="nofollow">
-                                <i class="fas fa-shopping-cart me-2"></i> Agregar al carrito
-                            </a>
-                        </div>
-                    </article>
+                        <?php get_template_part('template-parts/content-product'); ?>
                 </div>
                 <?php 
                     endwhile; 

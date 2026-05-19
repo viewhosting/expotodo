@@ -1,19 +1,19 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const trackingForm = document.getElementById('trackingForm');
+document.addEventListener('DOMContentLoaded', function () {
+    var trackingForm = document.getElementById('trackingForm');
     if (trackingForm) {
-        trackingForm.addEventListener('submit', function(e) {
+        trackingForm.addEventListener('submit', function (e) {
             e.preventDefault();
-            const orderId = document.getElementById('orderId').value;
-            const resultDiv = document.getElementById('trackingResult');
-            const resultIdSpan = document.getElementById('resultOrderId');
-            
+            var orderId = document.getElementById('orderId').value;
+            var resultDiv = document.getElementById('trackingResult');
+            var resultIdSpan = document.getElementById('resultOrderId');
+
             // Simular carga
-            const btn = this.querySelector('button');
-            const originalText = btn.textContent;
+            var btn = this.querySelector('button');
+            var originalText = btn.textContent;
             btn.textContent = 'Buscando...';
             btn.disabled = true;
 
-            setTimeout(() => {
+            setTimeout(function () {
                 if (resultIdSpan) resultIdSpan.textContent = '#' + orderId;
                 if (resultDiv) resultDiv.classList.remove('d-none');
                 btn.textContent = originalText;

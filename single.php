@@ -59,94 +59,28 @@ get_header();
         <div class="container">
             <h2 class="section-title text-center mb-5">Productos recomendados</h2>
             <div class="row g-4 row-cols-1 row-cols-sm-2 row-cols-md-4 row-cols-lg-4">
-                <!-- Static recommendations for now -->
-                <div class="col product-grid-item"
-                    data-category="maniquies-linea-deportiva maniquies-fibra-dama-caballero"
-                    data-flags="nuevo mas-vendido" data-price="520">
-                    <article class="product-card h-100">
-                        <div class="product-image-container">
-                            <div class="product-category">Linea Deportiva</div><button class="btn-add-wishlist"
-                                title="Agregar a lista de deseos" type="button"><i
-                                    class="far fa-heart"></i></button><img alt="Maniquí deportivo dama"
-                                class="product-image"
-                                src="https://www.expotodo.com.mx/wp-content/uploads/2023/07/EXPO-TODO-32-400x400.png" />
+                <?php
+                // Obtener 4 productos recomendados de forma dinámica
+                $recommended_args = array(
+                    'post_type' => 'product',
+                    'posts_per_page' => 4,
+                    'orderby' => 'rand', // Aleatorios para que siempre varíe
+                );
+                $recommended_products = new WP_Query($recommended_args);
+
+                if ($recommended_products->have_posts()) :
+                    while ($recommended_products->have_posts()) : $recommended_products->the_post();
+                        ?>
+                        <div class="col product-grid-item">
+                            <?php get_template_part('template-parts/content-product'); ?>
                         </div>
-                        <div class="product-content p-3">
-                            <h3 class="product-title">Maniquí deportivo dama</h3>
-                            <p class="product-description">Maniquí de alta calidad para exhibición profesional.</p>
-                            <div class="product-price mb-3"><span class="price new-price">520€</span></div><a
-                                class="btn-card btn-primary" href="#"><i
-                                    class="fas fa-eye me-2"></i> Ver detalles</a><a href="#" class="btn-card btn-primary mt-2">
-                            <i class="fas fa-shopping-cart me-2"></i> Agregar al carrito
-                        </a>
-                        </div>
-                    </article>
-                </div>
-                <div class="col product-grid-item"
-                    data-category="maniquies-fibra-dama-caballero maniquies-linea-piel" data-flags="mas-vendido"
-                    data-price="450">
-                    <article class="product-card h-100">
-                        <div class="product-image-container">
-                            <div class="product-category">Fibra Dama Caballero</div><button class="btn-add-wishlist"
-                                title="Agregar a lista de deseos" type="button"><i
-                                    class="far fa-heart"></i></button><img alt="Maniquí fibra dama clásico"
-                                class="product-image"
-                                src="https://www.expotodo.com.mx/wp-content/uploads/2025/11/BUCHONES-34.png" />
-                        </div>
-                        <div class="product-content p-3">
-                            <h3 class="product-title">Maniquí fibra dama clásico</h3>
-                            <p class="product-description">Maniquí de alta calidad para exhibición profesional.</p>
-                            <div class="product-price mb-3"><span class="price new-price">450€</span></div><a
-                                class="btn-card btn-primary" href="#"><i
-                                    class="fas fa-eye me-2"></i> Ver detalles</a><a href="#" class="btn-card btn-primary mt-2">
-                            <i class="fas fa-shopping-cart me-2"></i> Agregar al carrito
-                        </a>
-                        </div>
-                    </article>
-                </div>
-                <div class="col product-grid-item" data-category="bustos-modistos bustos-forrados-dama-caballero"
-                    data-flags="mas-vendido" data-price="279">
-                    <article class="product-card h-100">
-                        <div class="product-image-container">
-                            <div class="product-category">Bustos Modistos</div><button class="btn-add-wishlist"
-                                title="Agregar a lista de deseos" type="button"><i
-                                    class="far fa-heart"></i></button><img alt="Busto modisto dama"
-                                class="product-image"
-                                src="https://www.expotodo.com.mx/wp-content/uploads/2024/11/FOTOS-WEB-16.png" />
-                        </div>
-                        <div class="product-content p-3">
-                            <h3 class="product-title">Busto modisto dama</h3>
-                            <p class="product-description">Maniquí de alta calidad para exhibición profesional.</p>
-                            <div class="product-price mb-3"><span class="price new-price">279€</span></div><a
-                                class="btn-card btn-primary" href="#"><i
-                                    class="fas fa-eye me-2"></i> Ver detalles</a><a href="#" class="btn-card btn-primary mt-2">
-                            <i class="fas fa-shopping-cart me-2"></i> Agregar al carrito
-                        </a>
-                        </div>
-                    </article>
-                </div>
-                <div class="col product-grid-item" data-category="ganchos accesorios-tienda"
-                    data-flags="mas-vendido" data-price="1.5">
-                    <article class="product-card h-100">
-                        <div class="product-image-container">
-                            <div class="product-category">Ganchos</div><button class="btn-add-wishlist"
-                                title="Agregar a lista de deseos" type="button"><i
-                                    class="far fa-heart"></i></button><img alt="Ganchos metálicos"
-                                class="product-image"
-                                src="https://www.expotodo.com.mx/wp-content/uploads/2024/04/NUEVO-ARTICULADOS-2-1.png" />
-                        </div>
-                        <div class="product-content p-3">
-                            <h3 class="product-title">Ganchos metálicos</h3>
-                            <p class="product-description">Maniquí de alta calidad para exhibición profesional.</p>
-                            <div class="product-price mb-3"><span class="price new-price">1.5€</span></div><a
-                                class="btn-card btn-primary" href="#"><i
-                                    class="fas fa-eye me-2"></i> Ver detalles</a>
-                                    <a href="#" class="btn-card btn-primary mt-2">
-                            <i class="fas fa-shopping-cart me-2"></i> Agregar al carrito
-                        </a>
-                        </div>
-                    </article>
-                </div>
+                        <?php
+                    endwhile;
+                    wp_reset_postdata();
+                else :
+                    echo '<p class="text-center">No hay productos recomendados en este momento.</p>';
+                endif;
+                ?>
             </div>
         </div>
     </section>

@@ -2,25 +2,25 @@
  * Manejo de edición de direcciones mediante Modal AJAX para Expotodo
  */
 jQuery(document).ready(function ($) {
-    const modalElement = $('#addressModal');
-    const modalContainer = $('#address-modal-container');
-    const modalTitle = $('#addressModalLabel');
+    var modalElement = $('#addressModal');
+    var modalContainer = $('#address-modal-container');
+    var modalTitle = $('#addressModalLabel');
 
     // Al hacer clic en un botón de edición
     $('.btn-edit-address').on('click', function (e) {
         e.preventDefault();
-        const addressType = $(this).data('address-type');
-        const title = addressType === 'billing' ? 'Editar Facturación' : 'Editar Envío';
+        var addressType = $(this).data('address-type');
+        var title = addressType === 'billing' ? 'Editar Facturación' : 'Editar Envío';
 
         modalTitle.text(title);
-        modalContainer.html(`
-            <div class="text-center py-5">
-                <div class="spinner-border text-primary" role="status"></div>
-                <p class="mt-2 text-muted">Cargando formulario boutique...</p>
-            </div>
-        `);
+        modalContainer.html(
+            '<div class="text-center py-5">' +
+            '<div class="spinner-border text-primary" role="status"></div>' +
+            '<p class="mt-2 text-muted">Cargando formulario boutique...</p>' +
+            '</div>'
+        );
 
-        const modal = new bootstrap.Modal(modalElement[0]);
+        var modal = new bootstrap.Modal(modalElement[0]);
         modal.show();
 
         // Cargar el formulario vía AJAX
@@ -56,12 +56,12 @@ jQuery(document).ready(function ($) {
      * Función para guardar la dirección vía AJAX
      */
     function saveAddress(form, addressType) {
-        const btn = form.find('button[type="submit"]');
-        const originalText = btn.text();
+        var btn = form.find('button[type="submit"]');
+        var originalText = btn.text();
 
         btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Guardando...');
 
-        const formData = form.serializeArray();
+        var formData = form.serializeArray();
         formData.push({ name: 'action', value: 'expotodo_save_address_ajax' });
         formData.push({ name: 'address_type', value: addressType });
         formData.push({ name: 'security', value: expotodo_account_params.nonce });
@@ -74,9 +74,9 @@ jQuery(document).ready(function ($) {
                 if (response.success) {
                     btn.removeClass('btn-primary').addClass('btn-success').text('¡Guardado!');
 
-                    setTimeout(() => {
+                    setTimeout(function () {
                         bootstrap.Modal.getInstance(modalElement[0]).hide();
-                        // Recargar la sección de direcciones para reflejar cambios (o simplemente recargar la página)
+                        // Recargar la página para reflejar cambios
                         location.reload();
                     }, 1000);
                 } else {

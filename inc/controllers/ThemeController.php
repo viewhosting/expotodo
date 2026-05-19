@@ -35,30 +35,78 @@ class ThemeController {
         ) );
     }
 
+
     public function enqueue_assets() {
-        // Estilos base y externos
+        $version = time();
+        /**
+         * 1. GESTIÓN CRÍTICA DE JQUERY
+         * Lo movemos al header (false) porque el motor de la pantalla es lento.
+         * Si no está en el head, Slider Revolution fallará antes de encontrarlo.
+         */
+        if ( !is_admin() ) {
+            wp_deregister_script('jquery');
+            wp_register_script('jquery', includes_url('/js/jquery/jquery.min.js'), array(), null, false);
+            wp_enqueue_script('jquery');
+        }
+
+        // 2. DEPENDENCIAS EXTERNAS (CDNs)
         wp_enqueue_style( 'bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css', array(), '5.3.0' );
         wp_enqueue_style( 'fontawesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css', array(), '6.4.0' );
         wp_enqueue_style( 'google-fonts', 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&display=swap', array(), null );
         wp_enqueue_style( 'fancybox-css', 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css', array(), '5.0' );
-        wp_enqueue_script( 'fancybox-js', 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js', array(), '5.0', true );
+        wp_enqueue_style( 'swiper-css', 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css', array(), '11.0.0' );
 
-        // Estilos del tema
-        wp_enqueue_style( 'expotodo-style', get_template_directory_uri() . '/assets/css/main.css', array('bootstrap', 'fancybox-css'), '1.1.0' );
-        wp_enqueue_style( 'expotodo-filtro', get_template_directory_uri() . '/assets/css/filtro.css?ver='.rand(1,9999), array('expotodo-style'), '1.0.0' );
+        // 3. ESTILOS DEL TEMA Y CACHE-BUSTING
+        $version = time(); // Usamos time() para asegurar que el navegador siempre descargue lo nuevo
+        wp_enqueue_style( 'expotodo-style', get_template_directory_uri() . '/assets/css/main.css', array('bootstrap', 'fancybox-css'), $version );
+        
+        /**
+         * INYECCIÓN DE EMERGENCIA PARA PANTALLAS TÁCTILES
+         * Esto anula el color azul de los navegadores antiguos y fuerza el 'contain' del slider.
+         */
+        $custom_css = "
+            .woocommerce-loop-category__title a, h2 a, .product-title a { 
+                color: #000 !important; 
+                text-decoration: none !important;
+                -webkit-text-fill-color: #000 !important; 
+            }
+            /* Corregir el espacio blanco en Slider Revolution */
+            .tp-bgimg.defaultimg { 
+                background-size: contain !important; 
+                background-repeat: no-repeat !important; 
+                background-position: center center !important; 
+            }
+        ";
+        wp_add_inline_style( 'expotodo-style', $custom_css );
+
+        // Estilos condicionales
+        wp_enqueue_style( 'expotodo-filtro', get_template_directory_uri() . '/assets/css/filtro.css', array('expotodo-style'), $version );
 
         if ( is_page_template('page-cuenta.php') || is_account_page() ) {
-            wp_enqueue_style( 'expotodo-cuenta', get_template_directory_uri() . '/assets/css/cuenta.css?ver='.rand(1,9999), array('expotodo-style'), '1.0.0' );
+            wp_enqueue_style( 'expotodo-cuenta', get_template_directory_uri() . '/assets/css/cuenta.css', array('expotodo-style'), $version );
         }
 
         if ( is_cart() || is_page_template('page-cart.php') ) {
-            wp_enqueue_style( 'expotodo-carrito', get_template_directory_uri() . '/assets/css/pagina_carrito.css?ver='.rand(1,9999), array('expotodo-style'), '1.0.0' );
+            wp_enqueue_style( 'expotodo-carrito', get_template_directory_uri() . '/assets/css/pagina_carrito.css', array('expotodo-style'), $version );
         }
 
-        // Scripts base
+        if ( is_checkout() || is_page_template('page-checkout.php') ) {
+            wp_enqueue_style( 'expotodo-checkout', get_template_directory_uri() . '/assets/css/pagina_checkout.css', array('expotodo-style'), $version );
+            wp_enqueue_script( 'expotodo-checkout-custom', get_template_directory_uri() . '/assets/js/checkout-custom.js', array('jquery', 'expotodo-script'), $version, true );
+            wp_localize_script( 'expotodo-checkout-custom', 'expotodo_checkout_params', array(
+                'ajax_url' => admin_url( 'admin-ajax.php' ),
+                'nonce'    => wp_create_nonce( 'expotodo_checkout_nonce' ),
+            ));
+        }
+
+        // 4. SCRIPTS (Footer para rendimiento, excepto dependencias críticas)
+        wp_enqueue_script( 'fancybox-js', 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js', array(), '5.0', true );
+        wp_enqueue_script( 'swiper-js', 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js', array(), '11.0.0', true );
         wp_enqueue_script( 'bootstrap-js', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js', array('jquery'), '5.3.0', true );
-        wp_enqueue_script( 'expotodo-script', get_template_directory_uri() . '/assets/js/script.js?ver='.rand(1,9999), array('jquery'), '1.0.0', true );
         
+        wp_enqueue_script( 'expotodo-script', get_template_directory_uri() . '/assets/js/script.js', array('jquery'), $version, true );
+        
+        // Localización de variables
         wp_localize_script( 'expotodo-script', 'expotodo_globals', array(
             'ajax_url'       => admin_url( 'admin-ajax.php' ),
             'login_nonce'    => wp_create_nonce( 'expotodo_login_nonce' ),
@@ -68,26 +116,26 @@ class ThemeController {
             'checkout_nonce' => wp_create_nonce( 'woocommerce-process_checkout' ),
         ));
 
-        wp_enqueue_script( 'expotodo-login-js', get_template_directory_uri() . '/assets/js/expotodo-login.js?ver=' . time(), array('jquery', 'expotodo-script'), '1.0.0', true );
+        wp_enqueue_script( 'expotodo-login-js', get_template_directory_uri() . '/assets/js/expotodo-login.js', array('jquery', 'expotodo-script'), $version, true );
 
-        // Filtros de tienda
+        // 5. FILTROS Y PÁGINAS ESPECIALES
         if ( is_shop() || is_product_category() || is_page_template('page-lista-productos.php') || is_page('lista-productos') || is_page('productos') ) {
-            wp_enqueue_script( 'expotodo-ajax-shop-js', get_template_directory_uri() . '/assets/js/ajax-shop.js?ver='.rand(1,9999), array('jquery'), '1.0.0', true );
+            wp_enqueue_script( 'expotodo-ajax-shop-js', get_template_directory_uri() . '/assets/js/ajax-shop.js', array('jquery'), $version, true );
             wp_localize_script( 'expotodo-ajax-shop-js', 'expotodo_ajax', array(
                 'ajax_url' => admin_url( 'admin-ajax.php' ),
                 'nonce'    => wp_create_nonce('expotodo_filter_nonce')
             ));
         }
 
-        // Thank you & Account Boutique
+        // Estilos de checkout y cuenta
         if ( is_order_received_page() ) {
-            wp_enqueue_style( 'expotodo-thankyou', get_template_directory_uri() . '/assets/css/pagina_gracias.css', array(), '1.1.0' );
+            wp_enqueue_style( 'expotodo-thankyou', get_template_directory_uri() . '/assets/css/pagina_gracias.css', array(), $version );
         }
         if ( is_view_order_page() ) {
-            wp_enqueue_style( 'expotodo-view-order', get_template_directory_uri() . '/assets/css/pagina_view_order.css', array(), '1.0.0' );
+            wp_enqueue_style( 'expotodo-view-order', get_template_directory_uri() . '/assets/css/pagina_view_order.css', array(), $version );
         }
         if ( is_account_page() ) {
-            wp_enqueue_style( 'expotodo-account-boutique', get_template_directory_uri() . '/assets/css/pagina_cuenta.css', array(), '1.1.0' );
+            wp_enqueue_style( 'expotodo-account-boutique', get_template_directory_uri() . '/assets/css/pagina_cuenta.css', array(), $version );
         }
     }
 

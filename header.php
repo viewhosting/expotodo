@@ -10,7 +10,7 @@
     <div class="sidebar-overlay"></div>
     <!-- Header con Bootstrap Navbar -->
     <header class="main-header">
-        <nav class="navbar navbar-expand-lg navbar-custom">
+        <nav class="navbar navbar-expand-xl navbar-custom">
             <div class="container">
                 <!-- Logo -->
                 <a class="navbar-brand logo" href="<?php echo home_url(); ?>">
@@ -130,14 +130,20 @@
                 <div class="mb-3">
                     <label for="cartPostalCode" class="form-label mb-1">Código postal para envío</label>
                     <div class="input-group input-group-sm">
-                        <input type="text" class="form-control" id="cartPostalCode" placeholder="Ej. 01000">
+                        <input type="text" class="form-control" id="cartPostalCode" placeholder="Ej. 01000" value="<?php echo ( WC()->customer && WC()->customer->get_shipping_postcode() ) ? esc_attr( WC()->customer->get_shipping_postcode() ) : ''; ?>">
                         <button class="btn btn-outline-dark" type="button" id="cartCalculateShipping">Calcular</button>
                     </div>
                     <div class="mt-1 small text-muted cart-shipping-message"></div>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span>Envío</span>
-                    <span class="cart-shipping">—</span>
+                    <span class="cart-shipping"><?php 
+                        if ( WC()->cart && WC()->cart->needs_shipping() && WC()->customer && WC()->customer->get_shipping_postcode() ) {
+                            echo WC()->cart->get_cart_shipping_total();
+                        } else {
+                            echo '—';
+                        }
+                    ?></span>
                 </div>
                 <hr>
                 <div class="d-flex justify-content-between fw-bold">

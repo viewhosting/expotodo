@@ -28,6 +28,12 @@ get_header();
                                             address: "República de Uruguay 37, Centro Histórico de la Cdad. de México, Centro, Cuauhtémoc, 06000 Ciudad de México, CDMX"
                                         },
                                         { 
+                                            lat: 19.4312882, 
+                                            lng: -99.1491636, 
+                                            title: "Sucursal Ayuntamiento",
+                                            address: "Ayuntamiento 132, Centro, Cuauhtémoc, 06040, Ciudad de México"
+                                        },
+                                        { 
                                             lat: 21.1194371, 
                                             lng: -101.6775147, 
                                             title: "Sucursal León",
@@ -36,9 +42,9 @@ get_header();
                                     ];
 
                                     var map = new google.maps.Map(document.getElementById('map-sucursales'), {
-                                        zoom: 6,
-                                        center: { lat: 20.268, lng: -100.412 },
-                                        scrollwheel: false,
+                                        zoom: 17,
+                                        center: { lat: 19.4306729, lng: -99.1383525 },
+                                        scrollwheel: true,
                                         styles: [
                                             { "featureType": "administrative", "elementType": "labels.text.fill", "stylers": [{ "color": "#444444" }] },
                                             { "featureType": "landscape", "elementType": "all", "stylers": [{ "color": "#f2f2f2" }] },
@@ -49,7 +55,7 @@ get_header();
                                     var bounds = new google.maps.LatLngBounds();
                                     var infoWindow = new google.maps.InfoWindow();
 
-                                    locations.forEach(function(loc) {
+                                    locations.forEach(function(loc, index) {
                                         var marker = new google.maps.Marker({
                                             position: { lat: loc.lat, lng: loc.lng },
                                             map: map,
@@ -62,14 +68,15 @@ get_header();
                                             infoWindow.open(map, marker);
                                         });
 
-                                        bounds.extend(marker.getPosition());
+                                        if (index < 2) {
+                                            bounds.extend(marker.getPosition());
+                                        }
                                     });
 
                                     // Ajustar el mapa para que se vean todos los marcadores
                                     map.fitBounds(bounds);
                                 }
                             </script>
-                            <!-- REEMPLAZAR 'TU_API_KEY_AQUI' con una clave válida de Google Maps API -->
                             <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDD0onsVecR7aXcELdaTPrPzSvOgm6Ei9I&callback=initMap" async defer></script>
                         </div>
                         <div class="row g-3">
@@ -78,7 +85,16 @@ get_header();
                                     <i class="fas fa-map-marker-alt text-primary mt-1 me-2"></i>
                                     <div>
                                         <h5 class="h6 fw-bold">Matriz Centro</h5>
-                                        <p class="small text-muted mb-0">República de Uruguay 37, Centro Histórico de la Cdad. de México, Centro, Cuauhtémoc, 06000 Ciudad de México, CDMX</p>
+                                        <p class="small text-muted mb-0">República de Uruguay 37-Loc.A, Centro, Cuauhtémoc, 06000 Ciudad de México</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-map-marker-alt text-primary mt-1 me-2"></i>
+                                    <div>
+                                        <h5 class="h6 fw-bold">Sucursal Ayuntamiento</h5>
+                                        <p class="small text-muted mb-0">Ayuntamiento 132, Centro, Cuauhtémoc, 06040, Ciudad de México</p>
                                     </div>
                                 </div>
                             </div>
@@ -139,97 +155,7 @@ get_header();
     </section>
 </main>
 
-<!-- Sección de Productos Destacados -->
-<section class="featured-section py-5" id="coleccion">
-    <div class="container">
-        <h2 class="section-title text-center mb-5">Nuestra Colección</h2>
-        
-        <div class="row g-4 mb-5">
-            <?php
-            // Consulta de productos destacados aleatorios de WooCommerce
-            $args = array(
-                'post_type'      => 'product',
-                'posts_per_page' => 4,
-                'orderby'        => 'rand',
-                'tax_query'      => array(
-                    array(
-                        'taxonomy' => 'product_visibility',
-                        'field'    => 'name',
-                        'terms'    => 'featured',
-                    ),
-                ),
-            );
-
-            $featured_products = new WP_Query($args);
-
-            if ($featured_products->have_posts()) :
-                while ($featured_products->have_posts()) : $featured_products->the_post();
-                    global $product;
-                    $product_id = get_the_ID();
-                    $product_name = get_the_title();
-                    $product_price = $product->get_price();
-                    
-                    // Obtener categoría principal
-                    $terms = get_the_terms($product_id, 'product_cat');
-                    $category_name = !empty($terms) && !is_wp_error($terms) ? $terms[0]->name : 'Producto';
-                    
-                    // Obtener imagen
-                    $image_url = has_post_thumbnail() ? get_the_post_thumbnail_url($product_id, 'large') : 'https://via.placeholder.com/400';
-            ?>
-            <div class="col-md-3">
-                <article class="product-card h-100" data-product-id="<?php echo esc_attr($product_id); ?>" data-product-name="<?php echo esc_attr($product_name); ?>" data-product-price="<?php echo esc_attr($product_price); ?>">
-                    <div class="product-image-container">
-                        <div class="product-category"><?php echo esc_html($category_name); ?></div>
-                        <?php if ($product->is_on_sale()) : ?>
-                            <div class="product-category sale" style="top: 40px; background-color: #dc3545;">Oferta</div>
-                        <?php endif; ?>
-                        <button type="button" class="btn-add-wishlist" title="Agregar a lista de deseos">
-                            <i class="far fa-heart"></i>
-                        </button>
-                        <img src="<?php echo esc_url($image_url); ?>" 
-                             class="product-image" 
-                             alt="<?php echo esc_attr($product_name); ?>">
-                    </div>
-                    <div class="product-content p-3">
-                        <h3 class="product-title"><?php echo esc_html($product_name); ?></h3>
-                        <p class="product-description">
-                            <?php echo wp_trim_words(get_the_excerpt(), 15, '...'); ?>
-                        </p>
-                        <div class="product-price mb-3">
-                            <?php echo $product->get_price_html(); ?>
-                        </div>
-                        <div class="d-flex flex-wrap gap-2">
-                             <a href="<?php echo get_permalink(); ?>" class="btn-card btn-primary flex-grow-1">
-                                <i class="fas fa-eye me-2"></i> Ver
-                            </a>
-                             <?php if ( $product->is_type('variable') ) : ?>
-                                 <a href="<?php echo get_permalink(); ?>" class="btn-card btn-primary flex-grow-1">
-                                     <i class="fas fa-eye me-2"></i> Opciones
-                                 </a>
-                             <?php else : ?>
-                                 <a href="<?php echo esc_url($product->add_to_cart_url()); ?>" class="btn-card btn-primary ajax_add_to_cart flex-grow-1" data-quantity="1" data-product_id="<?php echo get_the_ID(); ?>" aria-label="Agregar “<?php the_title_attribute(); ?>” al carrito">
-                                     <i class="fas fa-shopping-cart me-2"></i> Agregar
-                                 </a>
-                             <?php endif; ?>
-                        </div>
-                    </div>
-                </article>
-            </div>
-            <?php
-                endwhile;
-                wp_reset_postdata();
-            else :
-                echo '<div class="col-12 text-center"><p>No hay productos destacados disponibles en este momento.</p></div>';
-            endif;
-            ?>
-        </div>
-        
-        <div class="text-center">
-            <a href="<?php echo home_url('/productos'); ?>" class="btn btn-outline-dark btn-lg px-5">
-                Ver Catálogo Completo
-            </a>
-        </div>
-    </div>
-</section>
+    <!-- Sección de Colección Centralizada -->
+    <?php get_template_part('template-parts/product-collection'); ?>
 
 <?php get_footer(); ?>

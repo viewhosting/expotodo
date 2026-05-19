@@ -164,44 +164,7 @@ defined( 'ABSPATH' ) || exit;
                                 if ( ! $_rel_product ) continue;
                                 ?>
                                 <div class="col-lg-3 col-md-4 col-sm-6">
-                                    <article class="product-card h-100" data-product-id="<?php echo get_the_ID(); ?>">
-                                        <div class="product-image-container">
-                                            <?php 
-                                            $terms = get_the_terms( get_the_ID(), 'product_cat' );
-                                            $cat_name = !empty($terms) && !is_wp_error($terms) ? $terms[0]->name : 'Producto';
-                                            ?>
-                                            <div class="product-category"><?php echo esc_html($cat_name); ?></div>
-                                            
-                                            <button type="button" class="btn-add-wishlist" title="Agregar a lista de deseos">
-                                                <i class="far fa-heart"></i>
-                                            </button>
-
-                                            <?php 
-                                            if (has_post_thumbnail()) {
-                                                the_post_thumbnail('medium', array('class' => 'product-image'));
-                                            } else {
-                                                echo '<img src="https://via.placeholder.com/300x300?text=No+Image" class="product-image" alt="' . get_the_title() . '">';
-                                            }
-                                            ?>
-                                        </div>
-                                        <div class="product-content p-3">
-                                            <h3 class="product-title"><?php the_title(); ?></h3>
-                                            <p class="product-description">
-                                                <?php echo wp_trim_words(get_the_excerpt(), 10, '...'); ?>
-                                            </p>
-                                            <div class="product-price mb-3">
-                                                <?php echo $_rel_product->get_price_html(); ?>
-                                            </div>
-                                            <div class="d-flex flex-wrap gap-2">
-                                                <a href="<?php the_permalink(); ?>" class="btn-card btn-primary flex-grow-1">
-                                                    <i class="fas fa-eye me-2"></i> Ver
-                                                </a>
-                                                <a href="<?php echo esc_url( $_rel_product->add_to_cart_url() ); ?>" class="btn-card btn-primary ajax_add_to_cart flex-grow-1" data-quantity="1" data-product_id="<?php echo get_the_ID(); ?>">
-                                                    <i class="fas fa-shopping-cart me-2"></i> Agregar
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </article>
+                                    <?php get_template_part('template-parts/content-product'); ?>
                                 </div>
                                 <?php
                             endwhile;

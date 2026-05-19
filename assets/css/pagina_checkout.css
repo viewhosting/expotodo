@@ -989,6 +989,7 @@
         flex-direction: row !important;
         justify-content: space-between !important;
         align-items: flex-end !important; /* Alinea los contenidos por la parte inferior para que se vean parejos */
+        background: transparent !important;
     }
 
     .totals-grid-col {
@@ -1027,6 +1028,15 @@
 
 /* Response para móviles (Optimización Final & Sticky Footer) */
 @media (max-width: 768px) {
+    .woocommerce-checkout .cart-collaterals,
+    .woocommerce-checkout .cart-totals-container,
+    .woocommerce-checkout .cart-wrapper,
+    .woocommerce-checkout,
+    .woocommerce {
+        position: static !important;
+        z-index: auto !important;
+    }
+
      .shipping-calculator-button {
         width: 100%;
         text-align: center;
@@ -1071,16 +1081,23 @@
         bottom: 0 !important;
         left: 0 !important;
         right: 0 !important;
-        background: rgba(255, 255, 255, 0.65) !important;
-        backdrop-filter: blur(18px) saturate(180%) !important;
-        -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
-        padding: 15px 25px 0px 25px !important;
-        z-index: 1000 !important;
-        box-shadow: 0 -8px 32px rgba(0,0,0,0.08) !important;
-        border-top: 1px solid rgba(255, 255, 255, 0.45) !important;
+        background: rgba(255, 255, 255, 0.9) !important;
+        backdrop-filter: blur(25px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+        padding: 15px 25px calc(15px + env(safe-area-inset-bottom, 0px)) 25px !important;
+        z-index: 999999 !important; /* Enorme z-index para que flote por encima del footer, productos y widgets */
+        box-shadow: 0 -12px 40px rgba(0,0,0,0.12) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.6) !important;
         display: flex !important;
         flex-direction: column !important;
         gap: 8px !important;
+    }
+
+    /* Evitar que Joinchat (WhatsApp) quede tapado o interfiera con el botón de pagar o de totales */
+    .joinchat,
+    .joinchat__button {
+        bottom: 210px !important; /* Desplazado sobre la barra de totales en móviles */
+        z-index: 9999999 !important; /* Mayor z-index que la barra (999999) */
     }
 
     .main-total {
@@ -1379,12 +1396,13 @@ body.woocommerce-checkout {
 
 /* Ocultar labels por defecto para un look minimalista */
 .woocommerce-checkout .form-row label {
-    display: none !important;
+    display: none;
 }
 
-/* MOSTRAR labels específicos para Identidad y Recogida para mayor claridad */
+/* MOSTRAR labels específicos para Identidad, Recogida y Facturación para mayor claridad */
 #contact_details_section .form-row label,
-#pickup_location_fields .form-row label {
+#pickup_location_fields .form-row label,
+#billing_details_section .form-row label {
     display: block !important;
     font-size: 0.85rem !important;
     font-weight: 600 !important;
@@ -1405,31 +1423,111 @@ body.woocommerce-checkout {
 
 .woocommerce-checkout .woocommerce-billing-fields__field-wrapper,
 .woocommerce-checkout .woocommerce-shipping-fields__field-wrapper {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    display: grid !important;
+    grid-template-columns: repeat(12, 1fr) !important;
+    gap: 15px 10px;
 }
 
-/* Distribución de campos en la Sección 1: Identidad */
-#billing_first_name_field {
-    grid-column: 1;
-}
-#billing_last_name_field {
-    grid-column: 2;
-}
-#billing_email_field,
-#billing_phone_field {
-    grid-column: span 2;
+/* Forzar a que cada campo (.form-row) ocupe el 100% de su celda y anular anchos/floats por defecto de WooCommerce */
+.woocommerce-checkout .woocommerce-billing-fields__field-wrapper .form-row,
+.woocommerce-checkout .woocommerce-shipping-fields__field-wrapper .form-row {
+    width: 100% !important;
+    max-width: 100% !important;
+    float: none !important;
 }
 
-/* Campos que deben ser ancho completo en general */
+/* Distribución de campos en la Sección 1: Identidad y Contacto */
+/* Fila 1: Nombre y Apellidos (6/6) */
+#billing_first_name_field,
+#shipping_first_name_field {
+    grid-column: span 6 !important;
+    order: 1 !important;
+}
+#billing_last_name_field,
+#shipping_last_name_field {
+    grid-column: span 6 !important;
+    order: 2 !important;
+}
+#billing_email_field {
+    grid-column: span 12 !important;
+    order: 13 !important;
+}
+
+/* Fila 2: Teléfono / Celular (12) */
+#billing_phone_field,
+#shipping_phone_field {
+    grid-column: span 12 !important;
+    order: 3 !important;
+}
+
+/* Fila 3: Número Exterior y Número Interior (6/6) */
+#billing_number_exterior_field,
+#shipping_number_exterior_field {
+    grid-column: span 6 !important;
+    order: 4 !important;
+}
+#billing_number_interior_field,
+#shipping_number_interior_field {
+    grid-column: span 6 !important;
+    order: 5 !important;
+}
+
+/* Fila 4: Calle (12) */
 #billing_address_1_field,
+#shipping_address_1_field {
+    grid-column: span 12 !important;
+    order: 6 !important;
+}
+
+/* Fila 5: Colonia y CP (6/6) */
 #billing_address_2_field,
-#billing_rfc_field,
-#billing_company_name_field,
-#shipping_address_1_field,
-#shipping_address_2_field,
+#shipping_address_2_field {
+    grid-column: span 6 !important;
+    order: 7 !important;
+}
+#billing_postcode_field,
+#shipping_postcode_field {
+    grid-column: span 6 !important;
+    order: 8 !important;
+}
+
+/* Fila 6: Delegación / Municipio y Localidad / Ciudad (6/6) */
+#billing_delegacion_field,
+#shipping_delegacion_field {
+    grid-column: span 6 !important;
+    order: 9 !important;
+}
+#billing_city_field,
+#shipping_city_field {
+    grid-column: span 6 !important;
+    order: 10 !important;
+}
+
+/* Fila 7: Estado y País (6/6) */
+#billing_state_field,
+#shipping_state_field {
+    grid-column: span 6 !important;
+    order: 11 !important;
+}
+#billing_country_field,
+#shipping_country_field {
+    grid-column: span 6 !important;
+    order: 12 !important;
+}
+
+/* Campos especiales de Factura y Comentarios - 12 columnas */
+#billing_rfc_field {
+    grid-column: span 12 !important;
+    order: 14 !important;
+}
+#billing_company_name_field {
+    grid-column: span 12 !important;
+    order: 15 !important;
+}
 #order_comments_field {
-    grid-column: span 2;
+    grid-column: span 12 !important;
+    order: 16 !important;
+    margin-top: 25px !important;
 }
 
 /* --- FIX: Layout de Campos de Recogida (Pickup) --- */
@@ -1489,7 +1587,13 @@ body.woocommerce-checkout {
 @media (max-width: 768px) {
     .woocommerce-checkout .woocommerce-billing-fields__field-wrapper,
     .woocommerce-checkout .woocommerce-shipping-fields__field-wrapper {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+    .woocommerce-checkout .woocommerce-billing-fields__field-wrapper > .form-row,
+    .woocommerce-checkout .woocommerce-shipping-fields__field-wrapper > .form-row,
+    #order_comments_field {
+        grid-column: span 1 !important;
     }
 }
 
@@ -1900,4 +2004,30 @@ input {
 /* Efecto Hover */
 .woocommerce-terms-and-conditions-wrapper label.checkbox:hover .woocommerce-terms-and-conditions-checkbox-text::before {
     box-shadow: 0 0 0 4px rgba(176, 212, 67, 0.1) !important;
+}
+
+/* Lista de Productos Sticky en Checkout (Desktop) */
+@media (min-width: 992px) {
+    .woocommerce-checkout .cart-items-list {
+        position: -webkit-sticky;
+        position: sticky;
+        top: 2rem;
+        z-index: 10;
+        max-height: calc(100vh - 6rem);
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #b0d443 #f1f5f9;
+    }
+    
+    .woocommerce-checkout .cart-items-list::-webkit-scrollbar {
+        width: 6px;
+    }
+    .woocommerce-checkout .cart-items-list::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 10px;
+    }
+    .woocommerce-checkout .cart-items-list::-webkit-scrollbar-thumb {
+        background: #b0d443;
+        border-radius: 10px;
+    }
 }

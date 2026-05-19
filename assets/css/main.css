@@ -67,6 +67,22 @@ body {
     transform: translateY(-3px);
 }
 
+/* Botón de filtros móviles */
+[data-bs-target="#filterCollapse"] {
+    transition: all 0.3s ease;
+    background-color: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+    color: var(--text-white) !important;
+}
+
+[data-bs-target="#filterCollapse"][aria-expanded="true"] i.fa-chevron-down {
+    transform: rotate(180deg);
+}
+
+[data-bs-target="#filterCollapse"] i.fa-chevron-down {
+    transition: transform 0.3s ease;
+}
+
 /* ===== TIPOGRAFÍA ===== */
 h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
@@ -139,7 +155,7 @@ h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
     font-weight: 600;
     color: var(--text-dark) !important;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     padding: 0.5rem 1rem !important;
     position: relative;
 }
@@ -246,7 +262,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .wishlist-count {
-    background-color: var(--text-dark);
+    background-color: var(--primary-color);
     color: var(--text-white);
 }
 
@@ -462,6 +478,29 @@ h1, h2, h3, h4, h5, h6 {
     }
 }
 
+/* Reglas de Filtros (Fuera de anidaciones contradictorias) */
+@media (max-width: 991px) {
+    #filterCollapse.collapse:not(.show) {
+        display: none;
+    }
+}
+
+@media (min-width: 992px) {
+    #filterCollapse.collapse {
+        display: block !important;
+        height: auto !important;
+    }
+}
+
+
+/* Persistencia de filtros en escritorio */
+@media (min-width: 992px) {
+    .product-filter-sidebar.sticky-top {
+        top: 90px !important;
+        z-index: 100;
+    }
+}
+
 /* ===== HERO SECTION ===== */
 .hero {
     color: var(--text-white);
@@ -535,7 +574,7 @@ h1, h2, h3, h4, h5, h6 {
 .product-image-container {
     position: relative;
     width: 100%;
-    height: 250px; /* Alto fijo rectangular */
+    height: 320px; /* Alto fijo rectangular */
     overflow: hidden;
     background-color: #f8f8f8; /* Fondo por si la imagen no carga */
 }
@@ -618,7 +657,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .product-description {
-    font-size: 0.95rem;
+    font-size: 0.75rem;
     color: #666;
     margin-bottom: 20px;
     flex: 1;
@@ -657,7 +696,7 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--text-dark);
     font-family: var(--font-heading);
     font-weight: 500;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     text-decoration: none;
     letter-spacing: 0.5px;
     text-align: center;
@@ -760,29 +799,38 @@ h1, h2, h3, h4, h5, h6 {
 /* Menú del footer - SIEMPRE HORIZONTAL */
 .footer-menu {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     justify-content: flex-end;
     align-items: center;
-    gap: 20px;
+    gap: 15px 20px; /* Gap vertical y horizontal */
     text-align: right;
+    list-style: none; /* Limpiar puntos de lista de WP */
+    margin: 0;
+    padding: 0;
+}
+
+.footer-menu li {
+    display: inline-block;
 }
 
 .footer-menu a {
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.85) !important; /* Blanco no tan blanco */
     text-decoration: none;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-family: var(--font-heading);
     font-weight: 500;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     white-space: nowrap;
     flex-shrink: 0;
+    display: inline-block;
 }
 
 .footer-menu a:hover {
-    color: var(--primary-color);
+    color: var(--primary-dark) !important;
+    transform: translateY(-2px);
 }
 
 /* ===== RESPONSIVE ===== */
@@ -800,12 +848,16 @@ h1, h2, h3, h4, h5, h6 {
     }
     
     .hero {
-        min-height: 640px !important; /* Altura firme para móvil */
+        min-height: auto !important; /* Altura firme para móvil */
         margin-bottom: 20px !important;
     }
     
     .hero-title {
         font-size: 2.5rem;
+    }
+    
+    #sliders2{
+        background-size: cover !important;
     }
     
     .hero-subtitle {
@@ -814,12 +866,12 @@ h1, h2, h3, h4, h5, h6 {
     
     /* Imágenes de productos en móvil */
     .product-image-container {
-        height: 250px; /* Un poco más bajo en móvil */
+        height: 320px; /* Ajustado para 2 columnas */
     }
     
     .product-title {
         min-height: auto;
-        font-size: 1.2rem;
+        font-size: 1rem;
     }
     
     .product-description {
@@ -828,7 +880,8 @@ h1, h2, h3, h4, h5, h6 {
     
     /* Footer */
     .main-footer {
-        height: 150px;
+        height: auto;
+        min-height: 120px;
     }
     
     .footer-container {
@@ -896,11 +949,11 @@ h1, h2, h3, h4, h5, h6 {
     }
     
     .product-image-container {
-        height: 220px;
+        height: 320px;
     }
     
     .main-footer {
-        height: 160px;
+        height: auto;
     }
     
     .footer-info {
@@ -930,7 +983,13 @@ h1, h2, h3, h4, h5, h6 {
 
 @media (max-width: 480px) {
     .product-image-container {
-        height: 450px;
+        height: auto;
+    }
+    
+    /* Forzar 2 columnas si row-cols-2 no es suficiente */
+    #product-grid-container .product-grid-item {
+        flex: 0 0 50%;
+        max-width: 50%;
     }
     
     .footer-menu {
@@ -938,6 +997,7 @@ h1, h2, h3, h4, h5, h6 {
     }
     
     .footer-menu a {
+        color: rgba(255, 255, 255, 0.85) !important;
         font-size: 0.65rem;
         margin: 0 2px;
         padding: 1px 3px;
@@ -1243,9 +1303,50 @@ h1, h2, h3, h4, h5, h6 {
     margin-bottom: 0.25rem;
 }
 
-/* Ocultar campos de factura por defecto (evita parpadeo al cargar) */
+/* Asegurar que los campos de factura se manejen por el contenedor padre */
 .invoice-field {
-    display: none;
+    display: block !important; /* No ocultar individualmente, el padre manda */
+}
+
+/* Asegurar que los labels de factura sean visibles y legibles */
+.premium-field-wrap {
+    margin-bottom: 20px !important;
+    display: block !important;
+    width: 100% !important;
+    clear: both !important;
+}
+
+.premium-field-wrap label {
+    display: block !important;
+    color: var(--text-dark) !important;
+    font-weight: 700 !important;
+    margin-bottom: 8px !important;
+    font-size: 0.85rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Diseño de Inputs Premium para Facturación */
+.premium-field-wrap .input-text, 
+.premium-field-wrap select,
+.premium-field-wrap .select2-container--default .select2-selection--single {
+    background-color: #ffffff !important;
+    border: 2px solid #cbd5e1 !important; /* Gris más visible */
+    border-radius: 12px !important;
+    padding: 12px 15px !important;
+    height: 50px !important;
+    color: #1e293b !important;
+    font-size: 1rem !important;
+    width: 100% !important;
+    display: block !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+}
+
+.premium-field-wrap .input-text:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 4px rgba(140, 168, 53, 0.15) !important;
 }
 
 /* Estilo para el checkbox de factura */
@@ -2251,4 +2352,107 @@ a.added_to_cart {
 
 .search-results-list::-webkit-scrollbar-thumb:hover {
     background: #ccc;
+}
+
+
+/* ==========================================
+   TABLA DE TALLAS PERSONALIZADA
+   ========================================== */
+
+        .tabla-medidas {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            font-family: inherit;
+        }
+        .tabla-medidas thead tr {
+            background-color: var(--primary-dark) !important;
+            color: #ffffff !important;
+        }
+        .tabla-medidas th {
+            padding: 12px 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .tabla-medidas td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            text-align: center;
+            color: #444;
+        }
+        .tabla-medidas tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .tabla-medidas tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        .size-label {
+            background: #f0f4f8;
+            font-weight: bold;
+            color: #004aad;
+        }
+/* ==========================================
+   COMPONENT: PRODUCT CAROUSEL (SWIPER)
+   ========================================== */
+.section-title.m-0 {
+    line-height: 1.2;
+    text-align: center;
+    width: 100%;
+    display: block;
+}
+
+/* Responsivo para el header de la colección */
+@media (min-width: 768px) {
+    .position-md-absolute {
+        position: absolute !important;
+    }
+    .end-0 {
+        right: 0 !important;
+    }
+    .translate-middle-y-md {
+        transform: translateY(-50%) !important;
+    }
+}
+
+@media (max-width: 767px) {
+    .section-title {
+        font-size: 1.8rem !important;
+    }
+    .swiper-controls {
+        justify-content: center;
+        width: 100%;
+    }
+}
+
+.products-swiper {
+    padding: 10px 5px 40px 5px !important;
+}
+
+.swiper-button-prev-custom, .swiper-button-next-custom {
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #333;
+}
+
+.swiper-button-prev-custom:hover, .swiper-button-next-custom:hover {
+    background: #004aad;
+    color: #fff;
+    border-color: #004aad;
+}
+
+.swiper-pagination-bullet-active {
+    background: #004aad !important;
 }

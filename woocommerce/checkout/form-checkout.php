@@ -133,8 +133,39 @@ if ( ! $checkout->is_registration_enabled() && $checkout->is_registration_requir
                 ?>
             </div>
 
-            <!-- Sección 1: Datos de Contacto e Identidad (Siempre Visibles) -->
-            <div id="contact_details_section" class="customer-details-section mb-4">
+           
+            
+            <?php do_action( 'woocommerce_checkout_after_customer_details' ); ?>
+        </div>
+
+        <!-- Columna Derecha: Tu Pedido (Totales Premium) -->
+        <div class="col-12 col-lg-6 cart-totals-container">
+            <div class="cart-collaterals cart_totals" style="position: sticky; top: 2rem;">
+                
+                <!-- <h2 style="margin-bottom: 25px !important;"><?php esc_html_e( 'Resumen del Pedido', 'woocommerce' ); ?></h2> -->
+                
+                <div class="shop_totals_list">
+                    <?php if ( WC()->cart->needs_shipping() && WC()->cart->show_shipping() ) : ?>
+                        <div class="shipping-options-section mb-4">
+                            <div class="cart-config-actions mb-4">
+                                <div class="shipping-action-wrap d-flex align-items-center flex-wrap gap-2">
+                                    <?php wc_cart_totals_shipping_html(); ?>
+                                    <button type="button" class="change-address-btn" id="toggle_address_fields">
+                                        <i class="fas fa-map-marker-alt"></i> <?php _e( 'Cambiar Dirección', 'woocommerce' ); ?>
+                                    </button>
+                                </div>
+                                <div class="billing-request-toggle mt-3">
+                                    <label class="premium-checkbox-container">
+                                        <input type="checkbox" id="request_invoice_checkout">
+                                        <span class="checkmark"></span>
+                                        <?php _e( '¿Deseas factura?', 'woocommerce' ); ?>
+                                    </label>
+                                </div>
+                            </div>
+                        <hr class="mb-4">
+
+                             <!-- Sección 1: Datos de Contacto e Identidad (Siempre Visibles) -->
+            <div id="contact_details_section" class="customer-details-section mt-4 mb-4">
                 <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--primary-dark); text-transform: uppercase; margin-bottom: 20px;"><?php esc_html_e( 'Datos de Contacto', 'woocommerce' ); ?></h2>
                 <div class="row g-3">
                     <div class="col-12 col-md-11 mx-auto contact-fields-grid">
@@ -178,7 +209,7 @@ if ( ! $checkout->is_registration_enabled() && $checkout->is_registration_requir
             </div>
 
             <!-- Sección 2: Información de Envío (Entrega) -->
-            <div id="shipping_details_section" class="customer-details-section mb-4" style="display: none;">
+            <div id="shipping_details_section" class="customer-details-section mb-4" >
                 <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--primary-dark); text-transform: uppercase; margin-bottom: 20px;"><?php esc_html_e( 'Dirección de Entrega', 'woocommerce' ); ?></h2>
                 <div class="row g-3">
                     <div class="col-12 col-md-11 mx-auto">
@@ -216,34 +247,6 @@ if ( ! $checkout->is_registration_enabled() && $checkout->is_registration_requir
                     </div>
                 </div>
             </div>
-            
-            <?php do_action( 'woocommerce_checkout_after_customer_details' ); ?>
-        </div>
-
-        <!-- Columna Derecha: Tu Pedido (Totales Premium) -->
-        <div class="col-12 col-lg-6 cart-totals-container">
-            <div class="cart-collaterals cart_totals" style="position: sticky; top: 2rem;">
-                
-                <!-- <h2 style="margin-bottom: 25px !important;"><?php esc_html_e( 'Resumen del Pedido', 'woocommerce' ); ?></h2> -->
-                
-                <div class="shop_totals_list">
-                    <?php if ( WC()->cart->needs_shipping() && WC()->cart->show_shipping() ) : ?>
-                        <div class="shipping-options-section mb-4">
-                            <div class="cart-config-actions">
-                                <div class="shipping-action-wrap d-flex align-items-center flex-wrap gap-2">
-                                    <?php wc_cart_totals_shipping_html(); ?>
-                                    <button type="button" class="change-address-btn" id="toggle_address_fields">
-                                        <i class="fas fa-map-marker-alt"></i> <?php _e( 'Cambiar Dirección', 'woocommerce' ); ?>
-                                    </button>
-                                </div>
-                                <div class="billing-request-toggle mt-3">
-                                    <label class="premium-checkbox-container">
-                                        <input type="checkbox" id="request_invoice_checkout">
-                                        <span class="checkmark"></span>
-                                        <?php _e( '¿Deseas factura?', 'woocommerce' ); ?>
-                                    </label>
-                                </div>
-                            </div>
                         </div>
                     <?php endif; ?>
 
@@ -251,6 +254,18 @@ if ( ! $checkout->is_registration_enabled() && $checkout->is_registration_requir
                     // Mover el total review para procesar hooks
                     remove_action( 'woocommerce_checkout_order_review', 'woocommerce_checkout_payment', 20 );
                     ?>
+
+
+                        
+
+
+
+
+
+
+
+
+
                     
                     <div id="order_review" class="woocommerce-checkout-review-order">
                         <div class="cart-summary-footer-bar">
@@ -272,7 +287,7 @@ if ( ! $checkout->is_registration_enabled() && $checkout->is_registration_requir
                                 <div class="totals-grid-col">
                                     <div class="order-total total-row main-total">
                                         <span class="label"><?php esc_html_e( 'Total', 'woocommerce' ); ?></span>
-                                        <span class="value"><?php wc_cart_totals_order_total_html(); ?></span>
+                                        <span class="value total-value"><?php wc_cart_totals_order_total_html(); ?></span>
                                     </div>
                                     <div class="barra"></div>
                                 </div>
@@ -281,13 +296,13 @@ if ( ! $checkout->is_registration_enabled() && $checkout->is_registration_requir
                                 <div class="totals-grid-col details-col-hidden-mobile">
                                     <div class="cart-subtotal subtotal-row">
                                         <span class="label"><?php esc_html_e( 'Subtotal', 'woocommerce' ); ?></span>
-                                        <span class="value"><?php wc_cart_totals_subtotal_html(); ?></span>
+                                        <span class="value subtotal-value"><?php wc_cart_totals_subtotal_html(); ?></span>
                                     </div>
 
                                     <?php if ( WC()->cart->needs_shipping() && WC()->cart->show_shipping() ) : ?>
                                         <div class="shipping-cost-row subtotal-row">
                                             <span class="label"><?php esc_html_e( 'Envío', 'woocommerce' ); ?></span>
-                                            <span class="value"><?php echo WC()->cart->get_cart_shipping_total(); ?></span>
+                                            <span class="value shipping-value"><?php echo WC()->cart->get_cart_shipping_total(); ?></span>
                                         </div>
                                     <?php endif; ?>
                                 </div>

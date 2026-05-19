@@ -7,10 +7,10 @@ jQuery(document).ready(function ($) {
     // 1. Toggle Wishlist (Botón principal en tarjeta de producto)
     $(document).on('click', '.btn-add-wishlist', function (e) {
         e.preventDefault();
-        const btn = $(this);
+        var btn = $(this);
         // Intentar obtener el ID del botón o de la tarjeta padre (.product-card)
-        const productId = btn.data('id') || btn.closest('.product-card').data('product-id');
-        const icon = btn.find('i');
+        var productId = btn.data('id') || btn.closest('.product-card').data('product-id');
+        var icon = btn.find('i');
 
         if (!productId) {
             console.error('Wishlist Error: No product ID found.');
@@ -55,8 +55,8 @@ jQuery(document).ready(function ($) {
     // 2. Eliminar desde el Panel Lateral (Right Sidebar)
     $(document).on('click', '.btn-remove-wishlist', function (e) {
         e.preventDefault();
-        const productId = $(this).data('id');
-        const itemRow = $(this).closest('.wishlist-item');
+        var productId = $(this).data('id');
+        var itemRow = $(this).closest('.wishlist-item');
 
         itemRow.css('opacity', '0.5');
 
@@ -72,7 +72,7 @@ jQuery(document).ready(function ($) {
                 if (response.success) {
                     updateWishlistUI(response.data);
                     // Actualizar también los corazones en la lista de productos si existen
-                    $(`.btn-add-wishlist[data-id="${productId}"] i`).removeClass('fas text-danger').addClass('far');
+                    $('.btn-add-wishlist[data-id="' + productId + '"] i').removeClass('fas text-danger').addClass('far');
                 }
             }
         });
@@ -106,25 +106,25 @@ jQuery(document).ready(function ($) {
     /**
      * Función para mostrar notificaciones estilo Boutique compatibles con script.js
      */
-    window.showToast = function (title, message, type = 'success') {
-        let alertClass = 'woocommerce-message';
+    window.showToast = function (title, message, type) {
+        type = typeof type !== 'undefined' ? type : 'success';
+
+        var alertClass = 'woocommerce-message';
         if (type === 'warning' || type === 'info') alertClass = 'woocommerce-info';
         if (type === 'error') alertClass = 'woocommerce-error';
 
-        const toastHtml = `
-            <div class="${alertClass} animate-f-in">
-                <span><strong>${title}:</strong> ${message}</span>
-                <button type="button" class="close-sidebar-btn" aria-label="Cerrar" onclick="this.parentElement.remove()">
-                    <i class="fas fa-times" style="margin-left:10px; cursor:pointer;"></i>
-                </button>
-            </div>
-        `;
+        var toastHtml = '<div class="' + alertClass + ' animate-f-in">' +
+            '<span><strong>' + title + ':</strong> ' + message + '</span>' +
+            '<button type="button" class="close-sidebar-btn" aria-label="Cerrar" onclick="this.parentElement.remove()">' +
+            '<i class="fas fa-times" style="margin-left:10px; cursor:pointer;"></i>' +
+            '</button>' +
+            '</div>';
 
         // Inyectar en el body para que el MutationObserver en script.js lo capture
         $('body').append(toastHtml);
 
         // Auto-eliminar después de 5 segundos
-        setTimeout(() => {
+        setTimeout(function () {
             $('.woocommerce-message, .woocommerce-info, .woocommerce-error').fadeOut(500, function () {
                 $(this).remove();
             });
