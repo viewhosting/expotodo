@@ -43,12 +43,12 @@
         border-radius: 18px;
         padding: 12px !important;
         margin-bottom: 15px !important;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
         display: grid !important;
         grid-template-columns: 85px 1fr !important;
         gap: 12px !important;
         position: relative;
-        border: 1px solid rgba(0,0,0,0.02);
+        border: 1px solid rgba(0, 0, 0, 0.02);
     }
 
     .woocommerce-checkout .product-thumbnail {
@@ -67,7 +67,7 @@
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between;
-        gap: 8px !important; 
+        gap: 8px !important;
     }
 
     .woocommerce-checkout .product-name a {
@@ -159,6 +159,17 @@
         color: #b0d443 !important;
     }
 
+    /* Reducir todos los precios en general para móviles */
+    .woocommerce-Price-amount.amount {
+        font-size: 0.85rem !important;
+    }
+
+    /* Mantener el subtotal de producto en su tamaño específico o reducirlo un poco también */
+    .woocommerce-checkout .product-subtotal .woocommerce-Price-amount.amount {
+        font-size: 1.05rem !important;
+    }
+
+
     .woocommerce-checkout .product-remove {
         position: absolute;
         top: 8px;
@@ -185,9 +196,9 @@
         border-radius: 18px;
         padding: 15px;
         margin-top: 20px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
     }
-    
+
     .woocommerce-checkout .cart-actions-wrapper .actions {
         display: flex;
         flex-direction: column;
@@ -199,7 +210,8 @@
         display: flex !important;
         flex-direction: row !important;
         gap: 8px;
-        align-items: stretch !important; /* Estira ambos al mismo alto */
+        align-items: stretch !important;
+        /* Estira ambos al mismo alto */
     }
 
     .woocommerce-checkout .coupon input#coupon_code {
@@ -210,11 +222,13 @@
         border: 1px solid #e2e8f0 !important;
         font-size: 0.85rem !important;
         margin: 0 !important;
-        height: 44px !important; /* Altura unificada */
+        height: 44px !important;
+        /* Altura unificada */
     }
 
     .woocommerce-checkout .coupon button[name="apply_coupon"] {
-        height: 44px !important; /* Altura unificada */
+        height: 44px !important;
+        /* Altura unificada */
         padding: 0 15px !important;
         margin: 0 !important;
     }
@@ -238,9 +252,9 @@
 /* 💻 ESTILOS PARA ESCRITORIO */
 @media (min-width: 992px) {
 
-    .woocommerce-form__input-checkbox{
+    .woocommerce-form__input-checkbox {
         width: 20px !important;
-        
+
     }
 
     .woocommerce-checkout .cart-wrapper {
@@ -257,12 +271,12 @@
         border-radius: 25px;
         padding: 25px !important;
         margin-bottom: 25px;
-        box-shadow: 0 15px 40px rgba(0,0,0,0.05);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.05);
         display: grid !important;
         grid-template-columns: 140px 1fr !important;
         gap: 30px !important;
         position: relative;
-        border: 1px solid rgba(0,0,0,0.02);
+        border: 1px solid rgba(0, 0, 0, 0.02);
     }
 
     .woocommerce-checkout .product-thumbnail {
@@ -395,12 +409,13 @@
         border-radius: 20px;
         padding: 30px;
         margin-top: 30px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
     }
 
     .woocommerce-checkout .cart-actions-wrapper .actions {
         display: flex;
-        justify-content: center; /* Centramos el cupón para que se vea balanceado */
+        justify-content: center;
+        /* Centramos el cupón para que se vea balanceado */
         align-items: center;
         gap: 20px;
     }
@@ -463,8 +478,8 @@
         background: #fff !important;
         border-radius: 25px !important;
         padding: 35px !important;
-        box-shadow: 0 15px 50px rgba(0,0,0,0.06) !important;
-        border: 1px solid rgba(0,0,0,0.02) !important;
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.06) !important;
+        border: 1px solid rgba(0, 0, 0, 0.02) !important;
     }
 
     .cart_totals h2 {
@@ -485,7 +500,7 @@
         border-radius: 20px;
         margin: 0 0 30px 0;
         border: 1px solid #e2e8f0;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.01);
     }
 
     /* Contenedor Maestro de Envío (Para que todo esté en una línea) */
@@ -512,7 +527,8 @@
         color: #0f172a;
         font-weight: 800;
         font-size: 0.95rem;
-        margin-right: auto; /* Empuja el botón al final de la línea */
+        margin-right: auto;
+        /* Empuja el botón al final de la línea */
     }
 
     /* Botón Cambiar Dirección en la misma línea */
@@ -530,7 +546,7 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
         transition: all 0.2s ease !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
         margin: 0 !important;
     }
 
@@ -559,7 +575,7 @@
 
     /* GRID DE DOS COLUMNAS PARA CAMPOS */
     #extra_billing_fields {
-        display: none; 
+        display: none;
         grid-template-columns: 1fr 1fr;
         gap: 12px;
         margin-top: 15px;
@@ -591,7 +607,7 @@
         color: #1e293b !important;
         transition: all 0.3s ease !important;
         outline: none !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
     }
 
     .billing-field input:focus {
@@ -610,6 +626,7 @@
     .billing-fields-grid .billing-field:last-child {
         grid-column: span 2;
     }
+
     /* Tarjeta de Destino de Envío Premium (Acomodo Final) */
     .shipping-options-section {
         background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
@@ -617,7 +634,7 @@
         border-radius: 20px;
         margin: 0;
         border: 1px solid #e2e8f0;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.01);
     }
 
     /* Contenedor Maestro de Envío (Para que todo esté en una línea) */
@@ -644,7 +661,8 @@
         color: #0f172a;
         font-weight: 800;
         font-size: 0.95rem;
-        margin-right: auto; /* Empuja el botón al final de la línea */
+        margin-right: auto;
+        /* Empuja el botón al final de la línea */
     }
 
     /* Botón Cambiar Dirección en la misma línea */
@@ -661,8 +679,9 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
         transition: all 0.2s ease !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-        margin: 0 !important; /* Quitar cualquier margen que lo baje */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+        margin: 0 !important;
+        /* Quitar cualquier margen que lo baje */
     }
 
     .shipping-options-section .shipping-calculator-button:hover {
@@ -690,7 +709,8 @@
     /* GRID DE DOS COLUMNAS */
     #extra_billing_fields {
         display: grid;
-        grid-template-columns: 1fr 1fr; /* Dos columnas iguales */
+        grid-template-columns: 1fr 1fr;
+        /* Dos columnas iguales */
         gap: 12px;
         margin-top: 15px;
         transition: all 0.4s ease;
@@ -701,8 +721,10 @@
     }
 
     /* Campos que deben ocupar TODO el ancho */
-    .billing-field:nth-child(2), /* Razón Social suele ser larga */
-    .billing-field:last-child {  /* El Selector de CFDI */
+    .billing-field:nth-child(2),
+    /* Razón Social suele ser larga */
+    .billing-field:last-child {
+        /* El Selector de CFDI */
         grid-column: span 2;
     }
 
@@ -718,7 +740,7 @@
         color: #1e293b !important;
         transition: all 0.3s ease !important;
         outline: none !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
     }
 
     .billing-field input:focus,
@@ -734,54 +756,9 @@
         font-weight: 400;
     }
 
-    
 
-    .checkmark {
-        position: absolute;
-        top: 0;
-        left: 0;
-        height: 24px;
-        width: 24px;
-        background-color: #ffffff;
-        border: 2px solid #e2e8f0;
-        border-radius: 7px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    }
 
-    .premium-checkbox-container:hover .checkmark {
-        border-color: #94d64d;
-        transform: scale(1.05);
-        box-shadow: 0 4px 10px rgba(148, 214, 77, 0.15);
-    }
 
-    .premium-checkbox-container input:checked ~ .checkmark {
-        background-color: #94d64d;
-        border-color: #94d64d;
-    }
-
-    .checkmark:after {
-        content: "";
-        position: absolute;
-        display: none;
-        left: 8px;
-        top: 4px;
-        width: 6px;
-        height: 11px;
-        border: solid white;
-        border-width: 0 2.5px 2.5px 0;
-        transform: rotate(45deg);
-    }
-
-    .premium-checkbox-container input:checked ~ .checkmark:after {
-        display: block;
-        animation: checkPop 0.25s ease-out;
-    }
-
-    @keyframes checkPop {
-        0% { transform: rotate(45deg) scale(0.5); opacity: 0; }
-        100% { transform: rotate(45deg) scale(1); opacity: 1; }
-    }
 
     .cart_totals {
         width: 100% !important;
@@ -808,7 +785,7 @@
         padding: 0;
     }
 
-   
+
 
     /* --- FILA DE ACCIONES (Botón + Factura) --- */
     .cart-config-actions {
@@ -843,7 +820,7 @@
 
     .shipping-options-section .shipping-calculator-button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         border-color: #94d64d !important;
         color: #94d64d !important;
     }
@@ -852,14 +829,16 @@
     .shop_totals_list .total-row {
         display: flex;
         flex-direction: column;
-        align-items: flex-start; /* Todo a la izquierda */
+        align-items: flex-start;
+        /* Todo a la izquierda */
         border-bottom: 1px dashed #e2e8f0;
     }
 
     .shop_totals_list .subtotal-row {
         display: flex;
         flex-direction: column;
-        align-items: flex-end; /* Todo a la derecha */
+        align-items: flex-end;
+        /* Todo a la derecha */
         border-bottom: 1px dashed #e2e8f0;
     }
 
@@ -871,7 +850,8 @@
     .shop_totals_list .label {
         color: #94a3b8;
         font-weight: 600;
-        font-size: 0.75rem; /* Etiqueta pequeña */
+        font-size: 0.75rem;
+        /* Etiqueta pequeña */
         text-transform: uppercase;
         letter-spacing: 1px;
     }
@@ -879,7 +859,8 @@
     .shop_totals_list .value {
         color: #1e293b;
         font-weight: 700;
-        font-size: 1.2rem; /* Cantidad destacada */
+        font-size: 1.2rem;
+        /* Cantidad destacada */
     }
 
     /* El Total Maestro (Máxima Importancia) */
@@ -916,6 +897,7 @@
         font-weight: 950 !important;
         color: var(--primary-dark);
     }
+
     /* ==========================================
        SIDEBAR TOTALES STICKY (Premium)
        ========================================== */
@@ -931,33 +913,36 @@
         height: min-content;
     }
 
-    
+
 
 
     .totals-grid-col:nth-child(2) {
-            order: 2; /* Subtotal y Envío primero */
-        }
-        .totals-grid-col:nth-child(1) {
-            order: 1; /* Total después */
-            margin-top: 15px;
-        }
+        order: 2;
+        /* Subtotal y Envío primero */
+    }
+
+    .totals-grid-col:nth-child(1) {
+        order: 1;
+        /* Total después */
+        margin-top: 15px;
+    }
 
 
 
-        .premium-checkbox-container {
+    .premium-checkbox-container {
         padding-left: 35px;
     }
 }
 
- /* Restaurar Orden en Escritorio: Total Izquierda, Subtotales Derecha */
+/* Restaurar Orden en Escritorio: Total Izquierda, Subtotales Derecha */
 @media (min-width: 769px) {
 
-     .shipping-calculator-button {
+    .shipping-calculator-button {
         width: 100%;
         text-align: center;
         background: #ffffff !important;
         border: 1px solid #cbd5e1 !important;
-        
+
         padding: 5px 12px !important;
         border-radius: 8px !important;
         font-size: 0.7rem !important;
@@ -966,7 +951,7 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
         transition: all 0.2s ease !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
         margin: 0 !important;
     }
 
@@ -976,10 +961,10 @@
         transform: translateY(-1px);
     }
 
-    .cart-collaterals{
+    .cart-collaterals {
         margin-bottom: 50px;
     }
-     
+
 
 
 
@@ -988,7 +973,8 @@
         display: flex !important;
         flex-direction: row !important;
         justify-content: space-between !important;
-        align-items: flex-end !important; /* Alinea los contenidos por la parte inferior para que se vean parejos */
+        align-items: flex-end !important;
+        /* Alinea los contenidos por la parte inferior para que se vean parejos */
         background: transparent !important;
     }
 
@@ -997,21 +983,24 @@
     }
 
     .totals-grid-col:nth-child(1) {
-        order: 1 !important; /* Total a la izquierda */
+        order: 1 !important;
+        /* Total a la izquierda */
         padding-right: 40px !important;
     }
 
     .totals-grid-col:nth-child(2) {
-        order: 2 !important; /* Subtotales a la derecha */
+        order: 2 !important;
+        /* Subtotales a la derecha */
     }
 
     /* Restauramos el formato original del Total Maestro (Apilado Verticalmente) */
     .shop_totals_list .main-total {
         display: flex !important;
         flex-direction: column !important;
-        align-items: flex-start !important; /* Etiqueta TOTAL y monto a la izquierda */
+        align-items: flex-start !important;
+        /* Etiqueta TOTAL y monto a la izquierda */
     }
-    
+
     /* El monto también a la izquierda alineado con su etiqueta */
     .shop_totals_list .main-total .amount {
         text-align: left !important;
@@ -1021,13 +1010,14 @@
     .shop_totals_list .subtotal-row {
         display: flex !important;
         flex-direction: column !important;
-        align-items: flex-end !important; 
+        align-items: flex-end !important;
     }
 }
 
 
 /* Response para móviles (Optimización Final & Sticky Footer) */
 @media (max-width: 768px) {
+
     .woocommerce-checkout .cart-collaterals,
     .woocommerce-checkout .cart-totals-container,
     .woocommerce-checkout .cart-wrapper,
@@ -1037,12 +1027,12 @@
         z-index: auto !important;
     }
 
-     .shipping-calculator-button {
+    .shipping-calculator-button {
         width: 100%;
         text-align: center;
         background: #ffffff !important;
         border: 1px solid #cbd5e1 !important;
-        
+
         padding: 5px 12px !important;
         border-radius: 8px !important;
         font-size: 0.7rem !important;
@@ -1051,7 +1041,7 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
         transition: all 0.2s ease !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
         margin: 0 !important;
     }
 
@@ -1060,9 +1050,11 @@
         color: #94d64d !important;
         transform: translateY(-1px);
     }
-    .cart-collaterals{
+
+    .cart-collaterals {
         margin-bottom: 50px;
     }
+
     .cart-page-container {
         padding-bottom: 150px !important;
     }
@@ -1073,7 +1065,7 @@
         font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 1px;
-    } 
+    }
 
     /* --- LA BARRA FIJA MÁGICA (Total + Botón) --- */
     .cart-summary-footer-bar {
@@ -1085,8 +1077,9 @@
         backdrop-filter: blur(25px) saturate(180%) !important;
         -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
         padding: 15px 25px calc(15px + env(safe-area-inset-bottom, 0px)) 25px !important;
-        z-index: 999999 !important; /* Enorme z-index para que flote por encima del footer, productos y widgets */
-        box-shadow: 0 -12px 40px rgba(0,0,0,0.12) !important;
+        z-index: 999999 !important;
+        /* Enorme z-index para que flote por encima del footer, productos y widgets */
+        box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.12) !important;
         border-top: 1px solid rgba(255, 255, 255, 0.6) !important;
         display: flex !important;
         flex-direction: column !important;
@@ -1096,8 +1089,10 @@
     /* Evitar que Joinchat (WhatsApp) quede tapado o interfiera con el botón de pagar o de totales */
     .joinchat,
     .joinchat__button {
-        bottom: 210px !important; /* Desplazado sobre la barra de totales en móviles */
-        z-index: 9999999 !important; /* Mayor z-index que la barra (999999) */
+        bottom: 210px !important;
+        /* Desplazado sobre la barra de totales en móviles */
+        z-index: 9999999 !important;
+        /* Mayor z-index que la barra (999999) */
     }
 
     .main-total {
@@ -1111,11 +1106,11 @@
         color: #64748b !important;
         font-weight: 800 !important;
         text-transform: uppercase !important;
-        line-height: 1 !important;
+        line-height: 2 !important;
     }
 
     .main-total .amount {
-        font-size: 2.8rem !important;
+        font-size: 2rem !important;
         color: var(--primary-dark) !important;
         font-weight: 900 !important;
         letter-spacing: -1.5px !important;
@@ -1139,18 +1134,18 @@
 
 
 .cart_totals {
-        background: #fff !important;
-        border-radius: 25px !important;
-        padding: 35px !important;
-        box-shadow: 0 15px 50px rgba(0,0,0,0.06) !important;
-        border: 1px solid rgba(0,0,0,0.02) !important;
-    }
+    background: #fff !important;
+    border-radius: 25px !important;
+    padding: 35px !important;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.06) !important;
+    border: 1px solid rgba(0, 0, 0, 0.02) !important;
+}
 
 /* ==========================================
    SISTEMA DE NOTIFICACIONES TOAST (FLOTANTES)
    ========================================== */
-.woocommerce-error, 
-.woocommerce-message, 
+.woocommerce-error,
+.woocommerce-message,
 .woocommerce-info,
 .coupon-error-notice {
     position: fixed !important;
@@ -1162,7 +1157,7 @@
     padding: 20px 25px !important;
     background: #fff !important;
     border-radius: 15px !important;
-    box-shadow: 0 15px 45px rgba(0,0,0,0.18) !important;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.18) !important;
     list-style: none !important;
     margin: 0 !important;
     animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
@@ -1181,12 +1176,12 @@
     color: #172554 !important;
 }
 
-.woocommerce-shipping-calculator{
+.woocommerce-shipping-calculator {
     width: 100%;
     margin-top: 15px !important;
 }
 
-.shipping-calculator-form .button{
+.shipping-calculator-form .button {
     width: 100%;
     text-align: center;
     background: #ffffff !important;
@@ -1199,11 +1194,11 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     transition: all 0.2s ease !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
     margin: 0 !important;
 }
 
-.shipping-calculator-form .button:hover{
+.shipping-calculator-form .button:hover {
     border-color: #94d64d !important;
     color: #94d64d !important;
     transform: translateY(-1px);
@@ -1211,39 +1206,89 @@
 
 
 /* Botón Cambiar Dirección en la misma línea */
-   
 
 
-    /* --- DISEÑO DE CHECKBOX PREMIUM --- */
-    .premium-checkbox-container {
-        width: 100%;
-        align-items: center;
-        position: relative;
-        padding-left: 0 px;
-        margin-top: 15px;
-        margin-bottom: 0;
-        cursor: pointer;
-        text-align: center;
-        font-size: 0.85rem !important;
-        font-weight: 700 !important;
-        color: #475569 !important;
-        user-select: none;
-        transition: all 0.3s ease;
-        min-height: 24px;
-        flex-shrink: 0;
-    }
 
-    .premium-checkbox-container input {
-        position: absolute;
+/* --- DISEÑO DE CHECKBOX PREMIUM --- */
+.premium-checkbox-container {
+    width: 100%;
+    align-items: center;
+    position: relative;
+    padding-left: 0 px;
+    margin-top: 15px;
+    margin-bottom: 0;
+    cursor: pointer;
+    text-align: center;
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    color: #475569 !important;
+    user-select: none;
+    transition: all 0.3s ease;
+    min-height: 24px;
+    flex-shrink: 0;
+}
+
+.premium-checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 24px;
+    width: 24px;
+    background-color: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-radius: 7px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.premium-checkbox-container:hover .checkmark {
+    border-color: #94d64d;
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(148, 214, 77, 0.15);
+}
+
+.premium-checkbox-container input:checked~.checkmark {
+    background-color: #94d64d;
+    border-color: #94d64d;
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 8px;
+    top: 4px;
+    width: 6px;
+    height: 11px;
+    border: solid white;
+    border-width: 0 2.5px 2.5px 0;
+    transform: rotate(45deg);
+}
+
+.premium-checkbox-container input:checked~.checkmark:after {
+    display: block;
+    animation: checkPop 0.25s ease-out;
+}
+
+@keyframes checkPop {
+    0% {
+        transform: rotate(45deg) scale(0.5);
         opacity: 0;
-        cursor: pointer;
-        height: 0;
-        width: 0;
     }
 
-
-
-
+    100% {
+        transform: rotate(45deg) scale(1);
+        opacity: 1;
+    }
+}
 
 /* --- ESTILOS PREMIUM EXCLUSIVOS PARA EXTRA BILLING FIELDS --- */
 .extra_billing_fields input,
@@ -1262,7 +1307,7 @@
     color: #1e293b !important;
     box-sizing: border-box !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.01) !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.01) !important;
 }
 
 /* Hover effects */
@@ -1294,7 +1339,8 @@
     background-repeat: no-repeat !important;
     background-position: right 15px center !important;
     background-size: 16px !important;
-    padding-right: 40px !important; /* Espacio para que el texto no pise la flecha */
+    padding-right: 40px !important;
+    /* Espacio para que el texto no pise la flecha */
 }
 
 /* Mejorar el color del texto placeholder */
@@ -1309,16 +1355,16 @@
    ESTILOS PARA EL FORM DE PAGO
    ========================================== */
 
-#use-shipping-for-billing{
+#use-shipping-for-billing {
     width: auto !important;
     height: 12px !important;
 }
 
-.payment-gateways-list label{
+.payment-gateways-list label {
     color: var(--primary-dark) !important;
     font-weight: 700 !important;
 }
-   
+
 .customer-details-section input,
 .customer-details-section select,
 #customer-details-section input,
@@ -1326,7 +1372,7 @@
 .woocommerce-checkout .form-row input.input-text,
 .woocommerce-checkout .form-row select,
 .woocommerce-checkout .form-row textarea {
-    width: 100% ;
+    width: 100%;
     height: 52px;
     padding: 12px 18px;
     margin: 5px 0px 10px 0px;
@@ -1338,7 +1384,7 @@
     color: #1e293b !important;
     box-sizing: border-box !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.01) !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.01) !important;
 }
 
 /* ==========================================
@@ -1412,11 +1458,12 @@ body.woocommerce-checkout {
 }
 
 .woocommerce-checkout .form-row {
-    margin-bottom: 15px !important; /* Espacio extra para los labels */
+    margin-bottom: 15px !important;
+    /* Espacio extra para los labels */
     padding: 0 !important;
 }
 
-.woocommerce-checkout .woocommerce-billing-fields > h3,
+.woocommerce-checkout .woocommerce-billing-fields>h3,
 #ship-to-different-address {
     display: none !important;
 }
@@ -1443,11 +1490,13 @@ body.woocommerce-checkout {
     grid-column: span 6 !important;
     order: 1 !important;
 }
+
 #billing_last_name_field,
 #shipping_last_name_field {
     grid-column: span 6 !important;
     order: 2 !important;
 }
+
 #billing_email_field {
     grid-column: span 12 !important;
     order: 13 !important;
@@ -1466,6 +1515,7 @@ body.woocommerce-checkout {
     grid-column: span 6 !important;
     order: 4 !important;
 }
+
 #billing_number_interior_field,
 #shipping_number_interior_field {
     grid-column: span 6 !important;
@@ -1485,6 +1535,7 @@ body.woocommerce-checkout {
     grid-column: span 6 !important;
     order: 7 !important;
 }
+
 #billing_postcode_field,
 #shipping_postcode_field {
     grid-column: span 6 !important;
@@ -1497,6 +1548,7 @@ body.woocommerce-checkout {
     grid-column: span 6 !important;
     order: 9 !important;
 }
+
 #billing_city_field,
 #shipping_city_field {
     grid-column: span 6 !important;
@@ -1509,6 +1561,7 @@ body.woocommerce-checkout {
     grid-column: span 6 !important;
     order: 11 !important;
 }
+
 #billing_country_field,
 #shipping_country_field {
     grid-column: span 6 !important;
@@ -1520,10 +1573,12 @@ body.woocommerce-checkout {
     grid-column: span 12 !important;
     order: 14 !important;
 }
+
 #billing_company_name_field {
     grid-column: span 12 !important;
     order: 15 !important;
 }
+
 #order_comments_field {
     grid-column: span 12 !important;
     order: 16 !important;
@@ -1585,13 +1640,15 @@ body.woocommerce-checkout {
 }
 
 @media (max-width: 768px) {
+
     .woocommerce-checkout .woocommerce-billing-fields__field-wrapper,
     .woocommerce-checkout .woocommerce-shipping-fields__field-wrapper {
         grid-template-columns: 1fr !important;
         gap: 10px !important;
     }
-    .woocommerce-checkout .woocommerce-billing-fields__field-wrapper > .form-row,
-    .woocommerce-checkout .woocommerce-shipping-fields__field-wrapper > .form-row,
+
+    .woocommerce-checkout .woocommerce-billing-fields__field-wrapper>.form-row,
+    .woocommerce-checkout .woocommerce-shipping-fields__field-wrapper>.form-row,
     #order_comments_field {
         grid-column: span 1 !important;
     }
@@ -1633,7 +1690,8 @@ body.woocommerce-checkout {
     background-repeat: no-repeat !important;
     background-position: right 15px center !important;
     background-size: 16px !important;
-    padding-right: 40px !important; /* Espacio para que el texto no pise la flecha */
+    padding-right: 40px !important;
+    /* Espacio para que el texto no pise la flecha */
 }
 
 /* Mejorar el color del texto placeholder */
@@ -1694,7 +1752,8 @@ body.woocommerce-checkout {
     backdrop-filter: blur(12px) saturate(180%);
     -webkit-backdrop-filter: blur(12px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.4);
-    border-left: 5px solid #ff4b2b; /* Color de error suave */
+    border-left: 5px solid #ff4b2b;
+    /* Color de error suave */
     border-radius: 12px;
     padding: 16px 20px;
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
@@ -1724,6 +1783,7 @@ body.woocommerce-checkout {
         opacity: 0;
         transform: translateX(100%) scale(0.9);
     }
+
     to {
         opacity: 1;
         transform: translateX(0) scale(1);
@@ -1735,6 +1795,7 @@ body.woocommerce-checkout {
         opacity: 1;
         transform: translateX(0) scale(1);
     }
+
     to {
         opacity: 0;
         transform: translateX(100%) scale(0.9);
@@ -1742,8 +1803,7 @@ body.woocommerce-checkout {
 }
 
 /* Ocultar el mensaje de error nativo de WooCommerce */
-.woocommerce-NoticeGroup-checkout,
-.woocommerce-error {
+.woocommerce-NoticeGroup-checkout {
     display: none !important;
 }
 
@@ -1756,8 +1816,8 @@ input {
     background: #fff;
     border-radius: 20px;
     padding: 25px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-    border: 1px solid rgba(0,0,0,0.02);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.02);
 }
 
 .checkout-coupon-wrapper .coupon {
@@ -1814,13 +1874,16 @@ input {
     .checkout-coupon-wrapper {
         padding: 15px;
     }
+
     .checkout-coupon-wrapper .coupon {
         gap: 8px;
     }
+
     .checkout-coupon-wrapper .coupon input#coupon_code {
         height: 44px !important;
         font-size: 0.85rem !important;
     }
+
     .checkout-coupon-wrapper .coupon button[name="apply_coupon"] {
         height: 44px !important;
         padding: 0 15px !important;
@@ -1834,7 +1897,7 @@ input {
     border-radius: 12px !important;
     border: 1px solid #e2e8f0 !important;
     margin-bottom: 30px !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
 }
 
 .woocommerce-privacy-policy-text {
@@ -1894,21 +1957,21 @@ input {
 }
 
 /* Estado Marcado (Checked) */
-.woocommerce-form__label-for-checkbox.checkbox input:checked ~ span::before,
-.woocommerce-form__label-for-checkbox.checkbox input:checked + span + .optional, 
+.woocommerce-form__label-for-checkbox.checkbox input:checked~span::before,
+.woocommerce-form__label-for-checkbox.checkbox input:checked+span+.optional,
 .woocommerce-form__label-for-checkbox.checkbox input:checked::before {
     /* No podemos usar el input:checked::before si el input es absoluto, usamos el selector en el label */
 }
 
 /* Corrección para Toggle del Box Color */
-.woocommerce-form__label-for-checkbox.checkbox input:checked ~ ::before,
-.woocommerce-form__label-for-checkbox.checkbox input:checked ~ .woocommerce-terms-and-conditions-checkbox-text::before {
-   /* WC structure varies, using a more general approach */
+.woocommerce-form__label-for-checkbox.checkbox input:checked~ ::before,
+.woocommerce-form__label-for-checkbox.checkbox input:checked~.woocommerce-terms-and-conditions-checkbox-text::before {
+    /* WC structure varies, using a more general approach */
 }
 
 /* Usando :has si está disponible, o simplemente estilizando el input cuando está marcado */
-.woocommerce-form__label-for-checkbox.checkbox input:checked + .woocommerce-terms-and-conditions-checkbox-text::before,
-.woocommerce-form__label-for-checkbox.checkbox input:checked + span::before {
+.woocommerce-form__label-for-checkbox.checkbox input:checked+.woocommerce-terms-and-conditions-checkbox-text::before,
+.woocommerce-form__label-for-checkbox.checkbox input:checked+span::before {
     background-color: #b0d443 !important;
     border-color: #b0d443 !important;
 }
@@ -1928,18 +1991,18 @@ input {
     z-index: 2 !important;
 }
 
-.woocommerce-form__label-for-checkbox.checkbox input:checked ~ ::after {
+.woocommerce-form__label-for-checkbox.checkbox input:checked~ ::after {
     /* ... */
 }
 
 /* Mostrar el check cuando está marcado */
-.woocommerce-form__label-for-checkbox.checkbox input:checked ~ .woocommerce-terms-and-conditions-checkbox-text::after,
-.woocommerce-form__label-for-checkbox.checkbox input:checked ~ span::after {
+.woocommerce-form__label-for-checkbox.checkbox input:checked~.woocommerce-terms-and-conditions-checkbox-text::after,
+.woocommerce-form__label-for-checkbox.checkbox input:checked~span::after {
     /* Depende de si hay un span acompañando */
 }
 
 /* Simplificación para máxima compatibilidad con label::before/after */
-.woocommerce-form__label-for-checkbox.checkbox input:checked + span {
+.woocommerce-form__label-for-checkbox.checkbox input:checked+span {
     color: #1a1a1a !important;
 }
 
@@ -1992,12 +2055,12 @@ input {
 }
 
 /* Efectos al marcar (Checked) */
-.woocommerce-terms-and-conditions-wrapper label.checkbox input:checked + .woocommerce-terms-and-conditions-checkbox-text::before {
+.woocommerce-terms-and-conditions-wrapper label.checkbox input:checked+.woocommerce-terms-and-conditions-checkbox-text::before {
     background: #b0d443 !important;
     border-color: #b0d443 !important;
 }
 
-.woocommerce-terms-and-conditions-wrapper label.checkbox input:checked + .woocommerce-terms-and-conditions-checkbox-text::after {
+.woocommerce-terms-and-conditions-wrapper label.checkbox input:checked+.woocommerce-terms-and-conditions-checkbox-text::after {
     transform: translateY(-65%) rotate(45deg) scale(1) !important;
 }
 
@@ -2018,14 +2081,16 @@ input {
         scrollbar-width: thin;
         scrollbar-color: #b0d443 #f1f5f9;
     }
-    
+
     .woocommerce-checkout .cart-items-list::-webkit-scrollbar {
         width: 6px;
     }
+
     .woocommerce-checkout .cart-items-list::-webkit-scrollbar-track {
         background: #f1f5f9;
         border-radius: 10px;
     }
+
     .woocommerce-checkout .cart-items-list::-webkit-scrollbar-thumb {
         background: #b0d443;
         border-radius: 10px;

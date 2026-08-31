@@ -2,11 +2,14 @@
 /* Template Name: Detalle Producto */
 get_header();
 
-// Fetch one product to display (random or latest)
+// Fetch one product to display (random or latest) — excluye productos solo-cotización
 $args = array(
-    'post_type' => 'product',
+    'post_type'      => 'product',
     'posts_per_page' => 1,
-    'status' => 'publish',
+    'post_status'    => 'publish',
+    'meta_query'     => class_exists('QuoteOnlyController')
+        ? QuoteOnlyController::get_meta_exclusion_args()
+        : array(),
 );
 $loop = new WP_Query( $args );
 ?>
@@ -101,12 +104,15 @@ $loop = new WP_Query( $args );
             <h2 class="section-title text-center mb-5">Productos recomendados</h2>
             <div class="row g-4 row-cols-1 row-cols-sm-2 row-cols-md-4 row-cols-lg-4">
                 <?php
-                // Show 4 random products
+                // Show 4 random products — excluye solo-cotización
                 $related_args = array(
-                    'post_type' => 'product',
+                    'post_type'      => 'product',
                     'posts_per_page' => 4,
-                    'orderby' => 'rand',
-                    'post__not_in' => array( get_the_ID() )
+                    'orderby'        => 'rand',
+                    'post__not_in'   => array( get_the_ID() ),
+                    'meta_query'     => class_exists('QuoteOnlyController')
+                        ? QuoteOnlyController::get_meta_exclusion_args()
+                        : array(),
                 );
                 $related = new WP_Query( $related_args );
                 

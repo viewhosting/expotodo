@@ -39,6 +39,8 @@ $search_query = get_search_query();
                         global $product;
                         // Asegurar que sea un producto
                         if ( get_post_type() !== 'product' ) continue;
+                        // Defensa en profundidad: omitir productos solo-cotización
+                        if ( class_exists('QuoteOnlyController') && QuoteOnlyController::is_quote_only( get_the_ID() ) ) continue;
                         ?>
                         <div class="col">
                             <article class="product-card h-100 border-0 shadow-sm hover-shadow transition-all bg-white rounded-3 overflow-hidden">

@@ -110,7 +110,10 @@ jQuery(document).ready(function ($) {
     var observer = new MutationObserver(function (mutations) {
         autoHideWoocommerceMessages();
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
 
     // Mobile Navigation
     var navbarToggler = document.querySelector('.navbar-toggler');
@@ -420,20 +423,61 @@ jQuery(document).ready(function ($) {
     teleportCartButton();
 
     // WooCommerce dispara eventos cuando se encuentra/actualiza una variación
-    $('.variations_form').on('show_variation', function () {
+    $('.variations_form').on('show_variation', function (event, variation) {
         teleportCartButton();
         $('#sticky-cart-panel .cart-placeholder-text').hide();
         $('#sticky-cart-panel .single_variation_wrap').show();
+
+        // Cambiar la imagen principal a la correspondiente de la variación
+        if (variation && variation.image && variation.image.src) {
+            var variationImgUrl = variation.image.full_src || variation.image.src;
+            var $mainAnchor = $('.product-image-main a');
+            var $mainImage = $('.product-image-main img');
+
+            if ($mainImage.length) {
+                // Guardar la imagen original si no se ha guardado ya
+                if (!$mainImage.data('original-src')) {
+                    $mainImage.data('original-src', $mainImage.attr('src'));
+                }
+                if ($mainAnchor.length && !$mainAnchor.data('original-href')) {
+                    $mainAnchor.data('original-href', $mainAnchor.attr('href'));
+                }
+
+                // Efecto de transición sutil
+                $mainImage.css('opacity', '0.5');
+                setTimeout(function () {
+                    $mainImage.attr('src', variationImgUrl);
+                    if ($mainAnchor.length) {
+                        $mainAnchor.attr('href', variationImgUrl);
+                    }
+                    $mainImage.css('opacity', '1');
+                }, 150);
+            }
+        }
     });
 
-    $('.variations_form').on('hide_variation', function () {
+    $('.variations_form').on('hide_variation reset_image', function () {
         // Cuando no hay variación válida, ocultar el botón (WooCommerce lo hace con style display:none)
         // Mostramos el texto placeholder
         $('#sticky-cart-panel .cart-placeholder-text').show();
-    });
 
-    $('.variations_form').on('reset_image', function () {
-        $('#sticky-cart-panel .cart-placeholder-text').show();
+        // Restaurar la imagen original
+        var $mainAnchor = $('.product-image-main a');
+        var $mainImage = $('.product-image-main img');
+
+        if ($mainImage.length && $mainImage.data('original-src')) {
+            var originalSrc = $mainImage.data('original-src');
+            var originalHref = $mainAnchor.data('original-href') || originalSrc;
+
+            $mainImage.css('opacity', '0.5');
+            setTimeout(function () {
+                $mainImage.attr('src', originalSrc);
+                if ($mainAnchor.length) {
+                    $mainAnchor.attr('href', originalHref);
+                }
+                $mainImage.css('opacity', '1');
+            }, 150);
+        }
     });
 
     /**
@@ -538,7 +582,9 @@ jQuery(document).ready(function ($) {
         // Mostrar Toast de éxito
         var $toastEl = $('#cartToast');
         if ($toastEl.length && typeof bootstrap !== 'undefined') {
-            var toast = new bootstrap.Toast($toastEl[0], { delay: 3000 });
+            var toast = new bootstrap.Toast($toastEl[0], {
+                delay: 3000
+            });
             toast.show();
         }
 
@@ -702,6 +748,35 @@ jQuery(document).ready(function ($) {
                 },
                 1200: {
                     slidesPerView: 4,
+                }
+            }
+        });
+    }
+
+    // ==========================================
+    // TESTIMONIALS HERO CAROUSEL (SWIPER)
+    // ==========================================
+    if (typeof Swiper !== 'undefined' && $('.testimonials-swiper').length > 0) {
+        new Swiper('.testimonials-swiper', {
+            slidesPerView: 1,
+            spaceBetween: 20,
+            loop: true,
+            autoplay: {
+                delay: 5000,
+                disableOnInteraction: false,
+            },
+            pagination: {
+                el: '.testimonials-pagination',
+                clickable: true,
+            },
+            navigation: {
+                nextEl: '.testimonials-next-btn',
+                prevEl: '.testimonials-prev-btn',
+            },
+            breakpoints: {
+                992: {
+                    slidesPerView: 2,
+                    spaceBetween: 30,
                 }
             }
         });

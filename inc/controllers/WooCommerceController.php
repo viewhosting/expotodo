@@ -46,6 +46,9 @@ class WooCommerceController {
         add_filter( 'woocommerce_payment_successful_result', array( $this, 'force_mercadopago_redirect' ), 9999, 2 );
         add_filter( 'woocommerce_mercadopago_preference_body', array( $this, 'custom_mp_back_urls' ) );
         
+        // Permitir pago sin login si el hash/key coincide
+        add_filter( 'user_has_cap', array( $this, 'allow_pay_for_order_without_login' ), 9999, 3 );
+        
         // UI Cleanups
         add_filter( 'woocommerce_add_notice', array( $this, 'kill_zone_notices_at_birth' ), 999 );
         add_filter( 'woocommerce_shipping_package_name', '__return_empty_string', 999 );
@@ -58,6 +61,9 @@ class WooCommerceController {
         // Fix Visibilidad Global (Carga Inicial)
         add_action( 'woocommerce_product_query', array( $this, 'modify_wc_product_query' ) );
 
+        // Ocultar categoría Uncategorized / Sin Categoría de los listados
+        add_filter( 'get_terms', array( $this, 'exclude_uncategorized_category' ), 10, 4 );
+
         // Limpiar etiqueta de envío (Quitar ¡GRATIS! en recogida local)
         add_filter( 'woocommerce_cart_shipping_method_full_label', array( $this, 'clean_shipping_labels' ), 10, 2 );
         add_filter( 'woocommerce_cart_shipping_total', array( $this, 'clean_shipping_total_label' ), 10, 1 );
@@ -67,6 +73,7 @@ class WooCommerceController {
 
         // Forzar Recogida Local por defecto
         add_filter( 'woocommerce_package_rates', array( $this, 'sort_shipping_methods_local_pickup_first' ), 9999, 2 );
+        add_filter( 'woocommerce_package_rates', array( $this, 'apply_custom_shipping_cost_for_product_8510' ), 10000, 2 );
         add_filter( 'woocommerce_shipping_chosen_method', array( $this, 'default_shipping_to_local_pickup' ), 9999, 3 );
     }
 
@@ -130,6 +137,54 @@ class WooCommerceController {
         // Si hay métodos de recogida local, ponerlos primero
         if ( ! empty( $local_pickup_rates ) ) {
             return array_merge( $local_pickup_rates, $other_rates );
+        }
+
+        return $rates;
+    }
+
+    /**
+     * Aplica un costo de envío fijo de 1380.00 para el producto 8510 si se compran al menos 2 unidades.
+     */
+    public function apply_custom_shipping_cost_for_product_8510( $rates, $package ) {
+        if ( empty( $rates ) ) {
+            return $rates;
+        }
+
+        $product_id_to_check = 8510;
+        $min_quantity = 2;
+        $target_cost = 1380.00;
+        $apply_custom_cost = false;
+
+        if ( function_exists( 'WC' ) && WC()->cart ) {
+            foreach ( WC()->cart->get_cart() as $cart_item ) {
+                if ( ( $cart_item['product_id'] == $product_id_to_check || $cart_item['variation_id'] == $product_id_to_check ) && $cart_item['quantity'] >= $min_quantity ) {
+                    $apply_custom_cost = true;
+                    break;
+                }
+            }
+        }
+
+        if ( $apply_custom_cost ) {
+            foreach ( $rates as $rate_id => $rate ) {
+                if ( strpos( $rate_id, 'local_pickup' ) === false ) {
+                    $rate->set_cost( $target_cost );
+                    
+                    // Recalcular impuestos asociados a la tarifa de envío si existen impuestos activos
+                    $has_taxes = false;
+                    foreach ( $rate->get_taxes() as $tax ) {
+                        if ( $tax > 0 ) {
+                            $has_taxes = true;
+                            break;
+                        }
+                    }
+                    if ( $has_taxes && class_exists( 'WC_Tax' ) ) {
+                        $taxes = WC_Tax::calc_shipping_tax( $target_cost, WC_Tax::get_shipping_tax_rates() );
+                        $rate->set_taxes( $taxes );
+                    } else {
+                        $rate->set_taxes( array() );
+                    }
+                }
+            }
         }
 
         return $rates;
@@ -359,17 +414,11 @@ class WooCommerceController {
     }
 
     /**
-     * Remover Chihuahua (CH), Baja California (BC), Sonora (SO), Coahuila (CO), Nuevo León (NL) y Tamaulipas (TM) del listado de estados de México
+     * Remover Chihuahua (CH), Baja California (BC), Baja California Sur (BS) del listado de estados de México
      */
     public function remove_restricted_states( $states ) {
-        if ( isset( $states['MX'] ) ) {
-            unset( $states['MX']['BC'] ); // Baja California
-            unset( $states['MX']['CH'] ); // Chihuahua
-            unset( $states['MX']['SO'] ); // Sonora
-            unset( $states['MX']['CO'] ); // Coahuila
-            unset( $states['MX']['NL'] ); // Nuevo León
-            unset( $states['MX']['TM'] ); // Tamaulipas
-        }
+        // Permitimos todos los estados para facturación (billing) y recogida local.
+        // La restricción de envío a domicilio se maneja en la validación del checkout.
         return $states;
     }
 
@@ -378,26 +427,27 @@ class WooCommerceController {
         
         $cities_by_state = array(
             'AG' => array('Aguascalientes', 'Asientos', 'Calvillo', 'Cosío', 'Jesús María', 'Pabellón de Arteaga', 'Rincón de Romos', 'San José de Gracia', 'Tepezalá', 'El Llano', 'San Francisco de los Romo'),
-          //  'BC' => array('Ensenada', 'Mexicali', 'Tecate', 'Tijuana', 'Playas de Rosarito', 'San Quintín', 'San Felipe'),
+            'BC' => array('Ensenada', 'Mexicali', 'Tecate', 'Tijuana', 'Playas de Rosarito', 'San Quintín', 'San Felipe'),
             'BS' => array('La Paz', 'Los Cabos', 'Comondú', 'Loreto', 'Mulegé'),
+            'CH' => array('Chihuahua', 'Ciudad Juárez', 'Delicias', 'Cuauhtémoc', 'Hidalgo del Parral', 'Nuevo Casas Grandes', 'Camargo', 'Jiménez', 'Ojinaga', 'Aldama'),
             'CM' => array('Campeche', 'Carmen', 'Champotón', 'Escárcega', 'Calkiní', 'Hecelchakán', 'Hopelchén', 'Palizada', 'Tenabo', 'Candelaria', 'Calakmul'),
-          //  'CO' => array('Saltillo', 'Torreón', 'Monclova', 'Piedras Negras', 'Acuña', 'Matamoros', 'San Pedro', 'Ramos Arizpe', 'Frontera', 'Múzquiz'),
+            'CO' => array('Saltillo', 'Torreón', 'Monclova', 'Piedras Negras', 'Acuña', 'Matamoros', 'San Pedro', 'Ramos Arizpe', 'Frontera', 'Múzquiz'),
             'CL' => array('Colima', 'Manzanillo', 'Tecomán', 'Villa de Álvarez', 'Armería', 'Coquimatlán', 'Cuauhtémoc', 'Ixtlahuacán', 'Minatitlán', 'Comala'),
             'JA' => array('Guadalajara', 'Zapopan', 'Tlaquepaque', 'Tonalá', 'Puerto Vallarta', 'Tlajomulco de Zúñiga', 'Lagos de Moreno', 'Tepatitlán de Morelos', 'Ciudad Guzmán', 'Ocotlán'),
             'MX' => array('Ecatepec de Morelos', 'Nezahualcóyotl', 'Toluca de Lerdo', 'Naucalpan de Juárez', 'Chimalhuacán', 'Tlalnepantla de Baz', 'Cuautitlán Izcalli', 'Tecámac', 'Ixtapaluca', 'Atizapán de Zaragoza'),
             'MI' => array('Morelia', 'Uruapan', 'Zamora', 'Lázaro Cárdenas', 'Zitácuaro', 'Apatzingán', 'La Piedad', 'Pátzcuaro', 'Sahuayo', 'Maravatío'),
             'MO' => array('Cuernavaca', 'Jiutepec', 'Cuautla', 'Temixco', 'Yautepec', 'Emiliano Zapata', 'Zacatepec', 'Xochitepec', 'Tlaltizapán', 'Jojutla'),
             'NA' => array('Tepic', 'Xalisco', 'Santiago Ixcuintla', 'Bahía de Banderas', 'Compostela', 'Ixtlán del Río', 'Tecuala', 'San Blas', 'Acaponeta', 'Tuxpan'),
-          //  'NL' => array('Monterrey', 'Guadalupe', 'Apodaca', 'San Nicolás de los Garza', 'General Escobedo', 'Santa Catarina', 'Juárez', 'García', 'San Pedro Garza García', 'Cadereyta Jiménez'),
+            'NL' => array('Monterrey', 'Guadalupe', 'Apodaca', 'San Nicolás de los Garza', 'General Escobedo', 'Santa Catarina', 'Juárez', 'García', 'San Pedro Garza García', 'Cadereyta Jiménez'),
             'OA' => array('Oaxaca de Juárez', 'San Juan Bautista Tuxtepec', 'Salina Cruz', 'Juchitán de Zaragoza', 'Santa Cruz Xoxocotlán', 'Huajuapan de León', 'Santo Domingo Tehuantepec', 'Loma Bonita', 'Miahuatlán de Porfirio Díaz', 'Puerto Escondido'),
             'PU' => array('Puebla', 'Tehuacán', 'Cholula', 'Atlixco', 'San Martín Texmelucan'),
             'QE' => array('Santiago de Querétaro', 'San Juan del Río', 'El Marqués', 'Corregidora', 'Tequisquiapan'),
             'QR' => array('Cancún', 'Playa del Carmen', 'Chetumal', 'Cozumel', 'Tulum'),
             'SL' => array('San Luis Potosí', 'Soledad de Graciano Sánchez', 'Ciudad Valles', 'Matehuala', 'Rioverde'),
             'SI' => array('Culiacán', 'Mazatlán', 'Los Mochis', 'Guasave', 'Guamúchil'),
-          //  'SO' => array('Hermosillo', 'Ciudad Obregón', 'Nogales', 'San Luis Río Colorado', 'Navojoa'),
+            'SO' => array('Hermosillo', 'Ciudad Obregón', 'Nogales', 'San Luis Río Colorado', 'Navojoa'),
             'TB' => array('Villahermosa', 'Cárdenas', 'Comalcalco', 'Huimanguillo', 'Macuspana'),
-          //  'TM' => array('Reynosa', 'Matamoros', 'Nuevo Laredo', 'Tampico', 'Ciudad Victoria'),
+            'TM' => array('Reynosa', 'Matamoros', 'Nuevo Laredo', 'Tampico', 'Ciudad Victoria'),
             'TL' => array('Tlaxcala', 'Apizaco', 'Huamantla', 'Chiautempan', 'Zacatelco'),
             'VE' => array('Veracruz', 'Xalapa', 'Coatzacoalcos', 'Córdoba', 'Poza Rica'),
             'YU' => array('Mérida', 'Kanasín', 'Valladolid', 'Tizimín', 'Progreso'),
@@ -417,6 +467,11 @@ class WooCommerceController {
         $min_price = isset($_POST['min_price']) ? floatval($_POST['min_price']) : 0;
         $max_price = isset($_POST['max_price']) ? floatval($_POST['max_price']) : 999999;
 
+        // Exclusión base de productos solo-cotización
+        $base_meta_query = class_exists('QuoteOnlyController')
+            ? QuoteOnlyController::get_meta_exclusion_args()
+            : array( 'relation' => 'AND' );
+
         $args = array(
             'post_type'           => 'product',
             'post_status'         => 'publish',
@@ -434,7 +489,7 @@ class WooCommerceController {
                     'operator' => 'NOT IN',
                 ),
             ),
-            'meta_query'          => array('relation' => 'AND'),
+            'meta_query'          => $base_meta_query,
             'orderby'             => 'date',
             'order'               => 'DESC'
         );
@@ -529,10 +584,10 @@ class WooCommerceController {
         // Resolviendo estado de México según el CP
         $state = $this->get_state_from_postcode( $postcode );
 
-        // Verificar si pertenece a zona restringida fronteriza
-        $restricted_states = array( 'BC', 'CH', 'SO', 'CO', 'NL', 'TM' );
+        // Verificar si pertenece a zona restringida (Baja California, Baja California Sur o Chihuahua)
+        $restricted_states = array( 'BC', 'BS', 'CH' );
         if ( in_array( $state, $restricted_states ) ) {
-            wp_send_json_error( array( 'message' => 'Lo sentimos, actualmente no realizamos entregas en la zona fronteriza.' ) );
+            wp_send_json_error( array( 'message' => 'Lo sentimos, no realizamos envíos a domicilio a los estados de Baja California, Baja California Sur o Chihuahua.' ) );
         }
 
         // Establecer país México y el código postal / estado en la sesión de WooCommerce
@@ -687,21 +742,27 @@ class WooCommerceController {
             }
         }
 
-        // Restringir ventas a la zona fronteriza (Chihuahua, Baja California, Sonora, Coahuila, Nuevo León, Tamaulipas) y Tijuana
-        $shipping_state = ! empty( $_POST['shipping_state'] ) ? sanitize_text_field( $_POST['shipping_state'] ) : '';
-        $shipping_city = ! empty( $_POST['shipping_city'] ) ? sanitize_text_field( $_POST['shipping_city'] ) : '';
-
-        $restricted_states = array( 'BC', 'CH', 'SO', 'CO', 'NL', 'TM' );
-        $is_restricted = false;
-        if ( in_array( $shipping_state, $restricted_states ) ) {
-            $is_restricted = true;
+        // Restringir envío a domicilio a los estados de Baja California, Baja California Sur y Chihuahua
+        $chosen_methods = WC()->session->get( 'chosen_shipping_methods' );
+        $is_local_pickup = false;
+        if ( ! empty( $chosen_methods ) && ( strpos( $chosen_methods[0], 'local_pickup' ) !== false ) ) {
+            $is_local_pickup = true;
         }
-        if ( ! empty( $shipping_city ) && strcasecmp( trim( $shipping_city ), 'tijuana' ) === 0 ) {
-            $is_restricted = true;
+        if ( isset( $_POST['shipping_method'] ) && is_array( $_POST['shipping_method'] ) ) {
+            foreach ( $_POST['shipping_method'] as $method ) {
+                if ( strpos( $method, 'local_pickup' ) !== false ) {
+                    $is_local_pickup = true;
+                    break;
+                }
+            }
         }
 
-        if ( $is_restricted ) {
-            wc_add_notice( __( 'Lo sentimos, actualmente no realizamos entregas ni ventas en la zona fronteriza (Baja California, Sonora, Chihuahua, Coahuila, Nuevo León o Tamaulipas).', 'woocommerce' ), 'error' );
+        if ( ! $is_local_pickup ) {
+            $shipping_state = ! empty( $_POST['shipping_state'] ) ? sanitize_text_field( $_POST['shipping_state'] ) : '';
+            $restricted_states = array( 'BC', 'BS', 'CH' );
+            if ( in_array( $shipping_state, $restricted_states ) ) {
+                wc_add_notice( __( 'Lo sentimos, no realizamos envíos a domicilio a los estados de Baja California, Baja California Sur o Chihuahua.', 'woocommerce' ), 'error' );
+            }
         }
     }
 
@@ -827,13 +888,19 @@ class WooCommerceController {
     /**
      * Devuelve los argumentos de consulta para la sección de "Colección" o "Productos Nuevos"
      * Centraliza la lógica para que se pueda cambiar desde un solo lugar.
+     * Excluye automáticamente los productos marcados como solo-cotización.
      */
     public static function get_collection_query_args($count = 20) {
+        $meta_query = class_exists('QuoteOnlyController')
+            ? QuoteOnlyController::get_meta_exclusion_args()
+            : array();
+
         return array(
             'post_type'      => 'product',
             'posts_per_page' => $count,
             'orderby'        => 'date',
-            'order'          => 'DESC'
+            'order'          => 'DESC',
+            'meta_query'     => $meta_query,
         );
     }
 
@@ -878,5 +945,77 @@ class WooCommerceController {
         if ( $ext ) echo '<p><strong>Número Exterior:</strong> ' . esc_html( $ext ) . '</p>';
         if ( $int ) echo '<p><strong>Número Interior:</strong> ' . esc_html( $int ) . '</p>';
         if ( $del ) echo '<p><strong>Delegación/Municipio:</strong> ' . esc_html( $del ) . '</p>';
+    }
+
+    /**
+     * Permitir pagar el pedido sin necesidad de iniciar sesión si se tiene el link con la clave correcta
+     */
+    public function allow_pay_for_order_without_login( $allcaps, $caps, $args ) {
+        if ( isset( $caps[0] ) && 'pay_for_order' === $caps[0] ) {
+            $key = isset( $_GET['key'] ) ? sanitize_text_field( wp_unslash( $_GET['key'] ) ) : '';
+            if ( $key ) {
+                $order_id = isset( $args[2] ) ? $args[2] : null;
+                $order    = wc_get_order( $order_id );
+                if ( $order && $order->get_order_key() === $key ) {
+                    $allcaps['pay_for_order'] = true;
+                }
+            }
+        }
+        return $allcaps;
+    }
+
+    /**
+     * Ocultar la categoría por defecto (sin-categoria/uncategorized) de los listados de términos
+     */
+    public function exclude_uncategorized_category( $terms, $taxonomies, $args, $term_query ) {
+        if ( ! is_admin() && ! empty( $terms ) && is_array( $terms ) ) {
+            $target_taxonomies = array( 'product_cat', 'category' );
+            $intersect = array_intersect( $taxonomies, $target_taxonomies );
+            
+            if ( ! empty( $intersect ) ) {
+                $has_objects = false;
+                $has_ids = false;
+                
+                foreach ( $terms as $term ) {
+                    if ( is_object( $term ) ) {
+                        $has_objects = true;
+                        break;
+                    } elseif ( is_numeric( $term ) ) {
+                        $has_ids = true;
+                        break;
+                    }
+                }
+                
+                if ( $has_objects ) {
+                    foreach ( $terms as $key => $term ) {
+                        if ( is_object( $term ) && isset( $term->slug ) ) {
+                            if ( 'uncategorized' === $term->slug || 'sin-categoria' === $term->slug ) {
+                                unset( $terms[$key] );
+                            }
+                        }
+                    }
+                    $terms = array_values( $terms );
+                } elseif ( $has_ids ) {
+                    $exclude_ids = array();
+                    foreach ( $intersect as $tax ) {
+                        foreach ( array( 'uncategorized', 'sin-categoria' ) as $slug ) {
+                            $term_obj = get_term_by( 'slug', $slug, $tax );
+                            if ( $term_obj ) {
+                                $exclude_ids[] = (int) $term_obj->term_id;
+                            }
+                        }
+                    }
+                    if ( ! empty( $exclude_ids ) ) {
+                        foreach ( $terms as $key => $term ) {
+                            if ( in_array( (int) $term, $exclude_ids, true ) ) {
+                                unset( $terms[$key] );
+                            }
+                        }
+                        $terms = array_values( $terms );
+                    }
+                }
+            }
+        }
+        return $terms;
     }
 }

@@ -10,6 +10,14 @@ if ( ! $product ) {
     return;
 }
 
+// Guardia de seguridad: no renderizar tarjetas de productos solo-cotización.
+// Este template-part es el último escudo para cualquier loop custom que no
+// aplique su propia meta_query de exclusión.
+if ( class_exists( 'QuoteOnlyController' ) && QuoteOnlyController::is_quote_only( $product->get_id() ) ) {
+    return;
+}
+
+
 $product_id = $product->get_id();
 $product_name = $product->get_name();
 $product_price = $product->get_price();

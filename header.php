@@ -3,7 +3,6 @@
 <head>
     <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php wp_title('|', true, 'right'); ?></title>
     <?php wp_head(); ?>
 </head>
 <body <?php body_class(); ?>>
@@ -317,21 +316,34 @@
             <?php else : ?>
                 <form class="account-form" id="login-form">
                     <div class="mb-3">
-                        <label class="form-label" for="login-username">Correo electrónico o Usuario1</label>
-                        <input type="text" class="form-control" id="login-username" name="username" placeholder="tu@correo.com" required>
+                        <label class="form-label text-dark fw-semibold small" for="login-username">Correo electrónico o Usuario</label>
+                        <div class="input-group input-group-modern">
+                            <span class="input-group-text bg-white border-end-0 text-muted">
+                                <i class="far fa-user"></i>
+                            </span>
+                            <input type="text" class="form-control border-start-0 ps-1" id="login-username" name="username" placeholder="tu@correo.com" required autocomplete="username">
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label" for="login-password">Contraseña</label>
-                        <input type="password" class="form-control" id="login-password" name="password" placeholder="••••••••" required>
+                        <label class="form-label text-dark fw-semibold small" for="login-password">Contraseña</label>
+                        <div class="input-group input-group-modern">
+                            <span class="input-group-text bg-white border-end-0 text-muted">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                            <input type="password" class="form-control border-start-0 border-end-0 ps-1" id="login-password" name="password" placeholder="••••••••" required autocomplete="current-password">
+                            <button class="btn btn-outline-secondary border-start-0 bg-white text-muted btn-toggle-password" type="button" aria-label="Mostrar contraseña">
+                                <i class="far fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
                     <div id="login-message" class="mb-3 small text-danger"></div>
-                    <button type="button" class="btn btn-primary w-100 mb-2" id="btn-login-submit" onclick="expotodo_handle_login(this, event)">
+                    <button type="button" class="btn btn-primary w-100 mb-2 py-2 fw-bold text-dark btn-login-submit-modern" id="btn-login-submit" onclick="expotodo_handle_login(this, event)">
                         <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
                         Iniciar sesión
                     </button>
-                    <a href="<?php echo home_url('/my-account'); ?>" class="btn btn-outline-dark w-100">Crear cuenta</a>
+                    <a href="<?php echo home_url('/my-account'); ?>" class="btn btn-outline-dark w-100 py-2 fw-semibold">Crear cuenta</a>
                     <div class="mt-3 text-center">
-                        <a href="<?php echo home_url('/my-account'); ?>" class="text-decoration-none small">Ir a Configuración de Cuenta</a>
+                        <a href="<?php echo home_url('/my-account'); ?>" class="text-decoration-none small text-muted hover-primary">Ir a Configuración de Cuenta</a>
                     </div>
                 </form>
             <?php endif; ?>

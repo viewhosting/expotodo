@@ -79,6 +79,9 @@ class ThemeController {
         ";
         wp_add_inline_style( 'expotodo-style', $custom_css );
 
+        // Estilos de testimonios
+        wp_enqueue_style( 'expotodo-testimonials', get_template_directory_uri() . '/assets/css/testimonials.css', array('expotodo-style'), $version );
+
         // Estilos condicionales
         wp_enqueue_style( 'expotodo-filtro', get_template_directory_uri() . '/assets/css/filtro.css', array('expotodo-style'), $version );
 
@@ -134,7 +137,7 @@ class ThemeController {
         if ( is_view_order_page() ) {
             wp_enqueue_style( 'expotodo-view-order', get_template_directory_uri() . '/assets/css/pagina_view_order.css', array(), $version );
         }
-        if ( is_account_page() ) {
+        if ( is_page_template('page-cuenta.php') || is_account_page() ) {
             wp_enqueue_style( 'expotodo-account-boutique', get_template_directory_uri() . '/assets/css/pagina_cuenta.css', array(), $version );
         }
     }
@@ -173,8 +176,11 @@ class ThemeController {
         $args = array(
             'post_type'      => 'product',
             'posts_per_page' => 8,
-            'status'         => 'publish',
+            'post_status'    => 'publish',
             's'              => $query,
+            'meta_query'     => class_exists('QuoteOnlyController')
+                ? QuoteOnlyController::get_meta_exclusion_args()
+                : array(),
         );
 
         $loop = new WP_Query( $args );

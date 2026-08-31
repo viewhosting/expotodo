@@ -1,7 +1,7 @@
 // ==========================================
 // GLOBAL LOGIN HANDLER
 // ==========================================
-window.expotodo_handle_login = function (btn, e) {
+window.expotodo_handle_login = function(btn, e) {
     if (e) e.preventDefault();
 
     var $ = jQuery;
@@ -48,7 +48,7 @@ window.expotodo_handle_login = function (btn, e) {
         url: expotodo_globals.ajax_url,
         type: 'POST',
         data: formData,
-        success: function (response) {
+        success: function(response) {
             console.log('Login response:', response);
             if (response.success) {
                 $msg.html(response.data.message).addClass('text-success');
@@ -64,7 +64,7 @@ window.expotodo_handle_login = function (btn, e) {
                 $btn.find('.spinner-border').addClass('d-none');
             }
         },
-        error: function (xhr, status, error) {
+        error: function(xhr, status, error) {
             console.error('Login error:', error);
             console.error('Response:', xhr.responseText);
             $msg.html('Error de conexión. Inténtalo de nuevo.').addClass('text-danger');
@@ -77,7 +77,7 @@ window.expotodo_handle_login = function (btn, e) {
 // ==========================================
 // PROFILE SAVE HANDLER
 // ==========================================
-window.expotodo_save_profile = function (btn, e) {
+window.expotodo_save_profile = function(btn, e) {
     if (e) e.preventDefault();
 
     var $ = jQuery;
@@ -105,7 +105,7 @@ window.expotodo_save_profile = function (btn, e) {
         url: expotodo_globals.ajax_url,
         type: 'POST',
         data: formData,
-        success: function (response) {
+        success: function(response) {
             console.log('Profile update response:', response);
             if (response.success) {
                 $msg.html(response.data.message).addClass('text-success');
@@ -113,13 +113,33 @@ window.expotodo_save_profile = function (btn, e) {
                 $msg.html(response.data.message).addClass('text-danger');
             }
         },
-        error: function (xhr, status, error) {
+        error: function(xhr, status, error) {
             console.error('Profile update error:', error);
             $msg.html('Error de conexión. Inténtalo de nuevo.').addClass('text-danger');
         },
-        complete: function () {
+        complete: function() {
             $btn.prop('disabled', false);
             $btn.html(originalText);
         }
     });
 };
+
+// ==========================================
+// PASSWORD TOGGLE VISIBILITY HANDLER
+// ==========================================
+jQuery(document).ready(function($) {
+    $(document).on('click', '.btn-toggle-password', function(e) {
+        e.preventDefault();
+        var $btn = $(this);
+        var $input = $btn.siblings('input');
+        var $icon = $btn.find('i');
+
+        if ($input.attr('type') === 'password') {
+            $input.attr('type', 'text');
+            $icon.removeClass('fa-eye').addClass('fa-eye-slash');
+        } else {
+            $input.attr('type', 'password');
+            $icon.removeClass('fa-eye-slash').addClass('fa-eye');
+        }
+    });
+});

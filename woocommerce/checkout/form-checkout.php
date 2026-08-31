@@ -186,7 +186,7 @@ if ( ! $checkout->is_registration_enabled() && $checkout->is_registration_requir
                         ?>
 
                         <!-- Campos de Ubicación Dinámicos (Se muestran solo en Recogida Local para Mercado Pago) -->
-                        <div id="pickup_location_fields" class="pickup-address-wrap mt-3" style="display: none; width: 100%; grid-column: span 2;">
+                        <div id="pickup_location_fields" class="pickup-address-wrap mt-3" style="display: none !important; width: 100%; grid-column: span 2;">
                             <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--primary-dark); margin: 15px 0 10px; border-top: 1px solid #eee; padding-top: 15px;">
                                 <i class="fas fa-map-marker-alt"></i> <?php _e( 'Datos para el recibo de pago', 'woocommerce' ); ?>
                             </h3>
@@ -271,8 +271,9 @@ if ( ! $checkout->is_registration_enabled() && $checkout->is_registration_requir
                         <div class="cart-summary-footer-bar">
                             
                             <!-- Sección de Cupón Estilo Carrito -->
-                            <?php if ( wc_coupons_enabled() ) { ?>
+                            <!-- <?php if ( wc_coupons_enabled() ) { ?>
                                 <div class="checkout-coupon-wrapper mb-4">
+                                    1
                                     <div class="coupon d-flex gap-2">
                                         <input type="text" name="coupon_code" class="input-text" id="coupon_code" value="" placeholder="<?php esc_attr_e( 'Código de cupón', 'woocommerce' ); ?>" style="flex: 1; height: 48px; border-radius: 12px; border: 1px solid #e2e8f0; padding: 0 15px;" />
                                         <button type="submit" class="button btn-card btn-outline-primary" name="apply_coupon" value="<?php esc_attr_e( 'Aplicar', 'woocommerce' ); ?>" style="height: 48px; border-radius: 12px; font-weight: 800; padding: 0 20px;">
@@ -280,7 +281,7 @@ if ( ! $checkout->is_registration_enabled() && $checkout->is_registration_requir
                                         </button>
                                     </div>
                                 </div>
-                            <?php } ?>
+                            <?php } ?> -->
 
                             <div class="totals-grid-row mt-4 mb-2">
                                 <!-- Columna 1: Total (Izquierda en Escritorio) -->

@@ -9,28 +9,45 @@ get_header();
         <h1 class="mb-4">Mi Cuenta</h1>
         
         <?php if ( ! is_user_logged_in() ) : ?>
-            <div class="row justify-content-center">
-                <div class="col-md-5">
-                    <div class="card account-main-card">
-                        <div class="card-body p-5">
+            <div class="row justify-content-center py-4">
+                <div class="col-md-5 col-lg-4">
+                    <div class="card account-main-card login-card-modern shadow-lg">
+                        <div class="card-body p-4 p-md-5">
                             <div class="text-center mb-4">
-                                <i class="fas fa-user-circle fa-4x text-primary opacity-25 mb-3"></i>
-                                <h4 class="fw-bold">Bienvenido de nuevo</h4>
+                                <div class="login-logo-container mb-3">
+                                    <img src="<?php echo get_template_directory_uri(); ?>/assets/images/logo.png" alt="<?php bloginfo('name'); ?>" class="login-logo" style="max-width: 150px; height: auto;">
+                                </div>
+                                <h4 class="fw-bold text-dark mb-1">Bienvenido de nuevo</h4>
                                 <p class="text-muted small">Ingresa tus credenciales para acceder</p>
                             </div>
                             <form id="main-login-form" class="account-form">
                                 <div class="mb-3">
-                                    <label class="form-label">Correo electrónico o Usuario</label>
-                                    <input type="text" class="form-control" name="username" placeholder="ejemplo@correo.com" required>
+                                    <label class="form-label text-dark fw-semibold small">Correo electrónico o Usuario</label>
+                                    <div class="input-group input-group-modern">
+                                        <span class="input-group-text bg-white border-end-0 text-muted">
+                                            <i class="far fa-user"></i>
+                                        </span>
+                                        <input type="text" class="form-control border-start-0 ps-1" name="username" placeholder="ejemplo@correo.com" required autocomplete="username">
+                                    </div>
                                 </div>
                                 <div class="mb-4">
-                                    <label class="form-label">Contraseña</label>
-                                    <input type="password" class="form-control" name="password" placeholder="••••••••" required>
+                                    <label class="form-label text-dark fw-semibold small">Contraseña</label>
+                                    <div class="input-group input-group-modern">
+                                        <span class="input-group-text bg-white border-end-0 text-muted">
+                                            <i class="fas fa-lock"></i>
+                                        </span>
+                                        <input type="password" class="form-control border-start-0 border-end-0 ps-1" name="password" placeholder="••••••••" required autocomplete="current-password">
+                                        <button class="btn btn-outline-secondary border-start-0 bg-white text-muted btn-toggle-password" type="button" aria-label="Mostrar contraseña">
+                                            <i class="far fa-eye"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="login-message mb-3 small text-danger"></div>
-                                <button type="button" id="btn-main-login-submit" class="btn btn-primary w-100 py-2 fw-bold" onclick="expotodo_handle_login(this, event)">Acceder a mi cuenta</button>
+                                <button type="button" id="btn-main-login-submit" class="btn btn-primary w-100 py-2.5 fw-bold text-dark shadow-sm btn-login-submit-modern" onclick="expotodo_handle_login(this, event)">
+                                    Acceder a mi cuenta
+                                </button>
                                 <div class="text-center mt-3">
-                                    <a href="<?php echo wp_lostpassword_url(); ?>" class="text-decoration-none small text-muted">¿Olvidaste tu contraseña?</a>
+                                    <a href="<?php echo wp_lostpassword_url(); ?>" class="text-decoration-none small text-muted hover-primary">¿Olvidaste tu contraseña?</a>
                                 </div>
                             </form>
                         </div>

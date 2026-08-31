@@ -4,12 +4,13 @@
  */
 
 :root {
-    --primary-boutique: #2c3e50;
-    --secondary-boutique: #ecf0f1;
-    --accent-boutique: #27ae60;
-    --text-muted-boutique: #7f8c8d;
+    --primary-boutique: #1e293b;
+    --secondary-boutique: #f8fafc;
+    --accent-boutique: #b0d443;
+    --accent-dark-boutique: #8ca835;
+    --text-muted-boutique: #64748b;
     --border-radius-boutique: 12px;
-    --shadow-boutique: 0 4px 15px rgba(0,0,0,0.05);
+    --shadow-boutique: 0 10px 30px rgba(0, 0, 0, 0.04);
 }
 
 /* Contenedor Principal */
@@ -21,7 +22,7 @@
 }
 
 .account-header {
-    border-bottom: 1px solid rgba(0,0,0,0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     padding: 1.5rem;
 }
 
@@ -116,11 +117,31 @@
     text-transform: uppercase;
 }
 
-.status-completed { background-color: #e8f5e9; color: #2e7d32; }
-.status-processing { background-color: #e3f2fd; color: #1565c0; }
-.status-on-hold { background-color: #fff3e0; color: #ef6c00; }
-.status-pending { background-color: #fafafa; color: #616161; }
-.status-cancelled, .status-failed { background-color: #ffebee; color: #c62828; }
+.status-completed {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-processing {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.status-on-hold {
+    background-color: #fff3e0;
+    color: #ef6c00;
+}
+
+.status-pending {
+    background-color: #fafafa;
+    color: #616161;
+}
+
+.status-cancelled,
+.status-failed {
+    background-color: #ffebee;
+    color: #c62828;
+}
 
 /* Tarjetas de Dirección Simétricas */
 .address-card {
@@ -210,7 +231,7 @@
     color: var(--primary-boutique);
 }
 
-#address-modal-container input.input-text, 
+#address-modal-container input.input-text,
 #address-modal-container select {
     width: 100%;
     padding: 0.75rem 1rem;
@@ -250,9 +271,11 @@
     #address-modal-container .woocommerce-address-fields__field-wrapper {
         grid-template-columns: 1fr;
     }
+
     #address-modal-container p.form-row-wide {
         grid-column: span 1;
     }
+
     #addressModal .modal-body {
         padding: 1.5rem;
     }
@@ -269,7 +292,7 @@
 
 .wishlist-item {
     transition: all 0.3s ease;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .wishlist-item:hover {
@@ -278,9 +301,9 @@
 
 .wishlist-item-image {
     transition: transform 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     background-color: #fff;
-    border: 1px solid rgba(0,0,0,0.02);
+    border: 1px solid rgba(0, 0, 0, 0.02);
 }
 
 .wishlist-item:hover .wishlist-item-image {
@@ -331,9 +354,9 @@
 .boutique-toast {
     border: none !important;
     border-radius: 12px !important;
-    box-shadow: 0 15px 45px rgba(0,0,0,0.12) !important;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.12) !important;
     backdrop-filter: blur(8px);
-    background: rgba(255,255,255,0.95) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
 }
 
 #expotodo-toast-container {

@@ -60,11 +60,14 @@ get_header();
             <h2 class="section-title text-center mb-5">Productos recomendados</h2>
             <div class="row g-4 row-cols-1 row-cols-sm-2 row-cols-md-4 row-cols-lg-4">
                 <?php
-                // Obtener 4 productos recomendados de forma dinámica
+                // Obtener 4 productos recomendados de forma dinámica — excluye solo-cotización
                 $recommended_args = array(
-                    'post_type' => 'product',
+                    'post_type'      => 'product',
                     'posts_per_page' => 4,
-                    'orderby' => 'rand', // Aleatorios para que siempre varíe
+                    'orderby'        => 'rand', // Aleatorios para que siempre varíe
+                    'meta_query'     => class_exists('QuoteOnlyController')
+                        ? QuoteOnlyController::get_meta_exclusion_args()
+                        : array(),
                 );
                 $recommended_products = new WP_Query($recommended_args);
 

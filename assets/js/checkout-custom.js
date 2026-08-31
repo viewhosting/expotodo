@@ -1,4 +1,4 @@
-jQuery(document).ready(function ($) {
+jQuery(document).ready(function($) {
     // 1. Lógica para "¿Deseas factura?" (Sección de Facturación)
     function toggleBillingSection() {
         if ($('#request_invoice_checkout').is(':checked')) {
@@ -11,12 +11,12 @@ jQuery(document).ready(function ($) {
     }
 
     // Listener checkbox factura
-    $('body').on('change', '#request_invoice_checkout', function () {
+    $('body').on('change', '#request_invoice_checkout', function() {
         toggleBillingSection();
     });
 
     // 2. Lógica para "Cambiar Dirección" (Sección de Envío)
-    $('body').on('click', '#toggle_address_fields', function (e) {
+    $('body').on('click', '#toggle_address_fields', function(e) {
         e.preventDefault();
         $(this).toggleClass('active');
         if ($(this).hasClass('active')) {
@@ -28,15 +28,26 @@ jQuery(document).ready(function ($) {
 
     // 3. Lógica para ocultar Envío si es Recogida Local
     function handleShippingMethodChange() {
-        var selectedMethod = $('input[name^="shipping_method"]:checked').val();
+        var $selectedRadio = $('input[name^="shipping_method"]:checked');
+        var selectedMethod = $selectedRadio.val();
         var isLocalPickup = selectedMethod && selectedMethod.indexOf('local_pickup') !== -1;
+
+        // Obtener texto del label de envío para buscar "interior"
+        var selectedLabel = '';
+        if ($selectedRadio.length) {
+            var $label = $('label[for="' + $selectedRadio.attr('id') + '"]');
+            if (!$label.length) $label = $selectedRadio.siblings('label');
+            if (!$label.length) $label = $selectedRadio.closest('label');
+            selectedLabel = $label.text().toLowerCase();
+        }
+        var isEnvioInterior = selectedLabel.indexOf('interior') !== -1;
 
         if (isLocalPickup) {
             // MOSTRAR campos de ubicación para Mercado Pago (S1)
-            $('#pickup_location_fields').slideDown();
+            // $('#pickup_location_fields').slideDown(); // SIEMPRE OCULTO A PETICIÓN
 
             // Ocultar botón y sección de envío
-            $('#toggle_address_fields').removeClass('active').parent().hide();
+            $('#toggle_address_fields').removeClass('active').hide();
             $('#shipping_details_section').slideUp();
 
             // Sincronizar ship_to_different_address (0 para recogida local)
@@ -44,34 +55,48 @@ jQuery(document).ready(function ($) {
                 $('#ship-to-different-address-checkbox').prop('checked', false).trigger('change');
             }
         } else {
-            // No es recogida local: Mostrar botón de envío delivery
-            $('#toggle_address_fields').parent().show();
-            if ($('#toggle_address_fields').is(':hidden')) {
-                $('#toggle_address_fields').fadeIn();
-            }
-
             // Ocultar campos de ubicación de S1 (se usarán los de delivery)
             $('#pickup_location_fields').slideUp();
-
-            // Forzar apertura automática de delivery siempre
-            $('#toggle_address_fields').addClass('active');
-            $('#shipping_details_section').slideDown();
 
             // Sincronizar ship_to_different_address (1 para delivery) para que WooCommerce active la validación y muestre los campos
             if (!$('#ship-to-different-address-checkbox').is(':checked')) {
                 $('#ship-to-different-address-checkbox').prop('checked', true).trigger('change');
             }
             $('.shipping_address').show(); // Forzar visibilidad inmediata de los campos
+
+            // Verificar si el estado de envío actual es restringido
+            var state = $('#shipping_state').val();
+            var restrictedStates = ['BC', 'BS', 'CH'];
+            if (restrictedStates.indexOf(state) !== -1) {
+                showBoutiqueToast('Lo sentimos, no realizamos envíos a domicilio a los estados de Baja California, Baja California Sur o Chihuahua.');
+                $('#shipping_state').val('').trigger('change');
+            }
+
+            // Ocultar o mostrar botón de cambiar dirección según si es envío al interior
+            if (isEnvioInterior) {
+                $('#toggle_address_fields').show();
+                if ($('#toggle_address_fields').is(':hidden')) {
+                    $('#toggle_address_fields').fadeIn();
+                }
+
+                // Forzar apertura automática para envío al interior
+                $('#toggle_address_fields').addClass('active');
+                $('#shipping_details_section').slideDown();
+            } else {
+                // Si no es envío al interior (ni local pickup), ocultar el botón de cambiar dirección y su sección
+                $('#toggle_address_fields').removeClass('active').hide();
+                $('#shipping_details_section').slideUp();
+            }
         }
     }
 
     // Escuchar cambio inmediato al hacer clic en un método de envío
-    $('body').on('change', 'input[name^="shipping_method"]', function () {
+    $('body').on('change', 'input[name^="shipping_method"]', function() {
         handleShippingMethodChange();
     });
 
     // Escuchar actualización de checkout de WooCommerce
-    $(document.body).on('updated_checkout', function () {
+    $(document.body).on('updated_checkout', function() {
         handleShippingMethodChange();
     });
 
@@ -97,12 +122,12 @@ jQuery(document).ready(function ($) {
                 state: state,
                 nonce: expotodo_checkout_params.nonce
             },
-            success: function (response) {
+            success: function(response) {
                 $citySelect.empty();
                 $citySelect.append('<option value="">Seleccione una ciudad</option>');
 
                 if (response.success && response.data.length > 0) {
-                    $.each(response.data, function (index, value) {
+                    $.each(response.data, function(index, value) {
                         $citySelect.append('<option value="' + value + '">' + value + '</option>');
                     });
                 } else {
@@ -119,7 +144,7 @@ jQuery(document).ready(function ($) {
                     $citySelect.trigger('change');
                 }
             },
-            error: function () {
+            error: function() {
                 $citySelect.empty();
                 $citySelect.append('<option value="">Error al cargar</option>');
                 $citySelect.prop('disabled', false);
@@ -128,14 +153,25 @@ jQuery(document).ready(function ($) {
     }
 
     // Listener Billing State
-    $('body').on('change', '#billing_state', function () {
+    $('body').on('change', '#billing_state', function() {
         var state = $(this).val();
         loadCities(state, '#billing_city');
     });
 
     // Listener Shipping State
-    $('body').on('change', '#shipping_state', function () {
+    $('body').on('change', '#shipping_state', function() {
         var state = $(this).val();
+        var restrictedStates = ['BC', 'BS', 'CH'];
+
+        var selectedMethod = $('input[name^="shipping_method"]:checked').val();
+        var isLocalPickup = selectedMethod && selectedMethod.indexOf('local_pickup') !== -1;
+
+        if (!isLocalPickup && restrictedStates.indexOf(state) !== -1) {
+            showBoutiqueToast('Lo sentimos, no realizamos envíos a domicilio a los estados de Baja California, Baja California Sur o Chihuahua.');
+            $(this).val('').trigger('change');
+            return;
+        }
+
         loadCities(state, '#shipping_city');
     });
 
@@ -168,7 +204,7 @@ jQuery(document).ready(function ($) {
                 cart_item_key: cart_item_key,
                 qty: newQty
             },
-            success: function (response) {
+            success: function(response) {
                 if (response.success) {
                     $('body').trigger('update_checkout');
                 } else {
@@ -176,14 +212,14 @@ jQuery(document).ready(function ($) {
                     alert('Error al actualizar la cantidad');
                 }
             },
-            error: function () {
+            error: function() {
                 $('.cart-items-container').removeClass('processing').css('opacity', '1');
                 alert('Error de conexión');
             }
         });
     }
 
-    $('body').on('click', '.qty-checkout-up', function (e) {
+    $('body').on('click', '.qty-checkout-up', function(e) {
         e.preventDefault();
         var $wrapper = $(this).closest('.quantity-wrapper');
         var $input = $wrapper.find('.checkout-qty-input');
@@ -197,7 +233,7 @@ jQuery(document).ready(function ($) {
         updateCheckoutQuantity($(this).data('cart_item_key'), newQty);
     });
 
-    $('body').on('click', '.qty-checkout-down', function (e) {
+    $('body').on('click', '.qty-checkout-down', function(e) {
         e.preventDefault();
         var $wrapper = $(this).closest('.quantity-wrapper');
         var $input = $wrapper.find('.checkout-qty-input');
@@ -212,13 +248,13 @@ jQuery(document).ready(function ($) {
         updateCheckoutQuantity($(this).data('cart_item_key'), newQty);
     });
 
-    $('body').on('change', '.checkout-qty-input', function (e) {
+    $('body').on('change', '.checkout-qty-input', function(e) {
         var newQty = parseFloat($(this).val());
         var $btn = $(this).closest('.quantity-wrapper').find('.qty-checkout-up');
         updateCheckoutQuantity($btn.data('cart_item_key'), newQty);
     });
 
-    $('body').on('click', '.remove-checkout-item', function (e) {
+    $('body').on('click', '.remove-checkout-item', function(e) {
         e.preventDefault();
         var cart_item_key = $(this).data('cart_item_key');
 
@@ -231,7 +267,7 @@ jQuery(document).ready(function ($) {
                 action: 'expotodo_remove_checkout_item',
                 cart_item_key: cart_item_key
             },
-            success: function (response) {
+            success: function(response) {
                 if (response.success) {
                     // Triggers the checkout update to refresh the table and totals
                     $('body').trigger('update_checkout');
@@ -264,12 +300,12 @@ jQuery(document).ready(function ($) {
         $('.boutique-toast-container').append($toast);
 
         // Auto-eliminar después de 5 segundos
-        var timer = setTimeout(function () {
+        var timer = setTimeout(function() {
             hideToast($toast);
         }, 5000);
 
         // Click para cerrar
-        $toast.on('click', function () {
+        $toast.on('click', function() {
             clearTimeout(timer);
             hideToast($toast);
         });
@@ -277,7 +313,7 @@ jQuery(document).ready(function ($) {
 
     function hideToast($toast) {
         $toast.addClass('hiding');
-        setTimeout(function () {
+        setTimeout(function() {
             $toast.remove();
             // Eliminar contenedor si está vacío
             if ($('.boutique-toast-container').children().length === 0) {
@@ -289,14 +325,14 @@ jQuery(document).ready(function ($) {
     /**
      * Interceptar errores de WooCommerce Checkout
      */
-    $(document.body).on('checkout_error', function (e, error_message) {
+    $(document.body).on('checkout_error', function(e, error_message) {
         // WooCommerce envía un string HTML con un <ul> y varios <li>
         // Lo convertimos temporalmente en objeto jQuery para parsear
         var $tempDiv = $('<div>' + error_message + '</div>');
         var $errors = $tempDiv.find('li');
 
         if ($errors.length > 0) {
-            $errors.each(function () {
+            $errors.each(function() {
                 var msg = $(this).text().trim();
                 // Limpiar el mensaje de errores comunes de Woo (ej: "Facturación Nombre es un campo requerido" -> "Nombre es un campo requerido")
                 var cleanMsg = msg.replace('Facturación ', '').replace('Envío ', '');

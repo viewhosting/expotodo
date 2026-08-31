@@ -73,11 +73,14 @@ get_header();
                             <div class="p-3">
                                 <div class="row g-2 g-md-4 row-cols-2 row-cols-sm-2 row-cols-md-4 row-cols-lg-4" id="product-grid-container">
                                     <?php
-                                    // Custom Query for Products
+                                    // Custom Query for Products — excluye productos solo-cotización
                                     $args = array(
-                                        'post_type' => 'product',
+                                        'post_type'      => 'product',
                                         'posts_per_page' => 16,
-                                        'status' => 'publish',
+                                        'post_status'    => 'publish',
+                                        'meta_query'     => class_exists('QuoteOnlyController')
+                                            ? QuoteOnlyController::get_meta_exclusion_args()
+                                            : array(),
                                     );
                                     $loop = new WP_Query( $args );
 

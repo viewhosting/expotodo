@@ -20,7 +20,26 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 
-get_header(); 
+get_header();
+
+/*
+ * Guardia inline: si este producto es solo-cotización, no renderizar nada.
+ * El hook template_redirect del QuoteOnlyController ya lanza el 404 antes,
+ * pero esta guardia actúa como segunda línea de defensa para cualquier
+ * caso edge donde el hook no haya actuado.
+ */
+if ( is_singular( 'product' ) && class_exists( 'QuoteOnlyController' ) ) {
+    $__qo_id = get_queried_object_id();
+    if ( QuoteOnlyController::is_quote_only( $__qo_id ) ) {
+        global $wp_query;
+        $wp_query->set_404();
+        status_header( 404 );
+        nocache_headers();
+        include( get_query_template( '404' ) );
+        exit;
+    }
+    unset( $__qo_id );
+}
 ?>
 
 <main class="flex-grow-1">
@@ -153,10 +172,16 @@ get_header();
                     $related_ids = wc_get_related_products( $product->get_id(), 4 );
                     
                     if( !empty($related_ids) ) :
+                        // Excluir productos solo-cotización de los relacionados
+                        $related_meta_query = class_exists('QuoteOnlyController')
+                            ? QuoteOnlyController::get_meta_exclusion_args()
+                            : array();
+
                         $args = array(
-                            'post_type' => 'product',
-                            'post__in' => $related_ids,
-                            'posts_per_page' => 4
+                            'post_type'      => 'product',
+                            'post__in'       => $related_ids,
+                            'posts_per_page' => 4,
+                            'meta_query'     => $related_meta_query,
                         );
                         $related_products = new WP_Query( $args );
 
